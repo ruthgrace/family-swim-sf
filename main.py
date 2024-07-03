@@ -156,7 +156,6 @@ for pool in pools:
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
                         for slot in slots:
-                            # to do - add appropriate categories for morning afternoon evening
                             weekdays = slot["weekdays"].split(",")
                             start_time = slot["starting_time"]
                             end_time = slot["ending_time"]
@@ -173,10 +172,9 @@ for pool in pools:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
                 print(f'Failed to reach server: {e.reason}')
-
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
-    break
+
 # second, add "secret swim": balboa lap swim allows kids on the steps, mlk lap swim allows kids in the tot wading pool, hamilton families can swim in the small pool during lap swim if nothing else is scheduled at that time (check for duplication w existing family swim schedule)
 
 # searching by date/time looks like this
