@@ -1,14 +1,8 @@
-import xvfbwrapper
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.firefox import options, service
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from os import environ
-from time import sleep
 from urllib.parse import urlencode
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.error import URLError
 
 north_beach = "North Beach"
 hamilton = "Hamilton"
@@ -46,8 +40,6 @@ center_id = {
 family_swim = "family swim"
 lap_swim = "lap swim"
 
-print("ruth debug print")
-
 
 class SwimSlot:
   # category is morning, afternoon, evening
@@ -59,14 +51,10 @@ class SwimSlot:
     self.category = category
 
 
-options = options.Options()
-options.binary_location = environ["FIREFOX"]
-
 entries = []
 
 # first, make sure that all family swim is added to the spreadsheet
 for pool in pools:
-  print("first pool")
   url_params = {
       "activity_select_param": "2",
       "viewMode": "list",
@@ -74,29 +62,13 @@ for pool in pools:
       "activity_keyword": family_swim
   }
   try:
-    url = base_url + "?" + urlencode(url_params)
-    print(url)
-
-    with xvfbwrapper.Xvfb(), webdriver.Firefox(
-        options=options,
-        service=service.Service(log_path="../gecko.log")) as driver:
-      # with webdriver.Firefox(options=options) as driver:
-      actions = ActionChains(driver)
-      driver.get(url)
-      # assert "Python" in driver.title
-      # elem = driver.find_element(By.NAME, "q")
-      # elem.clear()
-      # elem.send_keys("pycon")
-      # elem.send_keys(Keys.RETURN)
-      # assert "No results found." not in driver.page_source
-      print(driver.title)
-
-    # driver = webdriver.Chrome(options=chrome_options)
-    # driver.get(url)
-    # soup = BeautifulSoup(driver.page_source, features="html.parser")
-    # driver.quit()
-    # activities = soup.find_all("div", class_="activity-card")
-    # print(activities)
+    page = urlopen(base_url + "?" + urlencode(url_params)).read()
+    soup = BeautifulSoup(page)
+    print(soup)
+  except HTTPError as e:
+    print(f'HTTP error occurred: {e.code} - {e.reason}')
+  except URLError as e:
+    print(f'Failed to reach server: {e.reason}')
   except Exception as e:
     print(f'An unexpected error occurred: {e}')
   break
