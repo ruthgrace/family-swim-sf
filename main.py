@@ -46,6 +46,38 @@ HEADERS = {
     "X-CSRF-Token": "4481af30-99dc-45da-981a-72b4439dfe89",
 }
 
+# example full request body
+# request_body = {
+#     "activity_search_pattern": {
+#         "skills": [],
+#         "time_after_str": "",
+#         "days_of_week": None,
+#         "activity_select_param": 2,
+#         "center_ids": [center_id[pool]],
+#         "time_before_str": "",
+#         "open_spots": None,
+#         "activity_id": None,
+#         "activity_category_ids": [],
+#         "date_before": "",
+#         "min_age": None,
+#         "date_after": "",
+#         "activity_type_ids": [],
+#         "site_ids": [],
+#         "for_map": False,
+#         "geographic_area_ids": [],
+#         "season_ids": [],
+#         "activity_department_ids": [],
+#         "activity_other_category_ids": [],
+#         "child_season_ids": [],
+#         "activity_keyword": "family swim",
+#         "instructor_ids": [],
+#         "max_age": None,
+#         "custom_price_from": "",
+#         "custom_price_to": "",
+#     },
+#     "activity_transfer_pattern": {},
+# }
+
 center_id = {
     north_beach: "198",
     hamilton: "88",
@@ -78,31 +110,9 @@ entries = []
 for pool in pools:
     request_body = {
         "activity_search_pattern": {
-            "skills": [],
-            "time_after_str": "",
-            "days_of_week": None,
             "activity_select_param": 2,
-            "center_ids": ["85"],
-            "time_before_str": "",
-            "open_spots": None,
-            "activity_id": None,
-            "activity_category_ids": [],
-            "date_before": "",
-            "min_age": None,
-            "date_after": "",
-            "activity_type_ids": [],
-            "site_ids": [],
-            "for_map": False,
-            "geographic_area_ids": [],
-            "season_ids": [],
-            "activity_department_ids": [],
-            "activity_other_category_ids": [],
-            "child_season_ids": [],
-            "activity_keyword": "family swim",
-            "instructor_ids": [],
-            "max_age": None,
-            "custom_price_from": "",
-            "custom_price_to": "",
+            "center_ids": [center_id[pool]],
+            "activity_keyword": "family swim"
         },
         "activity_transfer_pattern": {},
     }
