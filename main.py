@@ -1,6 +1,8 @@
 import requests
 import json
-from pprint import pprint
+from bs4 import BeautifulSoup
+from urllib.parse import urlencode
+from urllib.request import urlopen
 from urllib.error import HTTPError
 from urllib.error import URLError
 
@@ -121,11 +123,18 @@ for pool in pools:
                                  headers=HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
-        pprint(current_page)
-    except HTTPError as e:
-        print(f'HTTP error occurred: {e.code} - {e.reason}')
-    except URLError as e:
-        print(f'Failed to reach server: {e.reason}')
+        results = current_page["body"]["activity_items"]
+        for swim_slot in results:
+            swim_slot_url = swim_slot["detail_url"]
+            try:
+                page = urlopen(swim_slot_url).read()
+                soup = BeautifulSoup(page)
+                print(soup.prettify())
+            except HTTPError as e:
+                print(f'HTTP error occurred: {e.code} - {e.reason}')
+            except URLError as e:
+                print(f'Failed to reach server: {e.reason}')
+
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
     break
