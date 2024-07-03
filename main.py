@@ -35,23 +35,7 @@ SWIM_API_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/
 ACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activity/detail/meetingandregistrationdates"
 HEADERS = {
     "Content-Type": "application/json;charset=utf-8",
-    "Accept": "*/*",
-    "Sec-Fetch-Site": "same-origin",
-    "Accept-Language": "en-CA,en-US;q=0.9,en;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Sec-Fetch-Mode": "cors",
-    "Host": "anc.apm.activecommunities.com",
-    "Origin": "https://anc.apm.activecommunities.com",
-    "User-Agent":
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15",
-    "Referer":
-    "https://anc.apm.activecommunities.com/sfrecpark/activity/search?activity_select_param=2&center_ids=85&activity_keyword=family%20swim&viewMode=list",
-    "Content-Length": "581",
-    "Connection": "keep-alive",
-    "Sec-Fetch-Dest": "empty",
     "page_info": '{"order_by":"","page_number":1,"total_records_per_page":20}',
-    "X-Requested-With": "XMLHttpRequest",
-    "X-CSRF-Token": "4481af30-99dc-45da-981a-72b4439dfe89",
 }
 
 # example full request body
