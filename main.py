@@ -175,7 +175,10 @@ for pool in pools:
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
 
-# second, add "secret swim": balboa lap swim allows kids on the steps, mlk lap swim allows kids in the tot wading pool, hamilton families can swim in the small pool during lap swim if nothing else is scheduled at that time (check for duplication w existing family swim schedule)
+# second, add "secret swim":
+# * balboa allows kids during lap swim if nothing else is scheduled at that time
+# * hamilton allows kids during lap swim if nothing else is scheduled at that time
+# * ask MLK when the tot pool is open - are families always allowed in the tot pool?
 
 # searching by date/time looks like this
 # https://anc.apm.activecommunities.com/sfrecpark/activity/search?time_after_str=12%3A00&days_of_week=0000000&activity_select_param=2&time_before_str=13%3A00&date_before=2024-06-01&date_after=2024-06-01&viewMode=list
