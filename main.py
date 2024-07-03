@@ -139,12 +139,13 @@ for pool in pools:
                         slots = activity["pattern_dates"]
                         for slot in slots:
                             # to do - add appropriate categories for morning afternoon evening
-                            # also check for multi weekday slots
-                            entries.append(
-                                SwimSlot(pool, slot["weekdays"],
-                                         slot["starting_time"],
-                                         slot["ending_time"], "afternoon"))
-                            print(entries[-1])
+                            weekdays = slot["weekdays"].split(",")
+                            for weekday in weekdays:
+                                entries.append(
+                                    SwimSlot(pool, weekday.strip(),
+                                             slot["starting_time"],
+                                             slot["ending_time"], "afternoon"))
+                                print(entries[-1])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
