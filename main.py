@@ -17,6 +17,11 @@ balboa = "Balboa"
 mlk = "Martin Luther King Jr"
 coffman = "Coffman"
 
+# swim slot categories
+MORNING = "morning"
+AFTERNOON = "afternoon"
+EVENING = "evening"
+
 pools = [
     north_beach, hamilton, rossi, mission, garfield, sava, balboa, mlk, coffman
 ]
@@ -110,6 +115,19 @@ class SwimSlot:
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
 
 
+def get_categories(start_time, end_time):
+    categories = []
+    start_hour = int(start_time.split(":")[0].strip())
+    end_hour = int(end_time.split(":")[0].strip())
+    if start_hour < 12:
+        categories.append(MORNING)
+    if end_hour > 12 and start_hour < 17:
+        categories.append(AFTERNOON)
+    if end_hour > 17:
+        categories.append(EVENING)
+    return categories
+
+
 entries = []
 
 # first, make sure that all family swim is added to the spreadsheet
@@ -140,12 +158,17 @@ for pool in pools:
                         for slot in slots:
                             # to do - add appropriate categories for morning afternoon evening
                             weekdays = slot["weekdays"].split(",")
+                            start_time = slot["starting_time"]
+                            end_time = slot["ending_time"]
                             for weekday in weekdays:
-                                entries.append(
-                                    SwimSlot(pool, weekday.strip(),
-                                             slot["starting_time"],
-                                             slot["ending_time"], "afternoon"))
-                                print(entries[-1])
+                                categories = get_categories(
+                                    start_time, end_time)
+                                for category in categories:
+                                    entries.append(
+                                        SwimSlot(pool, weekday.strip(),
+                                                 start_time, end_time,
+                                                 category))
+                                    print(entries[-1])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
