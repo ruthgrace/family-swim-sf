@@ -2,6 +2,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode
+from urllib import request
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from urllib.error import URLError
@@ -26,7 +27,7 @@ pools = [
 # activity_keyword is the text in the search query
 
 SWIM_API_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/list?locale=en-US"
-# PAGINATION = {"order_by": "", "page_number": 1, "total_records_per_page": 20}
+ACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activity/detail/meetingandregistrationdates"
 HEADERS = {
     "Content-Type": "application/json;charset=utf-8",
     "Accept": "*/*",
@@ -105,6 +106,9 @@ class SwimSlot:
         self.end = end
         self.category = category
 
+    def __str__(self):
+        return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
+
 
 entries = []
 
@@ -124,12 +128,23 @@ for pool in pools:
                                  data=json.dumps(request_body))
         current_page = response.json()
         results = current_page["body"]["activity_items"]
-        for swim_slot in results:
-            swim_slot_url = swim_slot["detail_url"]
+        for item in results:
+            activity_id = item["id"]
             try:
-                page = urlopen(swim_slot_url).read()
-                soup = BeautifulSoup(page)
-                print(soup.prettify())
+                with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
+                    data = json.load(url)
+                    activity_schedules = data["body"][
+                        "meeting_and_registration_dates"]["activity_patterns"]
+                    for activity in activity_schedules:
+                        slots = activity["pattern_dates"]
+                        for slot in slots:
+                            # to do - add appropriate categories for morning afternoon evening
+                            # also check for multi weekday slots
+                            entries.append(
+                                SwimSlot(pool, slot["weekdays"],
+                                         slot["starting_time"],
+                                         slot["ending_time"], "afternoon"))
+                            print(entries[-1])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
