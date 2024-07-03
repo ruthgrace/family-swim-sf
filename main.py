@@ -26,6 +26,8 @@ pools = [
     north_beach, hamilton, rossi, mission, garfield, sava, balboa, mlk, coffman
 ]
 
+secret_lap_swim_pools = [balboa, hamilton]
+
 # an example search URL looks like this
 # https://anc.apm.activecommunities.com/sfrecpark/activity/search?activity_select_param=2&center_ids=85&activity_keyword=family%20swim&viewMode=list
 # center_id represents the swimming pool
@@ -35,7 +37,7 @@ SWIM_API_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/
 ACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activity/detail/meetingandregistrationdates"
 HEADERS = {
     "Content-Type": "application/json;charset=utf-8",
-    "page_info": '{"order_by":"","page_number":1,"total_records_per_page":20}',
+    "page_info": '{"order_by":"","page_number":1,"total_records_per_page":30}',
 }
 
 # example full request body
@@ -164,6 +166,45 @@ for pool in pools:
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
 # * ask MLK when the tot pool is open - are families always allowed in the tot pool?
 
-# searching by date/time looks like this
-# https://anc.apm.activecommunities.com/sfrecpark/activity/search?time_after_str=12%3A00&days_of_week=0000000&activity_select_param=2&time_before_str=13%3A00&date_before=2024-06-01&date_after=2024-06-01&viewMode=list
-# for June 1st, 12pm to 1pm
+lap_swim_entries = {}
+
+for pool in secret_lap_swim_pools:
+    lap_swim_entries[pool] = []
+    request_body = {
+        "activity_search_pattern": {
+            "activity_select_param": 2,
+            "center_ids": [center_id[pool]],
+            "activity_keyword": "lap swim"
+        },
+        "activity_transfer_pattern": {},
+    }
+    try:
+        response = requests.post(SWIM_API_URL,
+                                 headers=HEADERS,
+                                 data=json.dumps(request_body))
+        current_page = response.json()
+        results = current_page["body"]["activity_items"]
+        for item in results:
+            activity_id = item["id"]
+            try:
+                with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
+                    data = json.load(url)
+                    activity_schedules = data["body"][
+                        "meeting_and_registration_dates"]["activity_patterns"]
+                    for activity in activity_schedules:
+                        slots = activity["pattern_dates"]
+                        for slot in slots:
+                            weekdays = slot["weekdays"].split(",")
+                            start_time = slot["starting_time"]
+                            end_time = slot["ending_time"]
+                            for weekday in weekdays:
+                                lap_swim_entries[pool].append(
+                                    SwimSlot(pool, weekday.strip(), start_time,
+                                             end_time, "none"))
+                                print(f"LAP SWIM {lap_swim_entries[pool][-1]}")
+            except HTTPError as e:
+                print(f'HTTP error occurred: {e.code} - {e.reason}')
+            except URLError as e:
+                print(f'Failed to reach server: {e.reason}')
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
