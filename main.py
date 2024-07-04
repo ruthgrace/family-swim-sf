@@ -1,4 +1,5 @@
 import requests
+import traceback
 import json
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode
@@ -35,6 +36,7 @@ secret_lap_swim_pools = [balboa, hamilton]
 
 SWIM_API_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/list?locale=en-US"
 ACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activity/detail/meetingandregistrationdates"
+SUBACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/subs"
 HEADERS = {
     "Content-Type": "application/json;charset=utf-8",
     "page_info": '{"order_by":"","page_number":1,"total_records_per_page":30}',
@@ -114,6 +116,7 @@ def get_categories(start_time, end_time):
     return categories
 
 
+"""
 entries = []
 
 # first, make sure that all family swim is added to the spreadsheet
@@ -160,12 +163,13 @@ for pool in pools:
                 print(f'Failed to reach server: {e.reason}')
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
-
+"""
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
 # * ask MLK when the tot pool is open - are families always allowed in the tot pool?
 
+# get all lap swim slots for pools that have a small and big pool
 lap_swim_entries = {}
 
 for pool in secret_lap_swim_pools:
@@ -208,3 +212,99 @@ for pool in secret_lap_swim_pools:
                 print(f'Failed to reach server: {e.reason}')
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
+
+# get all non lap swim entries
+for pool in lap_swim_entries.keys():
+    request_body = {
+        "activity_search_pattern": {
+            "activity_select_param": 2,
+            "center_ids": [center_id[pool]],
+            "activity_keyword": "*"
+        },
+        "activity_transfer_pattern": {},
+    }
+    try:
+        response = requests.post(SWIM_API_URL,
+                                 headers=HEADERS,
+                                 data=json.dumps(request_body))
+        current_page = response.json()
+        results = current_page["body"]["activity_items"]
+        for item in results:
+            activity_ids = [item["id"]]
+            activity_name = item["name"]
+            print(f"activity name: {item['name']}")
+
+            if "lap swim" not in activity_name.lower():
+                # sometimes a listing that does not have meeting times has sub listings that do have meeting times
+                if "num_of_sub_activities" in item and item[
+                        "num_of_sub_activities"] > 0:
+                    if "sub_activities" in item and len(
+                            item["sub_activity_ids"]) > 0:
+                        activity_ids = item["sub_activity_ids"]
+                    else:
+                        try:
+                            request_body = {"locale": "en-US"}
+                            response = requests.post(
+                                f"{SUBACTIVITY_URL}/{activity_ids[0]}",
+                                headers=HEADERS,
+                                data=json.dumps(request_body))
+                            current_page = response.json()
+                            sub_activities = current_page["body"][
+                                "sub_activities"]
+                            for sub_activity_data in sub_activities:
+                                print(
+                                    f"sub activity name {sub_activity_data['name']}"
+                                )
+                                activity_ids.append(sub_activity_data["id"])
+                        except HTTPError as e:
+                            print(
+                                f'HTTP error occurred: {e.code} - {e.reason}')
+                        except URLError as e:
+                            print(f'Failed to reach server: {e.reason}')
+                for activity_id in activity_ids:
+                    try:
+                        with request.urlopen(
+                                f"{ACTIVITY_URL}/{activity_id}") as url:
+                            data = json.load(url)
+                            if "meeting_and_registration_dates" in data[
+                                    "body"]:
+                                if "no_meeting_dates" not in data["body"][
+                                        "meeting_and_registration_dates"] or not data[
+                                            "body"][
+                                                "meeting_and_registration_dates"][
+                                                    "no_meeting_dates"]:
+                                    """print(
+                                        f"meeting_and_registration_dates: {data['body']['meeting_and_registration_dates']}"
+                                    )
+                                    """
+                                    if "activity_patterns" in data["body"][
+                                            "meeting_and_registration_dates"]:
+                                        activity_schedules = data["body"][
+                                            "meeting_and_registration_dates"][
+                                                "activity_patterns"]
+                                        for activity in activity_schedules:
+                                            slots = activity["pattern_dates"]
+                                            print(slots)
+                                            for slot in slots:
+                                                weekdays = slot[
+                                                    "weekdays"].split(",")
+                                                start_time = slot[
+                                                    "starting_time"]
+                                                end_time = slot["ending_time"]
+                                                for weekday in weekdays:
+                                                    # CHECK IF THERE IS A CONFLICTING LAP SWIM AT THE SAME POOL
+                                                    print(
+                                                        SwimSlot(
+                                                            pool,
+                                                            weekday.strip(),
+                                                            start_time,
+                                                            end_time, "none"))
+                    except HTTPError as e:
+                        print(f'HTTP error occurred: {e.code} - {e.reason}')
+                    except URLError as e:
+                        print(f'Failed to reach server: {e.reason}')
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
+    # get all the non lap swim
+    # for each non lap swim check if it overlaps with lap swim; if it does, mark lap swim as NOT FAMILY FRIENDLY
