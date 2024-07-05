@@ -116,6 +116,20 @@ def get_categories(start_time, end_time):
     return categories
 
 
+def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
+    slot_start_hour = int(start_time.split(":")[0].strip())
+    slot_end_hour = int(end_time.split(":")[0].strip())
+    for i in range(len(lap_swim_slots)):
+        lap_swim_slot = lap_swim_slots[i]
+        if slot.pool == lap_swim_slot.pool and slot.weekday == lap_swim_slot.weekday:
+            lap_start_hour = int(start_time.split(":")[0].strip())
+            lap_end_hour = int(end_time.split(":")[0].strip())
+            if (slot_start_hour >= lap_start_hour and slot_start_hour
+                    < lap_end_hour) or (slot_end_hour <= lap_end_hour
+                                        and slot_end_hour > lap_start_hour):
+                overlap[i] = True
+
+
 """
 entries = []
 
@@ -215,6 +229,8 @@ for pool in secret_lap_swim_pools:
 
 # get all non lap swim entries
 for pool in lap_swim_entries.keys():
+    # this array records true at an index where a scheduled lap swim has an overlapping activity
+    overlap = [False for i in range(len(lap_swim_entries[pool]))]
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -273,10 +289,6 @@ for pool in lap_swim_entries.keys():
                                             "body"][
                                                 "meeting_and_registration_dates"][
                                                     "no_meeting_dates"]:
-                                    """print(
-                                        f"meeting_and_registration_dates: {data['body']['meeting_and_registration_dates']}"
-                                    )
-                                    """
                                     if "activity_patterns" in data["body"][
                                             "meeting_and_registration_dates"]:
                                         activity_schedules = data["body"][
@@ -292,13 +304,17 @@ for pool in lap_swim_entries.keys():
                                                     "starting_time"]
                                                 end_time = slot["ending_time"]
                                                 for weekday in weekdays:
-                                                    # CHECK IF THERE IS A CONFLICTING LAP SWIM AT THE SAME POOL
-                                                    print(
+                                                    remove_conflicting_lap_swim(
                                                         SwimSlot(
                                                             pool,
                                                             weekday.strip(),
-                                                            start_time,
-                                                            end_time, "none"))
+                                                            slot[
+                                                                "starting_time"],
+                                                            slot[
+                                                                "ending_time"],
+                                                            "none"),
+                                                        lap_swim_entries[pool],
+                                                        overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
                     except URLError as e:
@@ -306,5 +322,6 @@ for pool in lap_swim_entries.keys():
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
-    # get all the non lap swim
-    # for each non lap swim check if it overlaps with lap swim; if it does, mark lap swim as NOT FAMILY FRIENDLY
+    for i in range(len(lap_swim_entries[pool])):
+        if not overlap[i]:
+            print(f"SECRET SWIM: {lap_swim_entries[pool][i]}")
