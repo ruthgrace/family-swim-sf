@@ -85,7 +85,7 @@ HEADERS = {
 #     "activity_transfer_pattern": {},
 # }
 
-center_id = {
+CENTER_ID = {
     NORTH_BEACH: "198",
     HAMILTON: "88",
     ROSSI: "107",
@@ -97,8 +97,8 @@ center_id = {
     COFFMAN: "86"
 }
 
-family_swim = "family swim"
-lap_swim = "lap swim"
+FAMILY_SWIM = "family swim"
+LAP_SWIM = "lap swim"
 
 
 class SwimSlot:
@@ -156,8 +156,8 @@ for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [center_id[pool]],
-            "activity_keyword": "family swim"
+            "center_ids": [CENTER_ID[pool]],
+            "activity_keyword": FAMILY_SWIM
         },
         "activity_transfer_pattern": {},
     }
@@ -213,8 +213,8 @@ for pool in SECRET_LAP_SWIM_POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [center_id[pool]],
-            "activity_keyword": "lap swim"
+            "center_ids": [CENTER_ID[pool]],
+            "activity_keyword": LAP_SWIM
         },
         "activity_transfer_pattern": {},
     }
@@ -262,7 +262,7 @@ for pool in lap_swim_entries.keys():
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [center_id[pool]],
+            "center_ids": [CENTER_ID[pool]],
             "activity_keyword": "*"
         },
         "activity_transfer_pattern": {},
@@ -277,7 +277,7 @@ for pool in lap_swim_entries.keys():
             activity_ids = [item["id"]]
             print(f"activity id {item["id"]}")
             activity_name = item["name"]
-            if "lap swim" not in activity_name.lower():
+            if LAP_SWIM not in activity_name.lower():
                 # sometimes a listing that does not have meeting times has sub listings that do have meeting times
                 if "num_of_sub_activities" in item and item[
                         "num_of_sub_activities"] > 0:
