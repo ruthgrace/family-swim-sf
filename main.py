@@ -8,26 +8,36 @@ from urllib.request import urlopen
 from urllib.error import HTTPError
 from urllib.error import URLError
 
-north_beach = "North Beach"
-hamilton = "Hamilton"
-rossi = "Rossi"
-mission = "Mission"
-garfield = "Garfield"
-sava = "Sava"
-balboa = "Balboa"
-mlk = "Martin Luther King Jr"
-coffman = "Coffman"
+NORTH_BEACH = "North Beach"
+HAMILTON = "Hamilton"
+ROSSI = "Rossi"
+MISSION = "Mission"
+GARFIELD = "Garfield"
+SAVA = "Sava"
+BALBOA = "Balboa"
+MLK = "Martin Luther King Jr"
+COFFMAN = "Coffman"
 
 # swim slot categories
 MORNING = "morning"
 AFTERNOON = "afternoon"
 EVENING = "evening"
 
-pools = [
-    north_beach, hamilton, rossi, mission, garfield, sava, balboa, mlk, coffman
+POOLS = [
+    NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
 ]
 
-secret_lap_swim_pools = [balboa, hamilton]
+SECRET_LAP_SWIM_POOLS = [BALBOA, HAMILTON]
+
+MON = "Mon"
+TUE = "Tue"
+WED = "Wed"
+THU = "Thu"
+FRI = "Fri"
+SAT = "Sat"
+SUN = "Sun"
+
+WEEKDAYS = [MON, TUE, WED, THU, FRI, SAT, SUN]
 
 # an example search URL looks like this
 # https://anc.apm.activecommunities.com/sfrecpark/activity/search?activity_select_param=2&center_ids=85&activity_keyword=family%20swim&viewMode=list
@@ -75,15 +85,15 @@ HEADERS = {
 # }
 
 center_id = {
-    north_beach: "198",
-    hamilton: "88",
-    rossi: "107",
-    mission: "181",
-    garfield: "87",
-    sava: "108",
-    balboa: "85",
-    mlk: "177",
-    coffman: "86"
+    NORTH_BEACH: "198",
+    HAMILTON: "88",
+    ROSSI: "107",
+    MISSION: "181",
+    GARFIELD: "87",
+    SAVA: "108",
+    BALBOA: "85",
+    MLK: "177",
+    COFFMAN: "86"
 }
 
 family_swim = "family swim"
@@ -119,22 +129,24 @@ def get_categories(start_time, end_time):
 def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
     slot_start_hour = int(start_time.split(":")[0].strip())
     slot_end_hour = int(end_time.split(":")[0].strip())
-    for i in range(len(lap_swim_slots)):
-        lap_swim_slot = lap_swim_slots[i]
+    for i in range(len(lap_swim_slots[slot.weekday])):
+        lap_swim_slot = lap_swim_slots[slot.weekday][i]
         if slot.pool == lap_swim_slot.pool and slot.weekday == lap_swim_slot.weekday:
             lap_start_hour = int(start_time.split(":")[0].strip())
             lap_end_hour = int(end_time.split(":")[0].strip())
             if (slot_start_hour >= lap_start_hour and slot_start_hour
                     < lap_end_hour) or (slot_end_hour <= lap_end_hour
                                         and slot_end_hour > lap_start_hour):
-                overlap[i] = True
+                overlap[slot.weekday][i] = True
+                print(f"OVERLAP FOUND WITH {lap_swim_slot}")
+                return
 
 
 """
 entries = []
 
 # first, make sure that all family swim is added to the spreadsheet
-for pool in pools:
+for pool in POOLS = [:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -177,6 +189,7 @@ for pool in pools:
                 print(f'Failed to reach server: {e.reason}')
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
 """
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
@@ -186,8 +199,10 @@ for pool in pools:
 # get all lap swim slots for pools that have a small and big pool
 lap_swim_entries = {}
 
-for pool in secret_lap_swim_pools:
-    lap_swim_entries[pool] = []
+for pool in SECRET_LAP_SWIM_POOLS:
+    lap_swim_entries[pool] = {}
+    for weekday in WEEKDAYS:
+        lap_swim_entries[pool][weekday] = []
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -204,6 +219,7 @@ for pool in secret_lap_swim_pools:
         results = current_page["body"]["activity_items"]
         for item in results:
             activity_id = item["id"]
+            print(f"LAP SWIM ACTIVITY ID: {activity_id}")
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
@@ -216,21 +232,29 @@ for pool in secret_lap_swim_pools:
                             start_time = slot["starting_time"]
                             end_time = slot["ending_time"]
                             for weekday in weekdays:
-                                lap_swim_entries[pool].append(
-                                    SwimSlot(pool, weekday.strip(), start_time,
+                                weekday = weekday.strip()
+                                lap_swim_entries[pool][weekday].append(
+                                    SwimSlot(pool, weekday, start_time,
                                              end_time, "none"))
-                                print(f"LAP SWIM {lap_swim_entries[pool][-1]}")
+                                print(
+                                    f"LAP SWIM {lap_swim_entries[pool][weekday][-1]}"
+                                )
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
                 print(f'Failed to reach server: {e.reason}')
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
 
 # get all non lap swim entries
 for pool in lap_swim_entries.keys():
     # this array records true at an index where a scheduled lap swim has an overlapping activity
-    overlap = [False for i in range(len(lap_swim_entries[pool]))]
+    overlap = {}
+    for weekday in WEEKDAYS:
+        overlap[weekday] = [
+            False for i in range(len(lap_swim_entries[pool][weekday]))
+        ]
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -248,7 +272,7 @@ for pool in lap_swim_entries.keys():
         for item in results:
             activity_ids = [item["id"]]
             activity_name = item["name"]
-            print(f"activity name: {item['name']}")
+            print(f"activity id: {item['id']} activity name: {item['name']}")
 
             if "lap swim" not in activity_name.lower():
                 # sometimes a listing that does not have meeting times has sub listings that do have meeting times
@@ -270,6 +294,9 @@ for pool in lap_swim_entries.keys():
                             for sub_activity_data in sub_activities:
                                 print(
                                     f"sub activity name {sub_activity_data['name']}"
+                                )
+                                print(
+                                    f"sub activity id: {sub_activity_data['id']}"
                                 )
                                 activity_ids.append(sub_activity_data["id"])
                         except HTTPError as e:
@@ -322,6 +349,7 @@ for pool in lap_swim_entries.keys():
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
-    for i in range(len(lap_swim_entries[pool])):
-        if not overlap[i]:
-            print(f"SECRET SWIM: {lap_swim_entries[pool][i]}")
+    for weekdays in lap_swim_entries[pool].keys():
+        for i in range(len(lap_swim_entries[pool][weekdays])):
+            if not overlap[weekday][i]:
+                print(f"SECRET SWIM: {lap_swim_entries[pool][i]}")
