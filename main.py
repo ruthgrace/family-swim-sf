@@ -158,8 +158,8 @@ def get_subactivities(activity):
     activity_ids = [activity["id"]]
     if "num_of_sub_activities" in activity and activity[
             "num_of_sub_activities"] > 0:
-        if "sub_activities" in activity and len(
-                activity["sub_activity_ids"]) > 0:
+        if "sub_activity_ids" in activity and activity[
+                "sub_activity_ids"] and len(activity["sub_activity_ids"]) > 0:
             activity_ids = activity["sub_activity_ids"]
         else:
             try:
@@ -180,7 +180,7 @@ def get_subactivities(activity):
 
 
 def schedule_to_swimslots(schedule, swimslots, category=True):
-    for slot in slots:
+    for slot in schedule:
         weekdays = slot["weekdays"].split(",")
         start_time = slot["starting_time"]
         end_time = slot["ending_time"]
@@ -203,7 +203,7 @@ def get_swim_slots(activity_data):
     if "meeting_and_registration_dates" not in activity_data["body"]:
         return []
     if "no_meeting_dates" in activity_data["body"][
-            "meeting_and_registration_dates"] or activity_data["body"][
+            "meeting_and_registration_dates"] and activity_data["body"][
                 "meeting_and_registration_dates"]["no_meeting_dates"]:
         return []
     if "activity_patterns" not in activity_data["body"][
