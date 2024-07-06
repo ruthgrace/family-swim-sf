@@ -282,9 +282,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots,
-                                              lap_swim_entries[pool],
-                                              category=False)
+                        schedule_to_swimslots(slots, lap_swim_entries[pool])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
