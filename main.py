@@ -1,3 +1,4 @@
+import datetime
 import requests
 import traceback
 import json
@@ -126,19 +127,23 @@ def get_categories(start_time, end_time):
     return categories
 
 
+def string_to_time(time_str):
+    time_array = time_str.split(":")
+    return datetime.time(int(time_array[0]), int(time_array[1]),
+                         int(time_array[2]))
+
+
+TEST_SLOT_START = datetime.time(6, 30, 0)
+
+
 def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
-    slot_start_hour = int(start_time.split(":")[0].strip())
-    slot_end_hour = int(end_time.split(":")[0].strip())
     for i in range(len(lap_swim_slots[slot.weekday])):
         lap_swim_slot = lap_swim_slots[slot.weekday][i]
         if slot.pool == lap_swim_slot.pool and slot.weekday == lap_swim_slot.weekday:
-            lap_start_hour = int(start_time.split(":")[0].strip())
-            lap_end_hour = int(end_time.split(":")[0].strip())
-            if (slot_start_hour >= lap_start_hour and slot_start_hour
-                    < lap_end_hour) or (slot_end_hour <= lap_end_hour
-                                        and slot_end_hour > lap_start_hour):
+            if (slot.start >= lap_swim_slot.start and slot.start
+                    < lap_swim_slot.end) or (slot.end <= lap_swim_slot.end and
+                                             slot.end > lap_swim_slot.start):
                 overlap[slot.weekday][i] = True
-                print(f"OVERLAP FOUND WITH {lap_swim_slot}")
                 return
 
 
@@ -180,7 +185,7 @@ for pool in POOLS = [:
                                 for category in categories:
                                     entries.append(
                                         SwimSlot(pool, weekday.strip(),
-                                                 start_time, end_time,
+                                                 string_to_time(start_time), string_to_time(end_time),
                                                  category))
                                     print(entries[-1])
             except HTTPError as e:
@@ -219,7 +224,6 @@ for pool in SECRET_LAP_SWIM_POOLS:
         results = current_page["body"]["activity_items"]
         for item in results:
             activity_id = item["id"]
-            print(f"LAP SWIM ACTIVITY ID: {activity_id}")
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
@@ -229,16 +233,14 @@ for pool in SECRET_LAP_SWIM_POOLS:
                         slots = activity["pattern_dates"]
                         for slot in slots:
                             weekdays = slot["weekdays"].split(",")
-                            start_time = slot["starting_time"]
-                            end_time = slot["ending_time"]
                             for weekday in weekdays:
-                                weekday = weekday.strip()
-                                lap_swim_entries[pool][weekday].append(
-                                    SwimSlot(pool, weekday, start_time,
-                                             end_time, "none"))
-                                print(
-                                    f"LAP SWIM {lap_swim_entries[pool][weekday][-1]}"
-                                )
+                                clean_weekday = weekday.strip()
+                                lap_swim_entries[pool][clean_weekday].append(
+                                    SwimSlot(
+                                        pool, clean_weekday,
+                                        string_to_time(slot["starting_time"]),
+                                        string_to_time(slot["ending_time"]),
+                                        "none"))
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -272,8 +274,6 @@ for pool in lap_swim_entries.keys():
         for item in results:
             activity_ids = [item["id"]]
             activity_name = item["name"]
-            print(f"activity id: {item['id']} activity name: {item['name']}")
-
             if "lap swim" not in activity_name.lower():
                 # sometimes a listing that does not have meeting times has sub listings that do have meeting times
                 if "num_of_sub_activities" in item and item[
@@ -292,12 +292,6 @@ for pool in lap_swim_entries.keys():
                             sub_activities = current_page["body"][
                                 "sub_activities"]
                             for sub_activity_data in sub_activities:
-                                print(
-                                    f"sub activity name {sub_activity_data['name']}"
-                                )
-                                print(
-                                    f"sub activity id: {sub_activity_data['id']}"
-                                )
                                 activity_ids.append(sub_activity_data["id"])
                         except HTTPError as e:
                             print(
@@ -323,22 +317,20 @@ for pool in lap_swim_entries.keys():
                                                 "activity_patterns"]
                                         for activity in activity_schedules:
                                             slots = activity["pattern_dates"]
-                                            print(slots)
                                             for slot in slots:
                                                 weekdays = slot[
                                                     "weekdays"].split(",")
-                                                start_time = slot[
-                                                    "starting_time"]
-                                                end_time = slot["ending_time"]
                                                 for weekday in weekdays:
                                                     remove_conflicting_lap_swim(
                                                         SwimSlot(
                                                             pool,
                                                             weekday.strip(),
-                                                            slot[
-                                                                "starting_time"],
-                                                            slot[
-                                                                "ending_time"],
+                                                            string_to_time(slot[
+                                                                "starting_time"]
+                                                                           ),
+                                                            string_to_time(slot[
+                                                                "ending_time"]
+                                                                           ),
                                                             "none"),
                                                         lap_swim_entries[pool],
                                                         overlap)
@@ -349,7 +341,7 @@ for pool in lap_swim_entries.keys():
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
-    for weekdays in lap_swim_entries[pool].keys():
-        for i in range(len(lap_swim_entries[pool][weekdays])):
+    for weekday in lap_swim_entries[pool].keys():
+        for i in range(len(lap_swim_entries[pool][weekday])):
             if not overlap[weekday][i]:
-                print(f"SECRET SWIM: {lap_swim_entries[pool][i]}")
+                print(f"SECRET SWIM: {lap_swim_entries[pool][weekday][i]}")
