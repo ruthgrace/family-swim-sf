@@ -132,10 +132,6 @@ def string_to_time(time_str):
     return datetime.time(int(time_array[0]), int(time_array[1]),
                          int(time_array[2]))
 
-
-TEST_SLOT_START = datetime.time(6, 30, 0)
-
-
 def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
     for i in range(len(lap_swim_slots[slot.weekday])):
         lap_swim_slot = lap_swim_slots[slot.weekday][i]
@@ -147,11 +143,16 @@ def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
                 return
 
 
-"""
-entries = []
+def add_weekday_arrays(entries):
+    for weekday in WEEKDAYS:
+        entries[weekday] = []
+    return entries
 
+
+entries = {}
+entries = add_weekday_arrays(entries)
 # first, make sure that all family swim is added to the spreadsheet
-for pool in POOLS = [:
+for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -180,14 +181,15 @@ for pool in POOLS = [:
                             start_time = slot["starting_time"]
                             end_time = slot["ending_time"]
                             for weekday in weekdays:
+                                clean_weekday = weekday.strip()
                                 categories = get_categories(
                                     start_time, end_time)
                                 for category in categories:
-                                    entries.append(
-                                        SwimSlot(pool, weekday.strip(),
-                                                 string_to_time(start_time), string_to_time(end_time),
+                                    entries[clean_weekday].append(
+                                        SwimSlot(pool, clean_weekday,
+                                                 string_to_time(start_time),
+                                                 string_to_time(end_time),
                                                  category))
-                                    print(entries[-1])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -195,7 +197,7 @@ for pool in POOLS = [:
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
-"""
+
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
@@ -273,6 +275,7 @@ for pool in lap_swim_entries.keys():
         results = current_page["body"]["activity_items"]
         for item in results:
             activity_ids = [item["id"]]
+            print(f"activity id {item["id"]}")
             activity_name = item["name"]
             if "lap swim" not in activity_name.lower():
                 # sometimes a listing that does not have meeting times has sub listings that do have meeting times
