@@ -132,6 +132,7 @@ def string_to_time(time_str):
     return datetime.time(int(time_array[0]), int(time_array[1]),
                          int(time_array[2]))
 
+
 def remove_conflicting_lap_swim(slot, lap_swim_slots, overlap):
     for i in range(len(lap_swim_slots[slot.weekday])):
         lap_swim_slot = lap_swim_slots[slot.weekday][i]
@@ -147,6 +148,69 @@ def add_weekday_arrays(entries):
     for weekday in WEEKDAYS:
         entries[weekday] = []
     return entries
+
+
+def get_activity_schedule(data):
+    return data["body"]["meeting_and_registration_dates"]["activity_patterns"]
+
+
+def get_subactivities(activity):
+    activity_ids = [activity["id"]]
+    if "num_of_sub_activities" in activity and activity[
+            "num_of_sub_activities"] > 0:
+        if "sub_activity_ids" in activity and activity[
+                "sub_activity_ids"] and len(activity["sub_activity_ids"]) > 0:
+            activity_ids = activity["sub_activity_ids"]
+        else:
+            try:
+                request_body = {"locale": "en-US"}
+                response = requests.post(
+                    f"{SUBACTIVITY_URL}/{activity_ids[0]}",
+                    headers=HEADERS,
+                    data=json.dumps(request_body))
+                current_page = response.json()
+                sub_activities = current_page["body"]["sub_activities"]
+                for sub_activity_data in sub_activities:
+                    activity_ids.append(sub_activity_data["id"])
+            except HTTPError as e:
+                print(f'HTTP error occurred: {e.code} - {e.reason}')
+            except URLError as e:
+                print(f'Failed to reach server: {e.reason}')
+    return activity_ids
+
+
+def schedule_to_swimslots(schedule, swimslots, category=True):
+    for slot in schedule:
+        weekdays = slot["weekdays"].split(",")
+        start_time = slot["starting_time"]
+        end_time = slot["ending_time"]
+        for weekday in weekdays:
+            clean_weekday = weekday.strip()
+            if category:
+                categories = get_categories(start_time, end_time)
+                for category in categories:
+                    swimslots[clean_weekday].append(
+                        SwimSlot(pool, clean_weekday,
+                                 string_to_time(start_time),
+                                 string_to_time(end_time), category))
+            else:
+                swimslots[clean_weekday].append(
+                    SwimSlot(pool, clean_weekday, string_to_time(start_time),
+                             string_to_time(end_time), "none"))
+
+
+def get_swim_slots(activity_data):
+    if "meeting_and_registration_dates" not in activity_data["body"]:
+        return []
+    if "no_meeting_dates" in activity_data["body"][
+            "meeting_and_registration_dates"] and activity_data["body"][
+                "meeting_and_registration_dates"]["no_meeting_dates"]:
+        return []
+    if "activity_patterns" not in activity_data["body"][
+            "meeting_and_registration_dates"]:
+        return []
+    return activity_data["body"]["meeting_and_registration_dates"][
+        "activity_patterns"]
 
 
 entries = {}
@@ -172,24 +236,10 @@ for pool in POOLS:
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
-                    activity_schedules = data["body"][
-                        "meeting_and_registration_dates"]["activity_patterns"]
+                    activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        for slot in slots:
-                            weekdays = slot["weekdays"].split(",")
-                            start_time = slot["starting_time"]
-                            end_time = slot["ending_time"]
-                            for weekday in weekdays:
-                                clean_weekday = weekday.strip()
-                                categories = get_categories(
-                                    start_time, end_time)
-                                for category in categories:
-                                    entries[clean_weekday].append(
-                                        SwimSlot(pool, clean_weekday,
-                                                 string_to_time(start_time),
-                                                 string_to_time(end_time),
-                                                 category))
+                        schedule_to_swimslots(slots, entries)
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -229,20 +279,12 @@ for pool in SECRET_LAP_SWIM_POOLS:
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
-                    activity_schedules = data["body"][
-                        "meeting_and_registration_dates"]["activity_patterns"]
+                    activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        for slot in slots:
-                            weekdays = slot["weekdays"].split(",")
-                            for weekday in weekdays:
-                                clean_weekday = weekday.strip()
-                                lap_swim_entries[pool][clean_weekday].append(
-                                    SwimSlot(
-                                        pool, clean_weekday,
-                                        string_to_time(slot["starting_time"]),
-                                        string_to_time(slot["ending_time"]),
-                                        "none"))
+                        schedule_to_swimslots(slots,
+                                              lap_swim_entries[pool],
+                                              category=False)
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -274,69 +316,30 @@ for pool in lap_swim_entries.keys():
         current_page = response.json()
         results = current_page["body"]["activity_items"]
         for item in results:
-            activity_ids = [item["id"]]
-            print(f"activity id {item["id"]}")
             activity_name = item["name"]
             if LAP_SWIM not in activity_name.lower():
                 # sometimes a listing that does not have meeting times has sub listings that do have meeting times
-                if "num_of_sub_activities" in item and item[
-                        "num_of_sub_activities"] > 0:
-                    if "sub_activities" in item and len(
-                            item["sub_activity_ids"]) > 0:
-                        activity_ids = item["sub_activity_ids"]
-                    else:
-                        try:
-                            request_body = {"locale": "en-US"}
-                            response = requests.post(
-                                f"{SUBACTIVITY_URL}/{activity_ids[0]}",
-                                headers=HEADERS,
-                                data=json.dumps(request_body))
-                            current_page = response.json()
-                            sub_activities = current_page["body"][
-                                "sub_activities"]
-                            for sub_activity_data in sub_activities:
-                                activity_ids.append(sub_activity_data["id"])
-                        except HTTPError as e:
-                            print(
-                                f'HTTP error occurred: {e.code} - {e.reason}')
-                        except URLError as e:
-                            print(f'Failed to reach server: {e.reason}')
+                activity_ids = get_subactivities(item)
                 for activity_id in activity_ids:
                     try:
                         with request.urlopen(
                                 f"{ACTIVITY_URL}/{activity_id}") as url:
                             data = json.load(url)
-                            if "meeting_and_registration_dates" in data[
-                                    "body"]:
-                                if "no_meeting_dates" not in data["body"][
-                                        "meeting_and_registration_dates"] or not data[
-                                            "body"][
-                                                "meeting_and_registration_dates"][
-                                                    "no_meeting_dates"]:
-                                    if "activity_patterns" in data["body"][
-                                            "meeting_and_registration_dates"]:
-                                        activity_schedules = data["body"][
-                                            "meeting_and_registration_dates"][
-                                                "activity_patterns"]
-                                        for activity in activity_schedules:
-                                            slots = activity["pattern_dates"]
-                                            for slot in slots:
-                                                weekdays = slot[
-                                                    "weekdays"].split(",")
-                                                for weekday in weekdays:
-                                                    remove_conflicting_lap_swim(
-                                                        SwimSlot(
-                                                            pool,
-                                                            weekday.strip(),
-                                                            string_to_time(slot[
-                                                                "starting_time"]
-                                                                           ),
-                                                            string_to_time(slot[
-                                                                "ending_time"]
-                                                                           ),
-                                                            "none"),
-                                                        lap_swim_entries[pool],
-                                                        overlap)
+                            activity_schedules = get_swim_slots(data)
+                            for activity in activity_schedules:
+                                slots = activity["pattern_dates"]
+                                for slot in slots:
+                                    weekdays = slot["weekdays"].split(",")
+                                    for weekday in weekdays:
+                                        remove_conflicting_lap_swim(
+                                            SwimSlot(
+                                                pool, weekday.strip(),
+                                                string_to_time(
+                                                    slot["starting_time"]),
+                                                string_to_time(
+                                                    slot["ending_time"]),
+                                                "none"),
+                                            lap_swim_entries[pool], overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
                     except URLError as e:
