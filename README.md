@@ -12,5 +12,8 @@ pip install -r requirements.txt
 ```
 
 ## update map
-felt.com
-[to do ]
+0. Ask Emeline or Ruth for edit access to the sfkidsswim workspace on Felt.com
+1. Start a new map
+2. Upload map_data/public_pools.csv to the map
+3. Shift click to select all the pool dots. Click Icon and select the swim icon.
+4. 
