@@ -1,4 +1,5 @@
 import datetime
+import time
 import requests
 import traceback
 import json
@@ -20,9 +21,9 @@ MLK = "Martin Luther King Jr"
 COFFMAN = "Coffman"
 
 # swim slot categories
-MORNING = "morning"
-AFTERNOON = "afternoon"
-EVENING = "evening"
+MORNING = "Morning Family Swim"
+AFTERNOON = "Afternoon Family Swim"
+EVENING = "Evening Family Swim"
 
 POOLS = [
     NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
@@ -38,7 +39,25 @@ FRI = "Fri"
 SAT = "Sat"
 SUN = "Sun"
 
+MONDAY = "Monday"
+TUESDAY = "Tuesday"
+WEDNESDAY = "Wednesday"
+THURSDAY = "Thursday"
+FRIDAY = "Friday"
+SATURDAY = "Saturday"
+SUNDAY = "Sunday"
+
 WEEKDAYS = [MON, TUE, WED, THU, FRI, SAT, SUN]
+
+WEEKDAY_CONVERSION = {
+    MON: MONDAY,
+    TUE: TUESDAY,
+    WED: WEDNESDAY,
+    THU: THURSDAY,
+    FRI: FRIDAY,
+    SAT: SATURDAY,
+    SUN: SUNDAY
+}
 
 # an example search URL looks like this
 # https://anc.apm.activecommunities.com/sfrecpark/activity/search?activity_select_param=2&center_ids=85&activity_keyword=family%20swim&viewMode=list
@@ -100,6 +119,8 @@ CENTER_ID = {
 FAMILY_SWIM = "family swim"
 LAP_SWIM = "lap swim"
 
+MAP_DATA_DIR = "map_data"
+
 
 class SwimSlot:
     # category is morning, afternoon, evening
@@ -112,6 +133,13 @@ class SwimSlot:
 
     def __str__(self):
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
+
+    def spreadsheet_output(self, note=""):
+        # convert times from 18:30:00 to ore human readable e.g. 6:30pm
+        start_12h = self.start.strftime("%I:%M%p").lstrip('0')
+        end_12h = self.end.strftime("%I:%M%p").lstrip('0')
+        # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
+        return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{note}\n"
 
 
 def get_categories(start_time, end_time):
@@ -213,6 +241,14 @@ def get_swim_slots(activity_data):
         "activity_patterns"]
 
 
+def export_map_data(csv_file, entries, note):
+    lines = []
+    for weekday in WEEKDAYS:
+        for item in entries[weekday]:
+            lines.append(item.spreadsheet_output(note))
+    csv_file.writelines(lines)
+
+
 entries = {}
 entries = add_weekday_arrays(entries)
 # first, make sure that all family swim is added to the spreadsheet
@@ -291,6 +327,9 @@ for pool in SECRET_LAP_SWIM_POOLS:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
 
+secret_swim_entries = {}
+add_weekday_arrays(secret_swim_entries)
+
 # get all non lap swim entries
 for pool in lap_swim_entries.keys():
     # this array records true at an index where a scheduled lap swim has an overlapping activity
@@ -348,4 +387,13 @@ for pool in lap_swim_entries.keys():
     for weekday in lap_swim_entries[pool].keys():
         for i in range(len(lap_swim_entries[pool][weekday])):
             if not overlap[weekday][i]:
-                print(f"SECRET SWIM: {lap_swim_entries[pool][weekday][i]}")
+                secret_swim_entries[weekday].append(
+                    lap_swim_entries[pool][weekday][i])
+
+# write spreadsheet
+timestamp = time.time()
+with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "a") as csv_file:
+    export_map_data(csv_file, entries, "")
+    export_map_data(
+        csv_file, secret_swim_entries,
+        "secret family swim in small pool or steps during lap swim")
