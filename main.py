@@ -393,6 +393,9 @@ for pool in lap_swim_entries.keys():
 # write spreadsheet
 timestamp = time.time()
 with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "a") as csv_file:
+    # headings for CSV file
+    csv_file.write(
+        f"Pool name, Weekday, Time period, Start time, End time, Note\n")
     export_map_data(csv_file, entries, "")
     export_map_data(
         csv_file, secret_swim_entries,
