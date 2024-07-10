@@ -10,6 +10,8 @@ from urllib.request import urlopen
 from urllib.error import HTTPError
 from urllib.error import URLError
 
+import constants
+
 NORTH_BEACH = "North Beach"
 HAMILTON = "Hamilton"
 ROSSI = "Rossi"
@@ -67,11 +69,11 @@ WEEKDAY_CONVERSION = {
 SWIM_API_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/list?locale=en-US"
 ACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activity/detail/meetingandregistrationdates"
 SUBACTIVITY_URL = "https://anc.apm.activecommunities.com/sfrecpark/rest/activities/subs"
-HEADERS = {
+POOL_API_HEADERS = {
     "Content-Type": "application/json;charset=utf-8",
     "page_info": '{"order_by":"","page_number":1,"total_records_per_page":30}',
 }
-
+FELT_HEADERS = {"Authorization": f"Bearer {constants.FELT_TOKEN}"}
 # example full request body
 # request_body = {
 #     "activity_search_pattern": {
@@ -194,7 +196,7 @@ def get_subactivities(activity):
                 request_body = {"locale": "en-US"}
                 response = requests.post(
                     f"{SUBACTIVITY_URL}/{activity_ids[0]}",
-                    headers=HEADERS,
+                    headers=POOL_API_HEADERS,
                     data=json.dumps(request_body))
                 current_page = response.json()
                 sub_activities = current_page["body"]["sub_activities"]
@@ -263,7 +265,7 @@ for pool in POOLS:
     }
     try:
         response = requests.post(SWIM_API_URL,
-                                 headers=HEADERS,
+                                 headers=POOL_API_HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
         results = current_page["body"]["activity_items"]
@@ -284,6 +286,17 @@ for pool in POOLS:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
 
+print(f"MAP ID {constants.MAP_ID}")
+try:
+    # get all elements on map
+    response = requests.post(
+        f"https://felt.com/api/v2/maps/${constants.MAP_ID}/element_groups",
+        headers=FELT_HEADERS)
+    print(response.json())
+except Exception as e:
+    print(f'An unexpected error occurred: {e}')
+    print(traceback.format_exc())
+"""
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
@@ -306,7 +319,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
     }
     try:
         response = requests.post(SWIM_API_URL,
-                                 headers=HEADERS,
+                                 headers=POOL_API_HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
         results = current_page["body"]["activity_items"]
@@ -348,7 +361,7 @@ for pool in lap_swim_entries.keys():
     }
     try:
         response = requests.post(SWIM_API_URL,
-                                 headers=HEADERS,
+                                 headers=POOL_API_HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
         results = current_page["body"]["activity_items"]
@@ -400,3 +413,5 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "a") as csv_file:
     export_map_data(
         csv_file, secret_swim_entries,
         "secret family swim in small pool or steps during lap swim")
+
+"""
