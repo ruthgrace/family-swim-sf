@@ -11,7 +11,9 @@ but if you need to run it elsewhere,
 pip install -r requirements.txt
 ```
 
-make a `constants.py` file to point to the specific map you want to update.
+## set up for updating map
+
+1. make a `constants.py` file to point to the specific map you want to update.
 ```
 map_id = my_fake_map_id_1234
 project_id = my_fake_project_id_1234
