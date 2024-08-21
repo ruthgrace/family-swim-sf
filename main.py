@@ -248,6 +248,20 @@ def export_map_data(csv_file, entries, note):
             lines.append(item.spreadsheet_output(note))
     csv_file.writelines(lines)
 
+def is_currently_active(data):
+    if "current_date" in data["body"]:
+        current_date_string = data["body"]["current_date"]
+        current_date = datetime.datetime.strptime(current_date_string, '%Y-%m-%d %H:%M:%S').date()
+    else:
+        current_date = datetime.date.today()
+    if "beginning_date" in data["body"]["meeting_and_registration_dates"]["activity_patterns"][0] and "ending_date" in data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]:
+        beginning_date_string = data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]["beginning_date"]
+        ending_date_string = data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]["ending_date"]
+        beginning_date = datetime.datetime.strptime(beginning_date_string, '%Y-%m-%d').date()
+        ending_date = datetime.datetime.strptime(ending_date_string, '%Y-%m-%d').date()
+        if current_date < beginning_date or current_date > ending_date:
+            return False
+    return True
 
 entries = {}
 entries = add_weekday_arrays(entries)
@@ -272,6 +286,9 @@ for pool in POOLS:
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
+                    # make sure that the listing is CURRENTLY active
+                    if not is_currently_active(data):
+                        continue
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
@@ -315,6 +332,8 @@ for pool in SECRET_LAP_SWIM_POOLS:
             try:
                 with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
                     data = json.load(url)
+                    if not is_currently_active(data):
+                        continue
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
@@ -362,21 +381,43 @@ for pool in lap_swim_entries.keys():
                         with request.urlopen(
                                 f"{ACTIVITY_URL}/{activity_id}") as url:
                             data = json.load(url)
+                            if not is_currently_active(data):
+                                continue
                             activity_schedules = get_swim_slots(data)
                             for activity in activity_schedules:
                                 slots = activity["pattern_dates"]
                                 for slot in slots:
                                     weekdays = slot["weekdays"].split(",")
                                     for weekday in weekdays:
-                                        remove_conflicting_lap_swim(
-                                            SwimSlot(
-                                                pool, weekday.strip(),
-                                                string_to_time(
-                                                    slot["starting_time"]),
-                                                string_to_time(
-                                                    slot["ending_time"]),
-                                                "none"),
-                                            lap_swim_entries[pool], overlap)
+                                        if weekday == "Weekend":
+                                            remove_conflicting_lap_swim(
+                                                SwimSlot(
+                                                    pool, "Sat",
+                                                    string_to_time(
+                                                        slot["starting_time"]),
+                                                    string_to_time(
+                                                        slot["ending_time"]),
+                                                    "none"),
+                                                lap_swim_entries[pool], overlap)
+                                            remove_conflicting_lap_swim(
+                                                SwimSlot(
+                                                    pool, "Sun",
+                                                    string_to_time(
+                                                        slot["starting_time"]),
+                                                    string_to_time(
+                                                        slot["ending_time"]),
+                                                    "none"),
+                                                lap_swim_entries[pool], overlap)
+                                        else:
+                                            remove_conflicting_lap_swim(
+                                                SwimSlot(
+                                                    pool, weekday.strip(),
+                                                    string_to_time(
+                                                        slot["starting_time"]),
+                                                    string_to_time(
+                                                        slot["ending_time"]),
+                                                    "none"),
+                                                lap_swim_entries[pool], overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
                     except URLError as e:
