@@ -117,6 +117,7 @@ CENTER_ID = {
 }
 
 FAMILY_SWIM = "family swim"
+PARENT_CHILD_SWIM = "parent child swim"
 LAP_SWIM = "lap swim"
 
 MAP_DATA_DIR = "map_data"
@@ -267,6 +268,7 @@ entries = {}
 entries = add_weekday_arrays(entries)
 # first, make sure that all family swim is added to the spreadsheet
 for pool in POOLS:
+    # get family swim
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -281,6 +283,29 @@ for pool in POOLS:
                                  data=json.dumps(request_body))
         current_page = response.json()
         results = current_page["body"]["activity_items"]
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
+    # get parent child swim
+    request_body = {
+        "activity_search_pattern": {
+            "activity_select_param": 2,
+            "center_ids": [CENTER_ID[pool]],
+            "activity_keyword": PARENT_CHILD_SWIM
+        },
+        "activity_transfer_pattern": {},
+    }
+    try:
+        response = requests.post(SWIM_API_URL,
+                                 headers=HEADERS,
+                                 data=json.dumps(request_body))
+        current_page = response.json()
+        results.extend(current_page["body"]["activity_items"])
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
+    # extract swim times from results list
+    try:
         for item in results:
             activity_id = item["id"]
             try:
