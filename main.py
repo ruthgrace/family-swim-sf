@@ -269,37 +269,22 @@ def is_currently_active(data):
             return False
     return True
 
-
-
-
-# put the pools on the map
-
-os.environ["FELT_API_TOKEN"] = constants.FELT_TOKEN
-
-with open('map_data/public_pools.json') as f:
-    pool_map_locations = json.load(f)
-
-try:
-    response = elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
-    print(f"RUTH DEBUG - post elements response: {response}")
-    response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
-    print(f"RUTH DEBUG - list elements response: {response}")
-except Exception as e:
-    print(f'An unexpected error occurred while updating pool locations on the map: {e}')
-    print(traceback.format_exc())
-
-# TODO - add pools, sort swim times, add swim times (space them below pools? or have it be one text object... ??), move map code to the bottom
-
-
-
-
-
-
-
-
-
-
-
+def process_entry(item, entries):
+    activity_id = item["id"]
+    try:
+        with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
+            data = json.load(url)
+            # make sure that the listing is CURRENTLY active
+            if not is_currently_active(data):
+                return
+            activity_schedules = get_activity_schedule(data)
+            for activity in activity_schedules:
+                slots = activity["pattern_dates"]
+                schedule_to_swimslots(slots, entries)
+    except HTTPError as e:
+        print(f'HTTP error occurred: {e.code} - {e.reason}')
+    except URLError as e:
+        print(f'Failed to reach server: {e.reason}')
 
 entries = {}
 entries = add_weekday_arrays(entries)
@@ -344,21 +329,7 @@ for pool in POOLS:
     # extract swim times from results list
     try:
         for item in results:
-            activity_id = item["id"]
-            try:
-                with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
-                    data = json.load(url)
-                    # make sure that the listing is CURRENTLY active
-                    if not is_currently_active(data):
-                        continue
-                    activity_schedules = get_activity_schedule(data)
-                    for activity in activity_schedules:
-                        slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots, entries)
-            except HTTPError as e:
-                print(f'HTTP error occurred: {e.code} - {e.reason}')
-            except URLError as e:
-                print(f'Failed to reach server: {e.reason}')
+            process_entry(item, entries)
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
@@ -409,7 +380,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
         print(traceback.format_exc())
 
 secret_swim_entries = {}
-add_weekday_arrays(secret_swim_entries)
+secret_swim_entries = add_weekday_arrays(secret_swim_entries)
 
 # get all non lap swim entries
 for pool in lap_swim_entries.keys():
@@ -511,3 +482,26 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "w") as timestamp_
             latest_csv_file, secret_swim_entries,
             "secret family swim in small pool or steps during lap swim")
 
+
+# put the pools on the map
+
+os.environ["FELT_API_TOKEN"] = constants.FELT_TOKEN
+
+with open('map_data/public_pools.json') as f:
+    pool_map_locations = json.load(f)
+
+try:
+    response = elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
+    print(f"RUTH DEBUG - post elements response: {response}")
+    response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
+    print(f"RUTH DEBUG - list elements response: {response}")
+except Exception as e:
+    print(f'An unexpected error occurred while updating pool locations on the map: {e}')
+    print(traceback.format_exc())
+
+# TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
+
+# sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
+
+entries
+secret_swim_entries
