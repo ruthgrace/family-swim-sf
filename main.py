@@ -421,7 +421,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots, lap_swim_entries[pool])
+                        schedule_to_swimslots(slots, lap_swim_entries[pool], note="Secret Swim")
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -490,7 +490,7 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none", "Secret Swim"),
+                                                    "none", "Conflict Swim"),
                                                 lap_swim_entries[pool], overlap)
                                         else:
                                             remove_conflicting_lap_swim(
@@ -500,7 +500,7 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none","Secret Swim"),
+                                                    "none","Conflict Swim"),
                                                 lap_swim_entries[pool], overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
@@ -554,3 +554,5 @@ except Exception as e:
 
 # sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
 # first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim, print spreadsheet after this data reorg for map
+
+# get everything into ordered catalog and output it that way
