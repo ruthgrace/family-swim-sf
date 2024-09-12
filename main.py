@@ -121,7 +121,7 @@ CENTER_ID = {
 }
 
 FAMILY_SWIM = "family swim"
-PARENT_CHILD_SWIM = "parent child swim"
+PARENT_CHILD_SWIM = "drop in parent child swim"
 LAP_SWIM = "lap swim"
 
 MAP_DATA_DIR = "map_data"
