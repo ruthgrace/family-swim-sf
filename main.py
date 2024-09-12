@@ -509,5 +509,3 @@ except Exception as e:
 
 # sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
 # first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim
-entries
-secret_swim_entries
