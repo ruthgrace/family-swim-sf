@@ -147,12 +147,12 @@ class SwimSlot:
     def __str__(self):
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
 
-    def spreadsheet_output(self, note=""):
+    def spreadsheet_output(self):
         # convert times from 18:30:00 to more human readable e.g. 6:30pm
         start_12h = self.start.strftime("%I:%M%p").lstrip('0')
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
-        return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{note}\n"
+        return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{self.note}\n"
 
     def __eq__(self, other):
         return self.start == other.start
@@ -294,11 +294,11 @@ def get_swim_slots(activity_data):
         "activity_patterns"]
 
 
-def export_map_data(csv_file, entries, note):
+def export_map_data(csv_file, entries):
     lines = []
     for weekday in WEEKDAYS:
         for item in entries[weekday]:
-            lines.append(item.spreadsheet_output(note))
+            lines.append(item.spreadsheet_output())
     csv_file.writelines(lines)
 
 def is_currently_active(data):
@@ -490,7 +490,7 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none"),
+                                                    "none", "Secret Swim"),
                                                 lap_swim_entries[pool], overlap)
                                         else:
                                             remove_conflicting_lap_swim(
@@ -500,7 +500,7 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none",""),
+                                                    "none","Secret Swim"),
                                                 lap_swim_entries[pool], overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
@@ -524,16 +524,14 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "w") as timestamp_
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
         latest_csv_file.write(
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
-        export_map_data(timestamp_csv_file, family_swim_entries, "")
-        export_map_data(latest_csv_file, family_swim_entries, "")
-        export_map_data(timestamp_csv_file, parent_child_swim_entries, "")
-        export_map_data(latest_csv_file, parent_child_swim_entries, "")
+        export_map_data(timestamp_csv_file, family_swim_entries)
+        export_map_data(latest_csv_file, family_swim_entries)
+        export_map_data(timestamp_csv_file, parent_child_swim_entries)
+        export_map_data(latest_csv_file, parent_child_swim_entries)
         export_map_data(
-            timestamp_csv_file, secret_swim_entries,
-            "secret family swim in small pool or steps during lap swim")
+            timestamp_csv_file, secret_swim_entries)
         export_map_data(
-            latest_csv_file, secret_swim_entries,
-            "secret family swim in small pool or steps during lap swim")
+            latest_csv_file, secret_swim_entries)
 
 
 # put the pools on the map
