@@ -15,8 +15,9 @@ pip install -r requirements.txt
 
 1. make a `constants.py` file to point to the specific map you want to update.
 ```
-map_id = my_fake_map_id_1234
-project_id = my_fake_project_id_1234
+MAP_ID = "my_fake_map_id_1234"
+PROJECT_ID = "my_fake_project_id_1234"
+FELT_TOKEN = "my_fake_felt_api_token_1234"
 ```
 
 Replace `map_id` and `project_id` values with those from your map. Click the Settings gear to see them. I've redacted mine but here is where you can find yours.

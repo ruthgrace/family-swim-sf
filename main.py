@@ -1,14 +1,18 @@
+import constants
+
 import datetime
-import time
-import requests
-import traceback
 import json
+import requests
+import time
+import traceback
+
 from bs4 import BeautifulSoup
-from urllib.parse import urlencode
+from felt_python import elements
 from urllib import request
-from urllib.request import urlopen
 from urllib.error import HTTPError
 from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 NORTH_BEACH = "North Beach"
 HAMILTON = "Hamilton"
@@ -263,6 +267,11 @@ def is_currently_active(data):
         if current_date < beginning_date or current_date > ending_date:
             return False
     return True
+
+response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
+print(f"RUTH DEBUG - list elements response: {response}")
+
+
 
 entries = {}
 entries = add_weekday_arrays(entries)
