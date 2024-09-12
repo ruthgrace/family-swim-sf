@@ -39,7 +39,8 @@ POOLS = [
 
 SECRET_LAP_SWIM_POOLS = {
     BALBOA: "Parent Child Swim on Steps",
-    HAMILTON: "Family Swim in Small Pool"}
+    HAMILTON: "Family Swim in Small Pool"
+}
 
 MON = "Mon"
 TUE = "Tue"
@@ -132,6 +133,7 @@ LAP_SWIM = "lap swim"
 
 MAP_DATA_DIR = "map_data"
 
+
 @functools.total_ordering
 class SwimSlot:
     # category is morning, afternoon, evening
@@ -162,8 +164,10 @@ class SwimSlot:
     def __lt__(self, other):
         return self.start < other.start
 
+
 def get_swim_slot_start(swim_slot):
     return swim_slot.start
+
 
 class OrderedCatalog:
     # organized by pools, weekday, time of day (morning, afternoon, evening)
@@ -179,14 +183,16 @@ class OrderedCatalog:
                 for time_category in TIME_CATEGORIES:
                     self.catalog[pool][weekday][time_category] = []
 
-    def add_swim_slot(self, swim_slot):
-        self.catalog[swim_slot.pool][swim_slot.weekday][swim_slot.category].append(swim_slot)
+    def add(self, swim_slot):
+        self.catalog[swim_slot.pool][swim_slot.weekday][
+            swim_slot.category].append(swim_slot)
 
     def sort_all(self):
         for pool in self.catalog:
             for weekday in self.catalog[pool]:
                 for time_category in self.catalog[pool][weekday]:
-                    self.catalog[pool][weekday][time_category].sort(key=get_swim_slot_start)
+                    self.catalog[pool][weekday][time_category].sort(
+                        key=get_swim_slot_start)
 
     def output_lines(self):
         lines = []
@@ -194,7 +200,8 @@ class OrderedCatalog:
             for weekday in self.catalog[pool]:
                 for time_category in self.catalog[pool][weekday]:
                     for slot in self.catalog[pool][weekday][time_category]:
-                        lines.append(f"{slot.pool},{WEEKDAY_CONVERSION[slot.weekday]},{slot.category},{slot.start_12h},{slot.end_12h},{slot.note}")
+                        lines.append(slot.spreadsheet_output())
+        return lines
 
 
 def get_categories(start_time, end_time):
@@ -262,7 +269,27 @@ def get_subactivities(activity):
     return activity_ids
 
 
-def schedule_to_swimslots(schedule, swimslots, note="", category=True):
+def schedule_to_swimslots(schedule, ordered_catalog, note="", category=True):
+    for slot in schedule:
+        weekdays = slot["weekdays"].split(",")
+        start_time = slot["starting_time"]
+        end_time = slot["ending_time"]
+        for weekday in weekdays:
+            clean_weekday = weekday.strip()
+            if category:
+                categories = get_categories(start_time, end_time)
+                for category in categories:
+                    ordered_catalog.add(
+                        SwimSlot(pool, clean_weekday,
+                                 string_to_time(start_time),
+                                 string_to_time(end_time), category, note))
+            else:
+                ordered_catalog.add(
+                    SwimSlot(pool, clean_weekday, string_to_time(start_time),
+                             string_to_time(end_time), "none", note))
+
+
+def schedule_to_swimslots_lapswim(schedule, swimslots, note="", category=True):
     for slot in schedule:
         weekdays = slot["weekdays"].split(",")
         start_time = slot["starting_time"]
@@ -303,20 +330,29 @@ def export_map_data(csv_file, entries):
             lines.append(item.spreadsheet_output())
     csv_file.writelines(lines)
 
+
 def is_currently_active(data):
     if "current_date" in data["body"]:
         current_date_string = data["body"]["current_date"]
-        current_date = datetime.datetime.strptime(current_date_string, '%Y-%m-%d %H:%M:%S').date()
+        current_date = datetime.datetime.strptime(current_date_string,
+                                                  '%Y-%m-%d %H:%M:%S').date()
     else:
         current_date = datetime.date.today()
-    if "beginning_date" in data["body"]["meeting_and_registration_dates"]["activity_patterns"][0] and "ending_date" in data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]:
-        beginning_date_string = data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]["beginning_date"]
-        ending_date_string = data["body"]["meeting_and_registration_dates"]["activity_patterns"][0]["ending_date"]
-        beginning_date = datetime.datetime.strptime(beginning_date_string, '%Y-%m-%d').date()
-        ending_date = datetime.datetime.strptime(ending_date_string, '%Y-%m-%d').date()
+    if "beginning_date" in data["body"]["meeting_and_registration_dates"][
+            "activity_patterns"][0] and "ending_date" in data["body"][
+                "meeting_and_registration_dates"]["activity_patterns"][0]:
+        beginning_date_string = data["body"]["meeting_and_registration_dates"][
+            "activity_patterns"][0]["beginning_date"]
+        ending_date_string = data["body"]["meeting_and_registration_dates"][
+            "activity_patterns"][0]["ending_date"]
+        beginning_date = datetime.datetime.strptime(beginning_date_string,
+                                                    '%Y-%m-%d').date()
+        ending_date = datetime.datetime.strptime(ending_date_string,
+                                                 '%Y-%m-%d').date()
         if current_date < beginning_date or current_date > ending_date:
             return False
     return True
+
 
 def process_entries(results, entries, note=""):
     try:
@@ -340,6 +376,7 @@ def process_entries(results, entries, note=""):
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
 
+
 def get_search_results(request_body):
     try:
         response = requests.post(SWIM_API_URL,
@@ -353,10 +390,9 @@ def get_search_results(request_body):
     return results
 
 
-# get family swim slots
-family_swim_entries = {}
-family_swim_entries = add_weekday_arrays(family_swim_entries)
+ordered_catalog = OrderedCatalog()
 
+# get family swim slots
 for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
@@ -367,12 +403,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    process_entries(results, family_swim_entries, note="Family Swim")
-
-
-# get parent child swim slots (parent must be in water with child)
-parent_child_swim_entries = {}
-parent_child_swim_entries = add_weekday_arrays(parent_child_swim_entries)
+    process_entries(results, ordered_catalog, note="Family Swim")
 
 for pool in POOLS:
     request_body = {
@@ -384,8 +415,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    process_entries(results, parent_child_swim_entries, note="Parent Child Swim")
-
+    process_entries(results, ordered_catalog, note="Parent Child Swim")
 
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
@@ -423,7 +453,10 @@ for pool in SECRET_LAP_SWIM_POOLS:
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots, lap_swim_entries[pool], note=SECRET_LAP_SWIM_POOLS[pool])
+                        schedule_to_swimslots_lapswim(
+                            slots,
+                            lap_swim_entries[pool],
+                            note=SECRET_LAP_SWIM_POOLS[pool])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -484,7 +517,8 @@ for pool in lap_swim_entries.keys():
                                                     string_to_time(
                                                         slot["ending_time"]),
                                                     "none"),
-                                                lap_swim_entries[pool], overlap)
+                                                lap_swim_entries[pool],
+                                                overlap)
                                             remove_conflicting_lap_swim(
                                                 SwimSlot(
                                                     pool, "Sun",
@@ -493,7 +527,8 @@ for pool in lap_swim_entries.keys():
                                                     string_to_time(
                                                         slot["ending_time"]),
                                                     "none", "Conflict Swim"),
-                                                lap_swim_entries[pool], overlap)
+                                                lap_swim_entries[pool],
+                                                overlap)
                                         else:
                                             remove_conflicting_lap_swim(
                                                 SwimSlot(
@@ -502,8 +537,9 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none","Conflict Swim"),
-                                                lap_swim_entries[pool], overlap)
+                                                    "none", "Conflict Swim"),
+                                                lap_swim_entries[pool],
+                                                overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
                     except URLError as e:
@@ -517,24 +553,26 @@ for pool in lap_swim_entries.keys():
                 secret_swim_entries[weekday].append(
                     lap_swim_entries[pool][weekday][i])
 
+# sort the swim slots chronologically before outputting onto map or spreadsheet
+ordered_catalog.sort_all()
+
 # write spreadsheet
 timestamp = time.time()
-with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "w") as timestamp_csv_file:
-    with open(f"{MAP_DATA_DIR}/latest_family_swim_data.csv", "w") as latest_csv_file:
+with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
+          "w") as timestamp_csv_file:
+    with open(f"{MAP_DATA_DIR}/latest_family_swim_data.csv",
+              "w") as latest_csv_file:
         # headings for CSV file
         timestamp_csv_file.write(
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
         latest_csv_file.write(
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
-        export_map_data(timestamp_csv_file, family_swim_entries)
-        export_map_data(latest_csv_file, family_swim_entries)
-        export_map_data(timestamp_csv_file, parent_child_swim_entries)
-        export_map_data(latest_csv_file, parent_child_swim_entries)
-        export_map_data(
-            timestamp_csv_file, secret_swim_entries)
-        export_map_data(
-            latest_csv_file, secret_swim_entries)
-
+        lines = ordered_catalog.output_lines()
+        print(f"RUTH DEBUG {lines}")
+        timestamp_csv_file.writelines(lines)
+        latest_csv_file.writelines(lines)
+        export_map_data(timestamp_csv_file, secret_swim_entries)
+        export_map_data(latest_csv_file, secret_swim_entries)
 
 # put the pools on the map
 
@@ -544,18 +582,16 @@ with open('map_data/public_pools.json') as f:
     pool_map_locations = json.load(f)
 
 try:
-    response = elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
+    response = elements.post_elements(
+        map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
     print(f"RUTH DEBUG - post elements response: {response}")
-    response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
+    response = elements.list_elements(map_id=constants.MAP_ID,
+                                      api_token=constants.FELT_TOKEN)
     print(f"RUTH DEBUG - list elements response: {response}")
 except Exception as e:
-    print(f'An unexpected error occurred while updating pool locations on the map: {e}')
+    print(
+        f'An unexpected error occurred while updating pool locations on the map: {e}'
+    )
     print(traceback.format_exc())
 
 # TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
-
-# sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline).
-
-# first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim, print spreadsheet after this data reorg for map
-
-# get everything into ordered catalog and output it that way
