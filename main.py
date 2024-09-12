@@ -269,36 +269,29 @@ def is_currently_active(data):
             return False
     return True
 
-def process_entry(item, entries):
-    activity_id = item["id"]
+def process_entries(results, entries):
     try:
-        with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
-            data = json.load(url)
-            # make sure that the listing is CURRENTLY active
-            if not is_currently_active(data):
-                return
-            activity_schedules = get_activity_schedule(data)
-            for activity in activity_schedules:
-                slots = activity["pattern_dates"]
-                schedule_to_swimslots(slots, entries)
-    except HTTPError as e:
-        print(f'HTTP error occurred: {e.code} - {e.reason}')
-    except URLError as e:
-        print(f'Failed to reach server: {e.reason}')
+        for item in results:
+            activity_id = item["id"]
+            try:
+                with request.urlopen(f"{ACTIVITY_URL}/{activity_id}") as url:
+                    data = json.load(url)
+                    # make sure that the listing is CURRENTLY active
+                    if not is_currently_active(data):
+                        return
+                    activity_schedules = get_activity_schedule(data)
+                    for activity in activity_schedules:
+                        slots = activity["pattern_dates"]
+                        schedule_to_swimslots(slots, entries)
+            except HTTPError as e:
+                print(f'HTTP error occurred: {e.code} - {e.reason}')
+            except URLError as e:
+                print(f'Failed to reach server: {e.reason}')
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')
+        print(traceback.format_exc())
 
-entries = {}
-entries = add_weekday_arrays(entries)
-# first, make sure that all family swim is added to the spreadsheet
-for pool in POOLS:
-    # get family swim
-    request_body = {
-        "activity_search_pattern": {
-            "activity_select_param": 2,
-            "center_ids": [CENTER_ID[pool]],
-            "activity_keyword": FAMILY_SWIM
-        },
-        "activity_transfer_pattern": {},
-    }
+def get_search_results(request_body):
     try:
         response = requests.post(SWIM_API_URL,
                                  headers=HEADERS,
@@ -308,7 +301,31 @@ for pool in POOLS:
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
-    # get parent child swim
+    return results
+
+
+# get family swim slots
+family_swim_entries = {}
+family_swim_entries = add_weekday_arrays(family_swim_entries)
+
+for pool in POOLS:
+    request_body = {
+        "activity_search_pattern": {
+            "activity_select_param": 2,
+            "center_ids": [CENTER_ID[pool]],
+            "activity_keyword": FAMILY_SWIM
+        },
+        "activity_transfer_pattern": {},
+    }
+    results = get_search_results(request_body)
+    process_entries(results, family_swim_entries)
+
+
+# get parent child swim slots (parent must be in water with child)
+parent_child_swim_entries = {}
+parent_child_swim_entries = add_weekday_arrays(parent_child_swim_entries)
+
+for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
@@ -317,22 +334,9 @@ for pool in POOLS:
         },
         "activity_transfer_pattern": {},
     }
-    try:
-        response = requests.post(SWIM_API_URL,
-                                 headers=HEADERS,
-                                 data=json.dumps(request_body))
-        current_page = response.json()
-        results.extend(current_page["body"]["activity_items"])
-    except Exception as e:
-        print(f'An unexpected error occurred: {e}')
-        print(traceback.format_exc())
-    # extract swim times from results list
-    try:
-        for item in results:
-            process_entry(item, entries)
-    except Exception as e:
-        print(f'An unexpected error occurred: {e}')
-        print(traceback.format_exc())
+    results = get_search_results(request_body)
+    process_entries(results, parent_child_swim_entries)
+
 
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
@@ -473,8 +477,10 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "w") as timestamp_
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
         latest_csv_file.write(
             f"Pool name, Weekday, Time period, Start time, End time, Note\n")
-        export_map_data(timestamp_csv_file, entries, "")
-        export_map_data(latest_csv_file, entries, "")
+        export_map_data(timestamp_csv_file, family_swim_entries, "")
+        export_map_data(latest_csv_file, family_swim_entries, "")
+        export_map_data(timestamp_csv_file, parent_child_swim_entries, "")
+        export_map_data(latest_csv_file, parent_child_swim_entries, "")
         export_map_data(
             timestamp_csv_file, secret_swim_entries,
             "secret family swim in small pool or steps during lap swim")
@@ -502,6 +508,6 @@ except Exception as e:
 # TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
 
 # sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
-
+# first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim
 entries
 secret_swim_entries
