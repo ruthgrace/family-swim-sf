@@ -1,0 +1,185 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4123354,
+          37.8027108
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "North Beach Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "Wk2U6zNMQb9Brt8d00ZtcvA",
+        "felt:locked": false,
+        "felt:ordering": 1726165068607310,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4183047,
+          37.7591172
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Mission Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "TKXFs5qSSruwSZoWRJ9AziB",
+        "felt:locked": false,
+        "felt:ordering": 1726165101317988,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4146331,
+          37.7500228
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Garfield Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "9AdTmUWYJTd65dF9AvKnlR1C",
+        "felt:locked": false,
+        "felt:ordering": 1726165111516133,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4182549,
+          37.7133137
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Coffman Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "j8Z8kkkcQUegwrflbd51BB",
+        "felt:locked": false,
+        "felt:ordering": 1726165129475301,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.3984659,
+          37.7254761
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "MLK Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "tBusN9CrUR5ipAhyFilrhbB",
+        "felt:locked": false,
+        "felt:ordering": 1726165146039030,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4458516,
+          37.7262792
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Balboa Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "5NrykESJQNWE7qWf1h9CpqB",
+        "felt:locked": false,
+        "felt:ordering": 1726165158205687,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.48617,
+          37.7377844
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Sava Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "6QeWmxElTUqL5uBcvodeHC",
+        "felt:locked": false,
+        "felt:ordering": 1726165168973079,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.43547,
+          37.7845988
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Hamilton Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "ZtXnkvRHRWyLsnVXREdmVC",
+        "felt:locked": false,
+        "felt:ordering": 1726165194103770,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4685677,
+          37.7791066
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Rossi Pool",
+        "felt:clipSource": {},
+        "felt:color": "#C93535",
+        "felt:id": "WGDKGR3GQg2CGdq0JuRM4C",
+        "felt:locked": false,
+        "felt:ordering": 1726165202825624,
+        "felt:symbol": "swimming",
+        "felt:type": "Place"
+      },
+      "type": "Feature"
+    }
+  ]
+}

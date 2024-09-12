@@ -2,6 +2,7 @@ import constants
 
 import datetime
 import json
+import os
 import requests
 import time
 import traceback
@@ -140,7 +141,7 @@ class SwimSlot:
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
 
     def spreadsheet_output(self, note=""):
-        # convert times from 18:30:00 to ore human readable e.g. 6:30pm
+        # convert times from 18:30:00 to more human readable e.g. 6:30pm
         start_12h = self.start.strftime("%I:%M%p").lstrip('0')
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
@@ -268,8 +269,35 @@ def is_currently_active(data):
             return False
     return True
 
-response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
-print(f"RUTH DEBUG - list elements response: {response}")
+
+
+
+# put the pools on the map
+
+os.environ["FELT_API_TOKEN"] = constants.FELT_TOKEN
+
+with open('map_data/public_pools.json') as f:
+    pool_map_locations = json.load(f)
+
+try:
+    response = elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
+    print(f"RUTH DEBUG - post elements response: {response}")
+    response = elements.list_elements(map_id=constants.MAP_ID, api_token=constants.FELT_TOKEN)
+    print(f"RUTH DEBUG - list elements response: {response}")
+except Exception as e:
+    print(f'An unexpected error occurred while updating pool locations on the map: {e}')
+    print(traceback.format_exc())
+
+# TODO - add pools, sort swim times, add swim times (space them below pools? or have it be one text object... ??), move map code to the bottom
+
+
+
+
+
+
+
+
+
 
 
 
@@ -338,7 +366,7 @@ for pool in POOLS:
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
-# * ask MLK when the tot pool is open - are families always allowed in the tot pool?
+# * ask MLK when the tot pool is open - are families always allowed in the tot pool? - only during family swim
 
 # get all lap swim slots for pools that have a small and big pool
 lap_swim_entries = {}
@@ -482,3 +510,4 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv", "w") as timestamp_
         export_map_data(
             latest_csv_file, secret_swim_entries,
             "secret family swim in small pool or steps during lap swim")
+
