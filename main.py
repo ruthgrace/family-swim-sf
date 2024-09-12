@@ -37,7 +37,9 @@ POOLS = [
     NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
 ]
 
-SECRET_LAP_SWIM_POOLS = [BALBOA, HAMILTON]
+SECRET_LAP_SWIM_POOLS = {
+    BALBOA: "Parent Child Swim on Steps",
+    HAMILTON: "Family Swim in Small Pool"}
 
 MON = "Mon"
 TUE = "Tue"
@@ -421,7 +423,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots, lap_swim_entries[pool], note="Secret Swim")
+                        schedule_to_swimslots(slots, lap_swim_entries[pool], note=SECRET_LAP_SWIM_POOLS[pool])
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -552,7 +554,8 @@ except Exception as e:
 
 # TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
 
-# sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
+# sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline).
+
 # first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim, print spreadsheet after this data reorg for map
 
 # get everything into ordered catalog and output it that way
