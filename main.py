@@ -1,6 +1,7 @@
 import constants
 
 import datetime
+import functools
 import json
 import os
 import requests
@@ -26,9 +27,11 @@ MLK = "Martin Luther King Jr"
 COFFMAN = "Coffman"
 
 # swim slot categories
-MORNING = "Morning Family Swim"
-AFTERNOON = "Afternoon Family Swim"
-EVENING = "Evening Family Swim"
+MORNING = "Morning"
+AFTERNOON = "Afternoon"
+EVENING = "Evening"
+
+TIME_CATEGORIES = [MORNING, AFTERNOON, EVENING]
 
 POOLS = [
     NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
@@ -127,15 +130,19 @@ LAP_SWIM = "lap swim"
 
 MAP_DATA_DIR = "map_data"
 
-
+@functools.total_ordering
 class SwimSlot:
     # category is morning, afternoon, evening
-    def __init__(self, pool, weekday, start, end, category):
+    def __init__(self, pool, weekday, start, end, category, note):
         self.pool = pool
         self.weekday = weekday
         self.start = start
         self.end = end
         self.category = category
+        self.start_12h = self.start.strftime("%I:%M%p").lstrip('0')
+        self.end_12h = self.end.strftime("%I:%M%p").lstrip('0')
+        self.timeslot_string = f"{self.start_12h} - {self.end_12h}"
+        self.note = note
 
     def __str__(self):
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
@@ -146,6 +153,46 @@ class SwimSlot:
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
         return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{note}\n"
+
+    def __eq__(self, other):
+        return self.start == other.start
+
+    def __lt__(self, other):
+        return self.start < other.start
+
+def get_swim_slot_start(swim_slot):
+    return swim_slot.start
+
+class OrderedCatalog:
+    # organized by pools, weekday, time of day (morning, afternoon, evening)
+    def __init__(self):
+        self.catalog = {}
+        self.create_catalog_structure()
+
+    def create_catalog_structure(self):
+        for pool in POOLS:
+            self.catalog[pool] = {}
+            for weekday in WEEKDAYS:
+                self.catalog[pool][weekday] = {}
+                for time_category in TIME_CATEGORIES:
+                    self.catalog[pool][weekday][time_category] = []
+
+    def add_swim_slot(self, swim_slot):
+        self.catalog[swim_slot.pool][swim_slot.weekday][swim_slot.category].append(swim_slot)
+
+    def sort_all(self):
+        for pool in self.catalog:
+            for weekday in self.catalog[pool]:
+                for time_category in self.catalog[pool][weekday]:
+                    self.catalog[pool][weekday][time_category].sort(key=get_swim_slot_start)
+
+    def output_lines(self):
+        lines = []
+        for pool in self.catalog:
+            for weekday in self.catalog[pool]:
+                for time_category in self.catalog[pool][weekday]:
+                    for slot in self.catalog[pool][weekday][time_category]:
+                        lines.append(f"{slot.pool},{WEEKDAY_CONVERSION[slot.weekday]},{slot.category},{slot.start_12h},{slot.end_12h},{slot.note}")
 
 
 def get_categories(start_time, end_time):
@@ -213,7 +260,7 @@ def get_subactivities(activity):
     return activity_ids
 
 
-def schedule_to_swimslots(schedule, swimslots, category=True):
+def schedule_to_swimslots(schedule, swimslots, note="", category=True):
     for slot in schedule:
         weekdays = slot["weekdays"].split(",")
         start_time = slot["starting_time"]
@@ -226,11 +273,11 @@ def schedule_to_swimslots(schedule, swimslots, category=True):
                     swimslots[clean_weekday].append(
                         SwimSlot(pool, clean_weekday,
                                  string_to_time(start_time),
-                                 string_to_time(end_time), category))
+                                 string_to_time(end_time), category, note))
             else:
                 swimslots[clean_weekday].append(
                     SwimSlot(pool, clean_weekday, string_to_time(start_time),
-                             string_to_time(end_time), "none"))
+                             string_to_time(end_time), "none", note))
 
 
 def get_swim_slots(activity_data):
@@ -269,7 +316,7 @@ def is_currently_active(data):
             return False
     return True
 
-def process_entries(results, entries):
+def process_entries(results, entries, note=""):
     try:
         for item in results:
             activity_id = item["id"]
@@ -282,7 +329,7 @@ def process_entries(results, entries):
                     activity_schedules = get_activity_schedule(data)
                     for activity in activity_schedules:
                         slots = activity["pattern_dates"]
-                        schedule_to_swimslots(slots, entries)
+                        schedule_to_swimslots(slots, entries, note=note)
             except HTTPError as e:
                 print(f'HTTP error occurred: {e.code} - {e.reason}')
             except URLError as e:
@@ -318,7 +365,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    process_entries(results, family_swim_entries)
+    process_entries(results, family_swim_entries, note="Family Swim")
 
 
 # get parent child swim slots (parent must be in water with child)
@@ -335,7 +382,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    process_entries(results, parent_child_swim_entries)
+    process_entries(results, parent_child_swim_entries, note="Parent Child Swim")
 
 
 # second, add "secret swim":
@@ -453,7 +500,7 @@ for pool in lap_swim_entries.keys():
                                                         slot["starting_time"]),
                                                     string_to_time(
                                                         slot["ending_time"]),
-                                                    "none"),
+                                                    "none",""),
                                                 lap_swim_entries[pool], overlap)
                     except HTTPError as e:
                         print(f'HTTP error occurred: {e.code} - {e.reason}')
@@ -508,4 +555,4 @@ except Exception as e:
 # TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
 
 # sort swim times - put in dict by filter category (e.g. Friday Afternoon), dict with key pool and text of times (sorted and separated by newline). each one should say Family Swim, Parent Child Swim, or Family Swim during Lap Swim on small pool or Parent Child swim on steps during lap swim
-# first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim
+# first refactor - separate parent child and family swim, and make entries keyed by pool same way as secret swim, print spreadsheet after this data reorg for map
