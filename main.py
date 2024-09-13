@@ -550,8 +550,7 @@ for pool in lap_swim_entries.keys():
     for weekday in lap_swim_entries[pool].keys():
         for i in range(len(lap_swim_entries[pool][weekday])):
             if not overlap[weekday][i]:
-                secret_swim_entries[weekday].append(
-                    lap_swim_entries[pool][weekday][i])
+                ordered_catalog.add(lap_swim_entries[pool][weekday][i])
 
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
