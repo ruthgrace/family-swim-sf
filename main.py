@@ -472,6 +472,10 @@ for slot in non_lap_swim_slots:
 
 lap_swim_catalog.delete_conflicting_lap_swim
 
+secret_swim_slots = lap_swim_catalog.get_slot_list()
+for slot in secret_swim_slots:
+    ordered_catalog.add(slot)
+
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
 
