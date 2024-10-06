@@ -4,180 +4,230 @@
     {
       "geometry": {
         "coordinates": [
-          -122.4123354,
-          37.8027108
+          -122.412315,
+          37.802795
         ],
         "type": "Point"
       },
       "properties": {
         "name": "North Beach Pool",
-        "felt:clipSource": {},
+        "Address": "661 Lombard Street San Francisco CA 94133",
+        "Icon": "swimming",
+        "Label": "North Beach Pool",
         "felt:color": "#C93535",
-        "felt:id": "Wk2U6zNMQb9Brt8d00ZtcvA",
+        "felt:hasLongDescription": false,
+        "felt:id": "iPHsazNgRAazcE9AI7chAUC",
         "felt:locked": false,
-        "felt:ordering": 1726165068607310,
+        "felt:ordering": 1720475073461531,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
         "felt:symbol": "swimming",
-        "felt:type": "Place"
+        "felt:type": "Place",
+        "felt:widthScale": 1
       },
       "type": "Feature"
     },
     {
       "geometry": {
         "coordinates": [
-          -122.4183047,
-          37.7591172
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "Mission Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "TKXFs5qSSruwSZoWRJ9AziB",
-        "felt:locked": false,
-        "felt:ordering": 1726165101317988,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.4146331,
-          37.7500228
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "Garfield Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "9AdTmUWYJTd65dF9AvKnlR1C",
-        "felt:locked": false,
-        "felt:ordering": 1726165111516133,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.4182549,
-          37.7133137
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "Coffman Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "j8Z8kkkcQUegwrflbd51BB",
-        "felt:locked": false,
-        "felt:ordering": 1726165129475301,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.3984659,
-          37.7254761
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "MLK Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "tBusN9CrUR5ipAhyFilrhbB",
-        "felt:locked": false,
-        "felt:ordering": 1726165146039030,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.4458516,
-          37.7262792
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "Balboa Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "5NrykESJQNWE7qWf1h9CpqB",
-        "felt:locked": false,
-        "felt:ordering": 1726165158205687,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.48617,
-          37.7377844
-        ],
-        "type": "Point"
-      },
-      "properties": {
-        "name": "Sava Pool",
-        "felt:clipSource": {},
-        "felt:color": "#C93535",
-        "felt:id": "6QeWmxElTUqL5uBcvodeHC",
-        "felt:locked": false,
-        "felt:ordering": 1726165168973079,
-        "felt:symbol": "swimming",
-        "felt:type": "Place"
-      },
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [
-          -122.43547,
-          37.7845988
+          -122.418389,
+          37.786076
         ],
         "type": "Point"
       },
       "properties": {
         "name": "Hamilton Pool",
-        "felt:clipSource": {},
+        "Address": "1900 Geary Street San Francisco CA 94115",
+        "Icon": "swimming",
+        "Label": "Hamilton Pool",
         "felt:color": "#C93535",
-        "felt:id": "ZtXnkvRHRWyLsnVXREdmVC",
+        "felt:hasLongDescription": false,
+        "felt:id": "a6t5aCVLT8uf0QUlS9CFTQC",
         "felt:locked": false,
-        "felt:ordering": 1726165194103770,
+        "felt:ordering": 1720475073461706,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
         "felt:symbol": "swimming",
-        "felt:type": "Place"
+        "felt:type": "Place",
+        "felt:widthScale": 1
       },
       "type": "Feature"
     },
     {
       "geometry": {
         "coordinates": [
-          -122.4685677,
-          37.7791066
+          -122.45826,
+          37.77908
         ],
         "type": "Point"
       },
       "properties": {
         "name": "Rossi Pool",
-        "felt:clipSource": {},
+        "Address": "600 Arguello Blvd San Francisco CA 94118",
+        "Icon": "swimming",
+        "Label": "Rossi Pool",
         "felt:color": "#C93535",
-        "felt:id": "WGDKGR3GQg2CGdq0JuRM4C",
+        "felt:id": "T7PKQFbjQnu3D34LvIOkvA",
         "felt:locked": false,
-        "felt:ordering": 1726165202825624,
+        "felt:ordering": 1720475073461786,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
         "felt:symbol": "swimming",
-        "felt:type": "Place"
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.4228816,
+          37.7599999
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Mission Community Pool",
+        "Address": "101 Linda Street San Francisco CA 94110",
+        "Icon": "swimming",
+        "Label": "Mission Community Pool",
+        "felt:color": "#C93535",
+        "felt:hasLongDescription": false,
+        "felt:id": "RLTAMlclTcyJOjAZW8XZBB",
+        "felt:locked": false,
+        "felt:ordering": 1720475073461862,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.41246,
+          37.749992
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Garfield Pool",
+        "Address": "1271 Treat Avenue San Francisco CA 94110",
+        "Icon": "swimming",
+        "Label": "Garfield Pool",
+        "felt:color": "#C93535",
+        "felt:hasLongDescription": false,
+        "felt:id": "RIzeGOHFQfK69BxtzGih0NC",
+        "felt:locked": false,
+        "felt:ordering": 1720475073461975,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.47566,
+          37.737793
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Sava Pool",
+        "Address": "2695 19th Avenue San Francisco CA 94116",
+        "Icon": "swimming",
+        "Label": "Sava Pool",
+        "felt:color": "#C93535",
+        "felt:id": "y2pUSgH3RDSSn6dUgucEgA",
+        "felt:locked": false,
+        "felt:ordering": 1720475073462045,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.44347,
+          37.726547
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Balboa Pool",
+        "Address": "51 Havelock St San Francisco CA 94112",
+        "Icon": "swimming",
+        "Label": "Balboa Pool",
+        "felt:color": "#C93535",
+        "felt:id": "yjkAUj1LRKGULnvmar3MRD",
+        "felt:locked": false,
+        "felt:ordering": 1720475073462094,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.393844,
+          37.726252
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "MLK Pool",
+        "Address": "5701 3rd Street San Francisco CA 94124",
+        "Icon": "swimming",
+        "Label": "MLK Pool",
+        "felt:color": "#C93535",
+        "felt:hasLongDescription": false,
+        "felt:id": "MZ8qQTlJTU2syf5PCsdUuC",
+        "felt:locked": false,
+        "felt:ordering": 1720475073462166,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -122.415825,
+          37.713474
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Coffman Pool",
+        "Address": "1701 Visitacion Avenue San Francisco CA 94134",
+        "Icon": "swimming",
+        "Label": "Coffman Pool",
+        "felt:color": "#C93535",
+        "felt:id": "AeUA9C89BFTcCxPY2FgJBJTD",
+        "felt:locked": false,
+        "felt:ordering": 1720475073462214,
+        "felt:parentId": "8i4fcnBtQGKrPKA9CWU5OYA",
+        "felt:radiusDisplayAngle": 90,
+        "felt:symbol": "swimming",
+        "felt:type": "Place",
+        "felt:widthScale": 1
       },
       "type": "Feature"
     }

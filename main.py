@@ -58,6 +58,8 @@ FRIDAY = "Friday"
 SATURDAY = "Saturday"
 SUNDAY = "Sunday"
 
+POOL_GROUP = "pool_group"
+
 WEEKDAYS = [MON, TUE, WED, THU, FRI, SAT, SUN]
 
 WEEKDAY_CONVERSION = {
@@ -157,6 +159,9 @@ class SwimSlot:
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
         return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{self.note}\n"
+
+    def time_str(self):
+        return f"{self.start_12h} - {self.end_12h}"
 
     def __eq__(self, other):
         return self.start == other.start
@@ -495,9 +500,10 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
         timestamp_csv_file.writelines(lines)
         latest_csv_file.writelines(lines)
 
-# put the pools on the map
+# put the pools on the map - this needs to be put at the end after testing
 
 os.environ["FELT_API_TOKEN"] = constants.FELT_TOKEN
+pool_map_locations = {}
 
 with open('map_data/public_pools.json') as f:
     pool_map_locations = json.load(f)
@@ -506,13 +512,86 @@ try:
     response = elements.post_elements(
         map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
     print(f"RUTH DEBUG - post elements response: {response}")
-    response = elements.list_elements(map_id=constants.MAP_ID,
-                                      api_token=constants.FELT_TOKEN)
-    print(f"RUTH DEBUG - list elements response: {response}")
+    response = elements.list_element_groups(map_id=constants.MAP_ID,
+                                            api_token=constants.FELT_TOKEN)
+    print(f"RUTH DEBUG - list elements in groups response: {response}")
 except Exception as e:
     print(
         f'An unexpected error occurred while updating pool locations on the map: {e}'
     )
     print(traceback.format_exc())
 
-# TODO - sort swim times, add swim times to map just below pools, move map code to the bottom
+# calculate coordinates
+coordinates = {}
+for feature in pool_map_locations["features"]:
+    pool = feature["properties"]["name"].removesuffix(" Pool")
+    coordinates[pool] = {}
+    coordinates[pool]["pool"] = feature["geometry"]["coordinates"]
+    coordinates[pool]["text"] = [
+        feature["geometry"]["coordinates"][0],
+        feature["geometry"]["coordinates"][1] - 0.002
+    ]
+
+# for each group, remove all elements and rewrite all elements with pool_group_name as ID
+with open('map_data/group_ids.json') as f:
+    group_ids = json.load(f)["group_ids"]
+
+# JUST TEST THURS AFTERNOON OR FRIDAY MORNING FIRST - GET ALL ELEMENTS, DELETE ALL ELEMENTS, ADD SOME ELEMNETS
+# group_name = f"Thu_Afternoon"
+# group_id = group_ids[group_name]
+# group_contents = elements.list_elements_in_group(
+#     map_id=constants.MAP_ID,
+#     element_group_id=group_id,
+#     api_token=constants.FELT_TOKEN)
+# print(
+#     f"RUTH DEBUG - list elements in Thu_Afternoon group response: {group_contents}"
+# )
+
+for weekday in WEEKDAYS:
+    for time_category in TIME_CATEGORIES:
+        group_name = f"{weekday}_{time_category}"
+        group_id = group_ids[group_name]
+        group_contents = elements.list_elements_in_group(
+            map_id=constants.MAP_ID,
+            element_group_id=group_id,
+            api_token=constants.FELT_TOKEN)
+        # print(f"RUTH DEBUG - get elements in {group_name} id {group_id} response: {group_contents}")
+        elements = group_contents["features"]
+        # clear the old elements
+        for element in elements:
+            element_id = element["properties"]["felt:id"]
+            elements.delete_element(map_id=constants.MAP_ID,
+                                    element_id=element_id)
+        # write the new elements
+        new_elements = []
+        for pool in POOLS:
+            new_element = {}
+            times = ordered_catalog[pool][weekday][time_category]
+            times_arr = []
+            for time in times:
+                times_arr.append(time.time_str)
+            times_str = "\n".join(times_arr)
+            new_element["geometry"] = {
+                "coordinates": [
+                    [coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]] for i in range(5)
+                ],
+                "type": "Polygon"
+            }
+            new_element["properties"] = {
+                "felt:text": times_str,
+                "felt:color": "#2674BA",
+                "felt:id": f"{pool}_{weekday}_{time_category}",
+                "felt:position": [
+                    coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]
+                ],
+                "felt:textAlign": "left",
+                "felt:textStyle": "regular",
+                "felt:type": "Text",
+                "felt:parent": group_id,
+            }
+            new_element["type"] = "Feature"
+            new_elements.append(new_element)
+        feature_collection = {}
+        feature_collection["type"] = "FeatureCollection"
+        feature_collection["features"] = [new_elements]
+        elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=feature_collection)
