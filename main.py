@@ -26,13 +26,6 @@ BALBOA = "Balboa"
 MLK = "Martin Luther King Jr"
 COFFMAN = "Coffman"
 
-# swim slot categories
-MORNING = "Morning"
-AFTERNOON = "Afternoon"
-EVENING = "Evening"
-
-TIME_CATEGORIES = [MORNING, AFTERNOON, EVENING]
-
 POOLS = [
     NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
 ]
@@ -138,27 +131,26 @@ MAP_DATA_DIR = "map_data"
 
 @functools.total_ordering
 class SwimSlot:
-    # category is morning, afternoon, evening
-    def __init__(self, pool, weekday, start, end, category, note):
+
+    def __init__(self, pool, weekday, start, end, note):
         self.pool = pool
         self.weekday = weekday
         self.start = start
         self.end = end
-        self.category = category
         self.start_12h = self.start.strftime("%I:%M%p").lstrip('0')
         self.end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         self.timeslot_string = f"{self.start_12h} - {self.end_12h}"
         self.note = note
 
     def __str__(self):
-        return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.category})"
+        return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end})"
 
     def spreadsheet_output(self):
         # convert times from 18:30:00 to more human readable e.g. 6:30pm
         start_12h = self.start.strftime("%I:%M%p").lstrip('0')
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
-        return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{self.category},{start_12h},{end_12h},{self.note}\n"
+        return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{start_12h},{end_12h},{self.note}\n"
 
     def time_str(self):
         return f"{self.start_12h} - {self.end_12h}"
@@ -184,37 +176,29 @@ class OrderedCatalog:
         for pool in POOLS:
             self.catalog[pool] = {}
             for weekday in WEEKDAYS:
-                self.catalog[pool][weekday] = {}
-                for time_category in TIME_CATEGORIES:
-                    self.catalog[pool][weekday][time_category] = []
+                self.catalog[pool][weekday] = []
 
     def add(self, swim_slot):
-        self.catalog[swim_slot.pool][swim_slot.weekday][
-            swim_slot.category].append(swim_slot)
+        self.catalog[swim_slot.pool][swim_slot.weekday].append(swim_slot)
 
     def sort_all(self):
         for pool in self.catalog:
             for weekday in self.catalog[pool]:
-                for time_category in self.catalog[pool][weekday]:
-                    self.catalog[pool][weekday][time_category].sort(
-                        key=get_swim_slot_start)
+                self.catalog[pool][weekday].sort(key=get_swim_slot_start)
 
     def output_lines(self):
         lines = []
         for pool in self.catalog:
             for weekday in self.catalog[pool]:
-                for time_category in self.catalog[pool][weekday]:
-                    for slot in self.catalog[pool][weekday][time_category]:
-                        lines.append(slot.spreadsheet_output())
+                for slot in self.catalog[pool][weekday]:
+                    lines.append(slot.spreadsheet_output())
         return lines
 
     def get_slot_list(self):
         slot_list = []
         for pool in self.catalog:
             for weekday in self.catalog[pool]:
-                for time_category in self.catalog[pool][weekday]:
-                    slot_list.extend(
-                        self.catalog[pool][weekday][time_category])
+                slot_list.extend(self.catalog[pool][weekday])
         return slot_list
 
     def make_deletion_marks(self):
@@ -222,54 +206,31 @@ class OrderedCatalog:
         for pool in POOLS:
             self.deletion_marks[pool] = {}
             for weekday in WEEKDAYS:
-                self.deletion_marks[pool][weekday] = {}
-                for time_category in TIME_CATEGORIES:
-                    self.deletion_marks[pool][weekday][time_category] = [
-                        False
-                    ] * len(self.catalog[pool][weekday][time_category])
+                self.deletion_marks[pool][weekday] = [False] * len(
+                    self.catalog[pool][weekday])
 
     # ASSUMES THAT SLOTS HAVE BEEN SORTED
     def mark_conflicting_lap_swim(self, swim_slot):
-        same_category_slots = self.catalog[swim_slot.pool][swim_slot.weekday][
-            swim_slot.category]
-        for i in range(len(same_category_slots)):
-            catalog_slot = same_category_slots[i]
+        same_day_slots = self.catalog[swim_slot.pool][swim_slot.weekday]
+        for i in range(len(same_day_slots)):
+            catalog_slot = same_day_slots[i]
             if (swim_slot.start >= catalog_slot.start
                     and swim_slot.start < catalog_slot.start) or (
                         swim_slot.end > catalog_slot.start
                         and swim_slot.end <= catalog_slot.end):
-                self.deletion_marks[catalog_slot.pool][catalog_slot.weekday][
-                    catalog_slot.category][i] = True
+                self.deletion_marks[catalog_slot.pool][
+                    catalog_slot.weekday][i] = True
 
     def delete_conflicting_lap_swim(self):
         try:
             for pool in self.catalog:
                 for weekday in self.catalog[pool]:
-                    for time_category in self.catalog[pool][weekday]:
-                        for i in reverse(
-                                range(
-                                    len(self.catalog[pool][weekday]
-                                        [time_category]))):
-                            if self.deletion_marks[pool][weekday][
-                                    time_category][i]:
-                                self.catalog[pool][weekday][time_category].pop(
-                                    i)
+                    for i in reverse(range(len(self.catalog[pool][weekday]))):
+                        if self.deletion_marks[pool][weekday][i]:
+                            self.catalog[pool][weekday].pop(i)
         except Exception as e:
             print(e)
             traceback.print_exc()
-
-
-def get_categories(start_time, end_time):
-    categories = []
-    start_hour = int(start_time.split(":")[0].strip())
-    end_hour = int(end_time.split(":")[0].strip())
-    if start_hour < 12:
-        categories.append(MORNING)
-    if end_hour > 12 and start_hour < 17:
-        categories.append(AFTERNOON)
-    if end_hour > 17:
-        categories.append(EVENING)
-    return categories
 
 
 def string_to_time(time_str):
@@ -307,32 +268,27 @@ def get_subactivities(activity):
     return activity_ids
 
 
-def schedule_to_swimslots(schedule, ordered_catalog, note="", category=True):
+def schedule_to_swimslots(schedule, ordered_catalog, note=""):
     for slot in schedule:
         weekdays = slot["weekdays"].split(",")
         start_time = slot["starting_time"]
         end_time = slot["ending_time"]
         for weekday in weekdays:
             clean_weekday = weekday.strip()
-            if category:
-                categories = get_categories(start_time, end_time)
-                for category in categories:
-                    if clean_weekday == "Weekend":
-                        ordered_catalog.add(
-                            SwimSlot(pool, SAT, string_to_time(start_time),
-                                     string_to_time(end_time), category, note))
-                        ordered_catalog.add(
-                            SwimSlot(pool, SUN, string_to_time(start_time),
-                                     string_to_time(end_time), category, note))
-                    else:
-                        ordered_catalog.add(
-                            SwimSlot(pool, clean_weekday,
-                                     string_to_time(start_time),
-                                     string_to_time(end_time), category, note))
+            if clean_weekday == "Weekend":
+                ordered_catalog.add(
+                    SwimSlot(pool, SAT, string_to_time(start_time),
+                             string_to_time(end_time), note))
+                ordered_catalog.add(
+                    SwimSlot(pool, SUN, string_to_time(start_time),
+                             string_to_time(end_time), note))
             else:
                 ordered_catalog.add(
                     SwimSlot(pool, clean_weekday, string_to_time(start_time),
-                             string_to_time(end_time), "none", note))
+                             string_to_time(end_time), note))
+            ordered_catalog.add(
+                SwimSlot(pool, clean_weekday, string_to_time(start_time),
+                         string_to_time(end_time), note))
 
 
 def is_currently_active(data):
@@ -492,9 +448,9 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
               "w") as latest_csv_file:
         # headings for CSV file
         timestamp_csv_file.write(
-            f"Pool name, Weekday, Time period, Start time, End time, Note\n")
+            f"Pool name, Weekday, Start time, End time, Note\n")
         latest_csv_file.write(
-            f"Pool name, Weekday, Time period, Start time, End time, Note\n")
+            f"Pool name, Weekday, Start time, End time, Note\n")
         lines = ordered_catalog.output_lines()
         print(f"RUTH DEBUG {lines}")
         timestamp_csv_file.writelines(lines)
@@ -531,78 +487,4 @@ for feature in pool_map_locations["features"]:
         feature["geometry"]["coordinates"][0],
         feature["geometry"]["coordinates"][1] - 0.002
     ]
-
-# for each group, remove all elements and rewrite all elements with pool_group_name as ID
-with open('map_data/group_ids.json') as f:
-    group_ids = json.load(f)["group_ids"]
-
-# JUST TEST THURS AFTERNOON OR FRIDAY MORNING FIRST - GET ALL ELEMENTS, DELETE ALL ELEMENTS, ADD SOME ELEMNETS
-# group_name = f"Thu_Afternoon"
-# group_id = group_ids[group_name]
-# group_contents = elements.list_elements_in_group(
-#     map_id=constants.MAP_ID,
-#     element_group_id=group_id,
-#     api_token=constants.FELT_TOKEN)
-# print(
-#     f"RUTH DEBUG - list elements in Thu_Afternoon group response: {group_contents}"
-# )
-
-for weekday in WEEKDAYS:
-    for time_category in TIME_CATEGORIES:
-        group_name = f"{weekday}_{time_category}"
-        group_id = group_ids[group_name]
-        print(f"RUTH DEBUG - group_name: {group_name} group_id: {group_id}")
-        group_contents = elements.list_elements_in_group(
-            map_id=constants.MAP_ID,
-            element_group_id=group_id,
-            api_token=constants.FELT_TOKEN)
-        # print(f"RUTH DEBUG - get elements in {group_name} id {group_id} response: {group_contents}")
-        elements = group_contents["features"]
-        # clear the old elements
-        for element in elements:
-            element_id = element["properties"]["felt:id"]
-            elements.delete_element(map_id=constants.MAP_ID,
-                                    element_id=element_id)
-        # write the new elements
-        new_elements = []
-        for pool in POOLS:
-            new_element = {}
-            times = ordered_catalog[pool][weekday][time_category]
-            times_arr = []
-            for time in times:
-                times_arr.append(time.time_str)
-            times_str = "\n".join(times_arr)
-            new_element["geometry"] = {
-                "coordinates":
-                [[coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]]
-                 for i in range(5)],
-                "type":
-                "Polygon"
-            }
-            new_element["properties"] = {
-                "felt:text":
-                times_str,
-                "felt:color":
-                "#2674BA",
-                "felt:id":
-                f"{pool}_{weekday}_{time_category}",
-                "felt:position":
-                [coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]],
-                "felt:textAlign":
-                "left",
-                "felt:textStyle":
-                "regular",
-                "felt:type":
-                "Text",
-                "felt:parent":
-                group_id,
-            }
-            new_element["type"] = "Feature"
-            new_elements.append(new_element)
-        feature_collection = {}
-        feature_collection["type"] = "FeatureCollection"
-        feature_collection["features"] = [new_elements]
-        elements.post_elements(map_id=constants.MAP_ID,
-                               geojson_feature_collection=feature_collection)
-
-# RUTH TODO just give robin the pool locations and the days of the week adn the tiems per day per pool in text separated by newline for him to put on the map
+# make pool schedule json for map, per weekday per pool
