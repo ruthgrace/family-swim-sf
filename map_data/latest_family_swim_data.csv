@@ -28,6 +28,13 @@ Hamilton,Friday,Evening,6:30PM,8:00PM,Family Swim
 Hamilton,Saturday,Morning,9:00AM,10:30AM,Family Swim in Small Pool
 Hamilton,Saturday,Afternoon,1:30PM,3:30PM,Family Swim
 Hamilton,Saturday,Afternoon,4:00PM,5:00PM,Family Swim in Small Pool
+Rossi,Monday,Morning,9:00AM,11:00AM,Parent Child Swim
+Rossi,Tuesday,Morning,10:15AM,11:15AM,Family Swim
+Rossi,Wednesday,Afternoon,2:00PM,3:30PM,Family Swim
+Rossi,Thursday,Evening,6:30PM,7:30PM,Family Swim
+Rossi,Sunday,Morning,9:30AM,11:00AM,Parent Child Swim
+Rossi,Sunday,Afternoon,12:30PM,2:00PM,Family Swim
+Rossi,Sunday,Afternoon,2:30PM,3:30PM,Family Swim
 Mission,Tuesday,Morning,9:30AM,10:45AM,Parent Child Swim
 Mission,Tuesday,Afternoon,4:00PM,5:00PM,Family Swim
 Mission,Wednesday,Afternoon,2:30PM,3:45PM,Family Swim
@@ -36,6 +43,24 @@ Mission,Thursday,Afternoon,3:00PM,5:00PM,Family Swim
 Mission,Friday,Afternoon,2:30PM,3:45PM,Family Swim
 Mission,Saturday,Morning,10:45AM,12:00PM,Family Swim
 Mission,Saturday,Afternoon,1:30PM,3:00PM,Family Swim
+Garfield,Monday,Morning,7:00AM,8:45AM,Parent Child Swim
+Garfield,Monday,Morning,11:00AM,1:00PM,Parent Child Swim
+Garfield,Monday,Afternoon,11:00AM,1:00PM,Parent Child Swim
+Garfield,Monday,Afternoon,2:00PM,3:30PM,Family Swim
+Garfield,Monday,Afternoon,4:00PM,6:00PM,Family Swim
+Garfield,Monday,Evening,4:00PM,6:00PM,Family Swim
+Garfield,Tuesday,Afternoon,1:00PM,2:00PM,Parent Child Swim
+Garfield,Tuesday,Afternoon,2:30PM,3:30PM,Family Swim
+Garfield,Wednesday,Morning,7:00AM,8:45AM,Parent Child Swim
+Garfield,Wednesday,Afternoon,1:00PM,2:00PM,Parent Child Swim
+Garfield,Wednesday,Afternoon,2:30PM,3:30PM,Parent Child Swim
+Garfield,Wednesday,Afternoon,4:30PM,7:00PM,Parent Child Swim
+Garfield,Wednesday,Evening,4:30PM,7:00PM,Parent Child Swim
+Garfield,Thursday,Afternoon,2:30PM,3:30PM,Family Swim
+Garfield,Thursday,Afternoon,4:30PM,7:00PM,Parent Child Swim
+Garfield,Thursday,Evening,4:30PM,7:00PM,Parent Child Swim
+Garfield,Sunday,Afternoon,12:15PM,2:00PM,Family Swim
+Garfield,Sunday,Afternoon,2:30PM,4:00PM,Family Swim
 Sava,Tuesday,Afternoon,3:30PM,5:00PM,Family Swim
 Sava,Wednesday,Afternoon,2:30PM,3:30PM,Family Swim
 Sava,Thursday,Afternoon,2:30PM,5:00PM,Family Swim
@@ -71,6 +96,10 @@ Balboa,Saturday,Afternoon,2:30PM,3:30PM,Family Swim
 Balboa,Saturday,Afternoon,2:30PM,3:30PM,Family Swim
 Balboa,Saturday,Afternoon,4:00PM,5:00PM,Parent Child Swim on Steps
 Balboa,Saturday,Afternoon,4:00PM,5:00PM,Parent Child Swim on Steps
+Martin Luther King Jr,Tuesday,Afternoon,2:15PM,3:15PM,Family Swim
+Martin Luther King Jr,Wednesday,Afternoon,2:15PM,3:15PM,Family Swim
+Martin Luther King Jr,Friday,Afternoon,2:15PM,3:15PM,Family Swim
+Martin Luther King Jr,Saturday,Afternoon,2:00PM,3:30PM,Family Swim
 Coffman,Tuesday,Afternoon,2:00PM,4:00PM,Family Swim
 Coffman,Wednesday,Afternoon,1:30PM,2:30PM,Family Swim
 Coffman,Wednesday,Evening,5:45PM,7:00PM,Family Swim

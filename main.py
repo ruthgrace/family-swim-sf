@@ -551,6 +551,7 @@ for weekday in WEEKDAYS:
     for time_category in TIME_CATEGORIES:
         group_name = f"{weekday}_{time_category}"
         group_id = group_ids[group_name]
+        print(f"RUTH DEBUG - group_name: {group_name} group_id: {group_id}")
         group_contents = elements.list_elements_in_group(
             map_id=constants.MAP_ID,
             element_group_id=group_id,
@@ -572,26 +573,36 @@ for weekday in WEEKDAYS:
                 times_arr.append(time.time_str)
             times_str = "\n".join(times_arr)
             new_element["geometry"] = {
-                "coordinates": [
-                    [coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]] for i in range(5)
-                ],
-                "type": "Polygon"
+                "coordinates":
+                [[coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]]
+                 for i in range(5)],
+                "type":
+                "Polygon"
             }
             new_element["properties"] = {
-                "felt:text": times_str,
-                "felt:color": "#2674BA",
-                "felt:id": f"{pool}_{weekday}_{time_category}",
-                "felt:position": [
-                    coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]
-                ],
-                "felt:textAlign": "left",
-                "felt:textStyle": "regular",
-                "felt:type": "Text",
-                "felt:parent": group_id,
+                "felt:text":
+                times_str,
+                "felt:color":
+                "#2674BA",
+                "felt:id":
+                f"{pool}_{weekday}_{time_category}",
+                "felt:position":
+                [coordinates[pool]["pool"][0], coordinates[pool]["pool"][1]],
+                "felt:textAlign":
+                "left",
+                "felt:textStyle":
+                "regular",
+                "felt:type":
+                "Text",
+                "felt:parent":
+                group_id,
             }
             new_element["type"] = "Feature"
             new_elements.append(new_element)
         feature_collection = {}
         feature_collection["type"] = "FeatureCollection"
         feature_collection["features"] = [new_elements]
-        elements.post_elements(map_id=constants.MAP_ID, geojson_feature_collection=feature_collection)
+        elements.post_elements(map_id=constants.MAP_ID,
+                               geojson_feature_collection=feature_collection)
+
+# RUTH TODO just give robin the pool locations and the days of the week adn the tiems per day per pool in text separated by newline for him to put on the map
