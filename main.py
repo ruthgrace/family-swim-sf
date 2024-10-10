@@ -382,10 +382,9 @@ def get_search_results(request_body):
 
 
 def hour_delta(end_time, start_time):
-    hr_delta = end_time.hour - start_time.hour
+    hr_delta = float(end_time.hour - start_time.hour)
     min_delta = end_time.minute - start_time.minute
-    if min_delta > 0:
-        hr_delta += min_delta / 60
+    hr_delta += float(min_delta) / float(60)
     return hr_delta
 
 
@@ -424,25 +423,28 @@ timestamp = time.time()
 for pool in POOLS:
     working_families_data[pool] = {}
     for weekday in WEEKDAYS:
-        working_families_data[pool][weekday] = 0
+        working_families_data[pool][weekday] = float(0)
         if weekday in ["Sat", "Sun"]:
             for slot in ordered_catalog.catalog[pool][weekday]:
                 working_families_data[pool][weekday] += hour_delta(
                     slot.end, slot.start)
+                # print(f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}")
         for slot in ordered_catalog.catalog[pool][weekday]:
             if slot.end.hour > WORKDAY_END.hour:
                 if slot.start > WORKDAY_END:
-                    working_families_data[pool][weekday] += hour_delta(
+                    hours = hour_delta(
                         slot.end, slot.start)
                 else:
-                    working_families_data[pool][weekday] += hour_delta(
+                    hours = hour_delta(
                         slot.end, WORKDAY_END)
-        if working_families_data[pool][weekday] < 1:
-            working_families_data[pool][weekday] = 0
+                working_families_data[pool][weekday] += hours
 
-with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
+        if working_families_data[pool][weekday] < 1.0:
+            working_families_data[pool][weekday] = float(0)
+
+with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.csv",
           "w") as working_families_file:
-    with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_latest.json",
+    with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_latest.csv",
               "w") as working_families_latest_file:
         # headings for CSV file
         working_families_file.write(
@@ -517,7 +519,7 @@ for slot in secret_swim_slots:
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
 
-print(f"RUTH DEBUG: {ordered_catalog.get_printable_slot_list()}")
+# print(f"RUTH DEBUG: {ordered_catalog.get_printable_slot_list()}")
 # write spreadsheet
 with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
           "w") as timestamp_csv_file:
