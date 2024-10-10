@@ -35,25 +35,25 @@ SECRET_LAP_SWIM_POOLS = {
     HAMILTON: "Family Swim in Small Pool"
 }
 
+SAT = "Sat"
+SUN = "Sun"
 MON = "Mon"
 TUE = "Tue"
 WED = "Wed"
 THU = "Thu"
 FRI = "Fri"
-SAT = "Sat"
-SUN = "Sun"
 
+SATURDAY = "Saturday"
+SUNDAY = "Sunday"
 MONDAY = "Monday"
 TUESDAY = "Tuesday"
 WEDNESDAY = "Wednesday"
 THURSDAY = "Thursday"
 FRIDAY = "Friday"
-SATURDAY = "Saturday"
-SUNDAY = "Sunday"
 
 POOL_GROUP = "pool_group"
 
-WEEKDAYS = [MON, TUE, WED, THU, FRI, SAT, SUN]
+WEEKDAYS = [SAT, SUN, MON, TUE, WED, THU, FRI]
 
 WEEKDAY_CONVERSION = {
     MON: MONDAY,
@@ -145,7 +145,7 @@ class SwimSlot:
         self.note = note
 
     def __str__(self):
-        return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end})"
+        return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.note})"
 
     def spreadsheet_output(self):
         # convert times from 18:30:00 to more human readable e.g. 6:30pm
@@ -213,6 +213,13 @@ class OrderedCatalog:
             for weekday in self.catalog[pool]:
                 slot_list.extend(self.catalog[pool][weekday])
         return slot_list
+
+    def get_printable_slot_list(self):
+        slot_list = self.get_slot_list()
+        slot_list_strs = []
+        for slot in slot_list:
+            slot_list_strs.append(f"{slot}")
+        return slot_list_strs
 
     def make_deletion_marks(self):
         self.deletion_marks = {}
@@ -289,16 +296,21 @@ def schedule_to_swimslots(schedule, ordered_catalog, note=""):
         for weekday in weekdays:
             clean_weekday = weekday.strip()
             if clean_weekday == "Weekend":
-                ordered_catalog.add(
-                    SwimSlot(pool, SAT, string_to_time(start_time),
-                             string_to_time(end_time), note))
-                ordered_catalog.add(
-                    SwimSlot(pool, SUN, string_to_time(start_time),
-                             string_to_time(end_time), note))
+                sat_slot = SwimSlot(pool, SAT, string_to_time(start_time),
+                                    string_to_time(end_time), note)
+                sun_slot = SwimSlot(pool, SUN, string_to_time(start_time),
+                                    string_to_time(end_time), note)
+                if sat_slot not in ordered_catalog.catalog[pool][SAT]:
+                    ordered_catalog.add(sat_slot)
+                if sun_slot not in ordered_catalog.catalog[pool][SUN]:
+                    ordered_catalog.add(sun_slot)
             else:
-                ordered_catalog.add(
-                    SwimSlot(pool, clean_weekday, string_to_time(start_time),
-                             string_to_time(end_time), note))
+                new_slot = SwimSlot(pool, clean_weekday,
+                                    string_to_time(start_time),
+                                    string_to_time(end_time), note)
+                if new_slot not in ordered_catalog.catalog[pool][
+                        clean_weekday]:
+                    ordered_catalog.add(new_slot)
 
 
 def is_currently_active(data):
@@ -367,6 +379,14 @@ def get_search_results(request_body):
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
     return results
+
+
+def hour_delta(end_time, start_time):
+    hr_delta = end_time.hour - start_time.hour
+    min_delta = end_time.minute - start_time.minute
+    if min_delta > 0:
+        hr_delta += min_delta / 60
+    return hr_delta
 
 
 ordered_catalog = OrderedCatalog()
@@ -441,6 +461,11 @@ lap_swim_catalog.make_deletion_marks()
 for slot in non_lap_swim_slots:
     lap_swim_catalog.mark_conflicting_lap_swim(slot)
 
+# sometimes the secret swim is already in the database (not secret)
+family_swim_slots = ordered_catalog.get_slot_list()
+for slot in family_swim_slots:
+    lap_swim_catalog.mark_conflicting_lap_swim(slot)
+
 lap_swim_catalog.delete_conflicting_lap_swim
 
 secret_swim_slots = lap_swim_catalog.get_slot_list()
@@ -450,6 +475,7 @@ for slot in secret_swim_slots:
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
 
+print(f"RUTH DEBUG: {ordered_catalog.get_printable_slot_list()}")
 # write spreadsheet
 timestamp = time.time()
 with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
@@ -488,15 +514,21 @@ working_families_data = {}
 for pool in POOLS:
     working_families_data[pool] = {}
     for weekday in WEEKDAYS:
-        full_weekday = WEEKDAY_CONVERSION[weekday]
-        working_families_data[pool][full_weekday] = 0
+        working_families_data[pool][weekday] = 0
+        if weekday in ["Sat", "Sun"]:
+            for slot in ordered_catalog.catalog[pool][weekday]:
+                working_families_data[pool][weekday] += hour_delta(
+                    slot.end, slot.start)
         for slot in ordered_catalog.catalog[pool][weekday]:
-            if slot.end.hour - WORKDAY_END.hour >= 1:
-                hour_delta = slot.end.hour - WORKDAY_END.hour
-                minute_delta = slot.end.minute - WORKDAY_END.minute
-                if minute_delta > 0:
-                    hour_delta += minute_delta / 60
-                working_families_data[pool][full_weekday] += hour_delta
+            if slot.end.hour > WORKDAY_END.hour:
+                if slot.start > WORKDAY_END:
+                    working_families_data[pool][weekday] += hour_delta(
+                        slot.end, slot.start)
+                else:
+                    working_families_data[pool][weekday] += hour_delta(
+                        slot.end, WORKDAY_END)
+        if working_families_data[pool][weekday] < 1:
+            working_families_data[pool][weekday] = 0
 
 with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
           "w") as working_families_file:
@@ -506,8 +538,12 @@ with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
         working_families_file.write(
             "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
         )
+        working_families_latest_file.write(
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+        )
         for pool in POOLS:
             line_arr = [pool]
-            for hours in working_families_data[pool]:
-                line_arr.append(f"{hours}")
+            for weekday in WEEKDAYS:
+                line_arr.append(f"{working_families_data[pool][weekday]}")
             working_families_file.write(",".join(line_arr) + "\n")
+            working_families_latest_file.write(",".join(line_arr) + "\n")
