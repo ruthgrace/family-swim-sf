@@ -27,7 +27,7 @@ MLK = "Martin Luther King Jr Pool"
 COFFMAN = "Coffman Pool"
 
 POOLS = [
-    NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
+    BALBOA, COFFMAN, GARFIELD, HAMILTON, MLK, MISSION, NORTH_BEACH, ROSSI, SAVA
 ]
 
 SECRET_LAP_SWIM_POOLS = {
@@ -64,6 +64,8 @@ WEEKDAY_CONVERSION = {
     SAT: SATURDAY,
     SUN: SUNDAY
 }
+
+WORKDAY_END = datetime.time(17, 0)
 
 # an example search URL looks like this
 # https://anc.apm.activecommunities.com/sfrecpark/activity/search?activity_select_param=2&center_ids=85&activity_keyword=family%20swim&viewMode=list
@@ -480,3 +482,32 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.json",
 with open(f"{MAP_DATA_DIR}/latest_family_swim_data.json",
           "w") as latest_json_file:
     json.dump(pool_schedule_data, latest_json_file, indent=4)
+
+# calculate data for pool access for working families
+working_families_data = {}
+for pool in POOLS:
+    working_families_data[pool] = {}
+    for weekday in WEEKDAYS:
+        full_weekday = WEEKDAY_CONVERSION[weekday]
+        working_families_data[pool][full_weekday] = 0
+        for slot in ordered_catalog.catalog[pool][weekday]:
+            if slot.end.hour - WORKDAY_END.hour >= 1:
+                hour_delta = slot.end.hour - WORKDAY_END.hour
+                minute_delta = slot.end.minute - WORKDAY_END.minute
+                if minute_delta > 0:
+                    hour_delta += minute_delta / 60
+                working_families_data[pool][full_weekday] += hour_delta
+
+with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
+          "w") as working_families_file:
+    with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_latest.json",
+              "w") as working_families_latest_file:
+        # headings for CSV file
+        working_families_file.write(
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+        )
+        for pool in POOLS:
+            line_arr = [pool]
+            for hours in working_families_data[pool]:
+                line_arr.append(f"{hours}")
+            working_families_file.write(",".join(line_arr) + "\n")
