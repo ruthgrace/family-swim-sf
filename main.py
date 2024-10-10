@@ -16,15 +16,15 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-NORTH_BEACH = "North Beach"
-HAMILTON = "Hamilton"
-ROSSI = "Rossi"
-MISSION = "Mission"
-GARFIELD = "Garfield"
-SAVA = "Sava"
-BALBOA = "Balboa"
-MLK = "Martin Luther King Jr"
-COFFMAN = "Coffman"
+NORTH_BEACH = "North Beach Pool"
+HAMILTON = "Hamilton Pool"
+ROSSI = "Rossi Pool"
+MISSION = "Mission Community Pool"
+GARFIELD = "Garfield Pool"
+SAVA = "Sava Pool"
+BALBOA = "Balboa Pool"
+MLK = "Martin Luther King Jr Pool"
+COFFMAN = "Coffman Pool"
 
 POOLS = [
     NORTH_BEACH, HAMILTON, ROSSI, MISSION, GARFIELD, SAVA, BALBOA, MLK, COFFMAN
@@ -151,6 +151,17 @@ class SwimSlot:
         end_12h = self.end.strftime("%I:%M%p").lstrip('0')
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
         return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{start_12h},{end_12h},{self.note}\n"
+
+    def dict_output(self):
+        return_dict = {}
+        return_dict["pool"] = self.pool
+        # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
+        return_dict["weekday"] = WEEKDAY_CONVERSION[self.weekday]
+        # convert times from 18:30:00 to more human readable e.g. 6:30pm
+        return_dict["start"] = self.start.strftime("%I:%M%p").lstrip('0')
+        return_dict["end"] = self.end.strftime("%I:%M%p").lstrip('0')
+        return_dict["note"] = self.note
+        return return_dict
 
     def time_str(self):
         return f"{self.start_12h} - {self.end_12h}"
@@ -452,39 +463,24 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
         latest_csv_file.write(
             f"Pool name, Weekday, Start time, End time, Note\n")
         lines = ordered_catalog.output_lines()
-        print(f"RUTH DEBUG {lines}")
         timestamp_csv_file.writelines(lines)
         latest_csv_file.writelines(lines)
 
-# put the pools on the map - this needs to be put at the end after testing
+# make pool schedule json for map
+pool_schedule_data = {}
+for pool in POOLS:
+    pool_schedule_data[pool] = {}
+    for weekday in WEEKDAYS:
+        full_weekday = WEEKDAY_CONVERSION[weekday]
+        pool_schedule_data[pool][full_weekday] = []
+        for slot in ordered_catalog.catalog[pool][weekday]:
+            pool_schedule_data[pool][full_weekday].append(slot.dict_output())
 
-os.environ["FELT_API_TOKEN"] = constants.FELT_TOKEN
-pool_map_locations = {}
+timestamp = time.time()
+with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.json",
+          "w") as timestamp_json_file:
+    json.dump(pool_schedule_data, timestamp_json_file, indent=4)
 
-with open('map_data/public_pools.json') as f:
-    pool_map_locations = json.load(f)
-
-try:
-    response = elements.post_elements(
-        map_id=constants.MAP_ID, geojson_feature_collection=pool_map_locations)
-    print(f"RUTH DEBUG - post elements response: {response}")
-    response = elements.list_element_groups(map_id=constants.MAP_ID,
-                                            api_token=constants.FELT_TOKEN)
-    print(f"RUTH DEBUG - list elements in groups response: {response}")
-except Exception as e:
-    print(
-        f'An unexpected error occurred while updating pool locations on the map: {e}'
-    )
-    print(traceback.format_exc())
-
-# calculate coordinates
-coordinates = {}
-for feature in pool_map_locations["features"]:
-    pool = feature["properties"]["name"].removesuffix(" Pool")
-    coordinates[pool] = {}
-    coordinates[pool]["pool"] = feature["geometry"]["coordinates"]
-    coordinates[pool]["text"] = [
-        feature["geometry"]["coordinates"][0],
-        feature["geometry"]["coordinates"][1] - 0.002
-    ]
-# make pool schedule json for map, per weekday per pool
+with open(f"{MAP_DATA_DIR}/latest_family_swim_data.json",
+          "w") as latest_json_file:
+    json.dump(pool_schedule_data, latest_json_file, indent=4)
