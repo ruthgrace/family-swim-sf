@@ -122,10 +122,10 @@
         "type": "Point"
       },
       "properties": {
-        "name": "MLK Pool",
+        "name": "Martin Luther King Jr Pool",
         "Address": "5701 3rd Street San Francisco CA 94124",
         "Icon": "swimming",
-        "Label": "MLK Pool"
+        "Label": "MLK Jr Pool"
       },
       "type": "Feature"
     },
