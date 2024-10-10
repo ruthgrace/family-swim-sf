@@ -13,7 +13,8 @@
         "name": "North Beach Pool",
         "Address": "661 Lombard Street San Francisco CA 94133",
         "Icon": "swimming",
-        "Label": "North Beach Pool"
+        "Label": "North Beach Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/North-Beach-Pool-218"
       },
       "type": "Feature"
     },
@@ -29,7 +30,8 @@
         "name": "Hamilton Pool",
         "Address": "1900 Geary Street San Francisco CA 94115",
         "Icon": "swimming",
-        "Label": "Hamilton Pool"
+        "Label": "Hamilton Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Hamilton-Pool-215"
       },
       "type": "Feature"
     },
@@ -45,7 +47,8 @@
         "name": "Rossi Pool",
         "Address": "600 Arguello Blvd San Francisco CA 94118",
         "Icon": "swimming",
-        "Label": "Rossi Pool"
+        "Label": "Rossi Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Rossi-Pool-219"
       },
       "type": "Feature"
     },
@@ -61,7 +64,8 @@
         "name": "Mission Community Pool",
         "Address": "101 Linda Street San Francisco CA 94110",
         "Icon": "swimming",
-        "Label": "Mission Community Pool"
+        "Label": "Mission Community Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Mission-Community-Pool-217"
       },
       "type": "Feature"
     },
@@ -77,7 +81,8 @@
         "name": "Garfield Pool",
         "Address": "1271 Treat Avenue San Francisco CA 94110",
         "Icon": "swimming",
-        "Label": "Garfield Pool"
+        "Label": "Garfield Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Garfield-Pool-214"
       },
       "type": "Feature"
     },
@@ -93,7 +98,8 @@
         "name": "Sava Pool",
         "Address": "2695 19th Avenue San Francisco CA 94116",
         "Icon": "swimming",
-        "Label": "Sava Pool"
+        "Label": "Sava Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Sava-Pool-220"
       },
       "type": "Feature"
     },
@@ -109,7 +115,8 @@
         "name": "Balboa Pool",
         "Address": "51 Havelock St San Francisco CA 94112",
         "Icon": "swimming",
-        "Label": "Balboa Pool"
+        "Label": "Balboa Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Balboa-Pool-212"
       },
       "type": "Feature"
     },
@@ -125,7 +132,8 @@
         "name": "Martin Luther King Jr Pool",
         "Address": "5701 3rd Street San Francisco CA 94124",
         "Icon": "swimming",
-        "Label": "MLK Jr Pool"
+        "Label": "MLK Jr Pool",
+        "Website": "https://sfrecpark.org/Facilities/Facility/Details/Martin-Luther-King-Jr-Pool-216"
       },
       "type": "Feature"
     },
@@ -141,7 +149,8 @@
         "name": "Coffman Pool",
         "Address": "1701 Visitacion Avenue San Francisco CA 94134",
         "Icon": "swimming",
-        "Label": "Coffman Pool"
+        "Label": "Coffman Pool",
+        "Website": "https://sfrecpark.org/facilities/facility/details/Coffman-Pool-213"
       },
       "type": "Feature"
     }
