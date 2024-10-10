@@ -416,6 +416,48 @@ for pool in POOLS:
     results = get_search_results(request_body)
     process_entries(results, ordered_catalog, note="Parent Child Swim")
 
+ordered_catalog.sort_all()
+
+# calculate data for pool access for working families, not including secret swim
+working_families_data = {}
+timestamp = time.time()
+for pool in POOLS:
+    working_families_data[pool] = {}
+    for weekday in WEEKDAYS:
+        working_families_data[pool][weekday] = 0
+        if weekday in ["Sat", "Sun"]:
+            for slot in ordered_catalog.catalog[pool][weekday]:
+                working_families_data[pool][weekday] += hour_delta(
+                    slot.end, slot.start)
+        for slot in ordered_catalog.catalog[pool][weekday]:
+            if slot.end.hour > WORKDAY_END.hour:
+                if slot.start > WORKDAY_END:
+                    working_families_data[pool][weekday] += hour_delta(
+                        slot.end, slot.start)
+                else:
+                    working_families_data[pool][weekday] += hour_delta(
+                        slot.end, WORKDAY_END)
+        if working_families_data[pool][weekday] < 1:
+            working_families_data[pool][weekday] = 0
+
+with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
+          "w") as working_families_file:
+    with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_latest.json",
+              "w") as working_families_latest_file:
+        # headings for CSV file
+        working_families_file.write(
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+        )
+        working_families_latest_file.write(
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+        )
+        for pool in POOLS:
+            line_arr = [pool]
+            for weekday in WEEKDAYS:
+                line_arr.append(f"{working_families_data[pool][weekday]}")
+            working_families_file.write(",".join(line_arr) + "\n")
+            working_families_latest_file.write(",".join(line_arr) + "\n")
+
 # second, add "secret swim":
 # * balboa allows kids during lap swim if nothing else is scheduled at that time
 # * hamilton allows kids during lap swim if nothing else is scheduled at that time
@@ -477,7 +519,6 @@ ordered_catalog.sort_all()
 
 print(f"RUTH DEBUG: {ordered_catalog.get_printable_slot_list()}")
 # write spreadsheet
-timestamp = time.time()
 with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.csv",
           "w") as timestamp_csv_file:
     with open(f"{MAP_DATA_DIR}/latest_family_swim_data.csv",
@@ -508,42 +549,3 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.json",
 with open(f"{MAP_DATA_DIR}/latest_family_swim_data.json",
           "w") as latest_json_file:
     json.dump(pool_schedule_data, latest_json_file, indent=4)
-
-# calculate data for pool access for working families
-working_families_data = {}
-for pool in POOLS:
-    working_families_data[pool] = {}
-    for weekday in WEEKDAYS:
-        working_families_data[pool][weekday] = 0
-        if weekday in ["Sat", "Sun"]:
-            for slot in ordered_catalog.catalog[pool][weekday]:
-                working_families_data[pool][weekday] += hour_delta(
-                    slot.end, slot.start)
-        for slot in ordered_catalog.catalog[pool][weekday]:
-            if slot.end.hour > WORKDAY_END.hour:
-                if slot.start > WORKDAY_END:
-                    working_families_data[pool][weekday] += hour_delta(
-                        slot.end, slot.start)
-                else:
-                    working_families_data[pool][weekday] += hour_delta(
-                        slot.end, WORKDAY_END)
-        if working_families_data[pool][weekday] < 1:
-            working_families_data[pool][weekday] = 0
-
-with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.json",
-          "w") as working_families_file:
-    with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_latest.json",
-              "w") as working_families_latest_file:
-        # headings for CSV file
-        working_families_file.write(
-            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
-        )
-        working_families_latest_file.write(
-            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
-        )
-        for pool in POOLS:
-            line_arr = [pool]
-            for weekday in WEEKDAYS:
-                line_arr.append(f"{working_families_data[pool][weekday]}")
-            working_families_file.write(",".join(line_arr) + "\n")
-            working_families_latest_file.write(",".join(line_arr) + "\n")
