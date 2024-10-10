@@ -297,9 +297,6 @@ def schedule_to_swimslots(schedule, ordered_catalog, note=""):
                 ordered_catalog.add(
                     SwimSlot(pool, clean_weekday, string_to_time(start_time),
                              string_to_time(end_time), note))
-            ordered_catalog.add(
-                SwimSlot(pool, clean_weekday, string_to_time(start_time),
-                         string_to_time(end_time), note))
 
 
 def is_currently_active(data):
@@ -476,7 +473,6 @@ for pool in POOLS:
         for slot in ordered_catalog.catalog[pool][weekday]:
             pool_schedule_data[pool][full_weekday].append(slot.dict_output())
 
-timestamp = time.time()
 with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.json",
           "w") as timestamp_json_file:
     json.dump(pool_schedule_data, timestamp_json_file, indent=4)
