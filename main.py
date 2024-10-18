@@ -199,6 +199,17 @@ class OrderedCatalog:
             for weekday in self.catalog[pool]:
                 self.catalog[pool][weekday].sort(key=get_swim_slot_start)
 
+    def dedup(self):
+        for pool in self.catalog:
+            for weekday in self.catalog[pool]:
+                delete_indexes = []
+                for i in range(len(self.catalog[pool][weekday]) - 1):
+                    if self.catalog[pool][weekday][i] == self.catalog[pool][
+                            weekday][i + 1]:
+                        delete_indexes.insert(0, i)
+                for index in delete_indexes:
+                    self.catalog[pool][weekday].pop(index)
+
     def output_lines(self):
         lines = []
         for pool in self.catalog:
@@ -428,15 +439,15 @@ for pool in POOLS:
             for slot in ordered_catalog.catalog[pool][weekday]:
                 working_families_data[pool][weekday] += hour_delta(
                     slot.end, slot.start)
-                print(f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}")
+                print(
+                    f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}"
+                )
         for slot in ordered_catalog.catalog[pool][weekday]:
             if slot.end.hour > WORKDAY_END.hour:
                 if slot.start > WORKDAY_END:
-                    hours = hour_delta(
-                        slot.end, slot.start)
+                    hours = hour_delta(slot.end, slot.start)
                 else:
-                    hours = hour_delta(
-                        slot.end, WORKDAY_END)
+                    hours = hour_delta(slot.end, WORKDAY_END)
                 working_families_data[pool][weekday] += hours
 
         if working_families_data[pool][weekday] < 1.0:
@@ -518,6 +529,7 @@ for slot in secret_swim_slots:
 
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
+ordered_catalog.dedup()
 
 # print(f"RUTH DEBUG: {ordered_catalog.get_printable_slot_list()}")
 # write spreadsheet
