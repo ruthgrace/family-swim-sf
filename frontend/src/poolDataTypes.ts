@@ -1,3 +1,4 @@
+// generated with quicktype :P
 export interface PoolDictionary {
   "Balboa Pool": Pool;
   "Coffman Pool": Pool;
@@ -27,6 +28,8 @@ export interface Day {
   end: string;
   note: Note;
 }
+
+export type ScheduleForPool = { weekday: Weekday; times: string }[];
 
 export type Note =
   | "Parent Child Swim on Steps"

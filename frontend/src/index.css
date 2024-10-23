@@ -13,56 +13,62 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+.control-panel {
+  position: absolute;
+  top: 25px;
+  left: 10px;
+  background: #1a1a1a30;
+  padding: 10px;
+  color: #002B48;
+  z-index: 1;
 }
 
-body {
+.header-banner {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: #ffffffc3;
+  color: #002B48;
+  width: 100%;
+  z-index: 1;
+}
+
+h3 {
+  font-size: 1.0rem;
+  font-weight: 600;
+  line-height: 1.334;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.maplibregl-popup-content {
+  color: #242424
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.maplibregl-popup-close-button {
+  color: #242424
+
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.popup-content h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.popup-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.popup-content li {
+  margin: 5px 0;
+}
+
+.popup-content ul ul {
+  margin-left: 15px; /* Indent nested lists */
+}
+
+.popup-content li strong {
+  display: inline-block;
+  width: 80px; /* Align day names neatly */
 }
