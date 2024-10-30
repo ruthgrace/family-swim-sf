@@ -17,12 +17,11 @@
 # PUT THIS IN /etc/nginx/sites-available and /etc/nginx/sites-enabled
 
 server {
-
 	listen 80;
-        listen [::]:80;
-	server_name swimmap.joyfulparentingsf.com;
-
-        location ~ /.well-known {
-            root /var/www/family-swim-sf;
-        }
+    listen [::]:80;
+	server_name swimmap.joyfulparenting.com swim.joyfulparentingsf.com;
+    location ~ /.well-known {
+        root /var/www/family-swim-sf;
+    }
 }
+
