@@ -15,6 +15,10 @@ sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/f
 sudo service nginx reload
 
 certbot certonly --force-renewal -a webroot -w /var/www/family-swim-sf -d swimmap.joyfulparentingsf.com
+
+# clean up bootstrap nginx config
+sudo rm /etc/nginx/sites-available/family-swim-sf
+sudo rm /etc/nginx/sites-enabled/family-swim-sf
 ```
 4. put in production nginx config
 ```
