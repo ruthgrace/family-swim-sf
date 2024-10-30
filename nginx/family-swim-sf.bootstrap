@@ -19,7 +19,7 @@
 server {
 	listen 80;
     listen [::]:80;
-	server_name swimmap.joyfulparenting.com swim.joyfulparentingsf.com;
+	server_name swimmap.joyfulparentingsf.com swim.joyfulparentingsf.com;
     location ~ /.well-known {
         root /var/www/family-swim-sf;
     }

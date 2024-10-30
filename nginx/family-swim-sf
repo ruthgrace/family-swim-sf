@@ -19,7 +19,7 @@
 server {
 	listen 80;
     listen [::]:80;
-	server_name swimmap.joyfulparenting.com swim.joyfulparentingsf.com;
+	server_name swimmap.joyfulparentingsf.com swim.joyfulparentingsf.com;
     location ~ /.well-known {
         root /var/www/family-swim-sf;
     }
@@ -30,7 +30,7 @@ server {
 
 server {
     listen 443 ssl;
-	server_name swimmap.joyfulparenting.com swim.joyfulparentingsf.com;
+	server_name swimmap.joyfulparentingsf.com swim.joyfulparentingsf.com;
     ssl_certificate /etc/letsencrypt/live/swimmap.joyfulparentingsf.com/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/swimmap.joyfulparentingsf.com/privkey.pem; # managed by Certbot
     location / {
