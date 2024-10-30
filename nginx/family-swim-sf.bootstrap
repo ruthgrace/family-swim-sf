@@ -23,6 +23,6 @@ server {
 	server_name swimmap.joyfulparentingsf.com;
 
         location ~ /.well-known {
-            root /var/www/check-in-bot;
+            root /var/www/family-swim-sf;
         }
 }
