@@ -23,6 +23,8 @@ sudo rm /etc/nginx/sites-enabled/family-swim-sf
 4. put in production nginx config
 ```
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-available/family-swim-sf
+sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
+
 sudo service nginx reload
 ```
 
