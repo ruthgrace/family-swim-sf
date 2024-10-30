@@ -2,14 +2,27 @@
 generate map of when family swim is scheduled at public pools
 
 ## set up
-This is hosted on replit at https://replit.com/@Ruth-GraceGrace/family-swim-sf
+This is hosted on Ruth's server. It uses Python 3.12
 
-It uses Python 3.12
+1. clone this repo to /var/www/
+2. `pip install -r requirements.txt` # todo - set up venv
+3. hook up domain (currently swimmap.joyfulparenting.com)
+3. set up SSL certs
+```
+sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/sites-available/family-swim-sf
+sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
 
-but if you need to run it elsewhere,
+sudo service nginx reload
+
+certbot certonly --force-renewal -a webroot -w /var/www/family-swim-sf -d swimmap.joyfulparentingsf.com
 ```
-pip install -r requirements.txt
+4. put in production nginx config
 ```
+sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-available/family-swim-sf
+sudo service nginx reload
+```
+
+# 2024-10-29 the below is all outdated now
 
 ## set up for updating map
 
