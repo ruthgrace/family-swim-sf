@@ -34,7 +34,7 @@ server {
     ssl_certificate /etc/letsencrypt/live/swimmap.joyfulparentingsf.com/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/swimmap.joyfulparentingsf.com/privkey.pem; # managed by Certbot
     location / {
-        root /var/www/family-swim-sf/frontend;
+        root /var/www/family-swim-sf/frontend/dist;
     }
 
 }
