@@ -7,7 +7,7 @@ This is hosted on Ruth's server. It uses Python 3.12
 1. clone this repo to /var/www/
 2. `pip install -r requirements.txt` # todo - set up venv
 3. hook up domain (currently swimmap.joyfulparenting.com)
-3. set up SSL certs
+4. set up SSL certs
 ```
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/sites-available/family-swim-sf
 sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
@@ -20,6 +20,11 @@ sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-availa
 sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
 
 sudo service nginx reload
+```
+5. in frontend dir
+```
+npm install
+npm run build
 ```
 
 # 2024-10-29 the below is all outdated now
