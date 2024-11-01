@@ -112,11 +112,10 @@ export const SFMap = () => {
     }
   };
 
+  console.log("mapref", mapRef);
+
   return (
     <>
-      {/* <div className="header-banner">
-        Family Swim SF Public Pools hours until August 10. Closed July 13.
-      </div> */}
       <ControlPanel selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
 
       <Map
@@ -128,16 +127,12 @@ export const SFMap = () => {
           "location-labels",
         ]}
         initialViewState={{
-          longitude: -122.4323,
-          latitude: 37.7612,
-          zoom: 11.55,
+          longitude: -122.43623440090596,
+          latitude: 37.73621337169021,
+          zoom: 11.0,
         }}
-        minZoom={11.55}
+        minZoom={11.0}
         style={{ height: "100vh", width: "100vw" }}
-        maxBounds={[
-          [-123.173825, 37.63983], // Southwest coordinates (min longitude, min latitude)
-          [-122.28178, 37.929824], // Northeast coordinates (max longitude, max latitude)
-        ]}
         mapStyle="https://wms.wheregroup.com/tileserver/style/osm-bright.json"
       >
         <Source type="geojson" data={geojson}>
@@ -178,7 +173,6 @@ function createGoogleMapsLink(popupInfo) {
 }
 
 const SwimLocationPopup = ({ popupInfo, onClose }) => {
-  const schedule = getPoolSchedule(popupInfo.properties.name, poolData);
   return (
     <Popup
       style={{ width: "300px", color: "black" }}

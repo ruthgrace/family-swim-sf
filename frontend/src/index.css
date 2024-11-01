@@ -13,13 +13,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.control-panel-style {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  color: #002B48;
+}
+
 .control-panel {
   position: absolute;
   top: 25px;
   left: 10px;
-  background: #1a1a1a30;
   padding: 10px;
-  color: #002B48;
   z-index: 1;
 }
 
@@ -41,6 +45,7 @@ h3 {
 }
 
 .maplibregl-popup-content {
+  border-radius: 10px;
   color: #242424
 }
 
@@ -72,3 +77,31 @@ h3 {
   display: inline-block;
   width: 80px; /* Align day names neatly */
 }
+
+/* This hides the component by default */
+.mobile-only {
+  display: none !important;
+}
+
+/* This media query makes it visible only on screens up to 640px wide */
+@media (max-width: 768px) {
+  .mobile-only {
+    display: inherit !important;
+  }
+}
+
+.desktop-only {
+  display: inherit;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+}
+
+.btn-secondary {
+  outline: 3px solid;
+  border-width: 0px;
+}
+
