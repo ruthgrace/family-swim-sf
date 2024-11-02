@@ -15,7 +15,7 @@ export const ControlPanel = ({
 
   return (
     <>
-      <div className="control-panel control-panel-style">
+      <div className="control-panel-style">
         <div className="mobile-only">
           <Drawer.Root
             defaultOpen={true}
