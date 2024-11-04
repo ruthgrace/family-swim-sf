@@ -2,7 +2,9 @@ import { useState } from "react";
 import { daysOfWeek } from "./utils";
 import { Drawer } from "vaul";
 
-const snapPoints = ["175px", "250px"];
+const snapPoints = ["245px", "350px"];
+
+const updatedAt = "2024-11-03";
 
 export const ControlPanel = ({
   selectedDay,
@@ -33,6 +35,19 @@ export const ControlPanel = ({
                 className="control-panel-style mobile-only fixed flex flex-col p-8 border border-gray-200 border-b-none rounded-t-[10px] bottom-0 left-0 right-0 h-full max-h-[97%] mx-[-1px]"
               >
                 <Drawer.Handle />
+
+                <div
+                  style={{
+                    paddingTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <h2>Public Pool Family Swim Hours</h2>
+                  <h3>Presented by Joyful Parenting SF and SF Kids Swim</h3>
+                  <h5>Last updated {updatedAt}</h5>
+                </div>
                 <div
                   style={{
                     display: "flex",
@@ -59,6 +74,11 @@ export const ControlPanel = ({
             </Drawer.Portal>
           </Drawer.Root>
         </div>
+      </div>
+      <div className="desktop-only desktop-information-panel control-panel-style">
+        <h2>Public Pool Family Swim Hours</h2>
+        <h3>Presented by Joyful Parenting SF and SF Kids Swim</h3>
+        <h5>Last updated {updatedAt}</h5>
       </div>
       <div className="desktop-only control-panel control-panel-style">
         {daysOfWeek.map((day) => {
