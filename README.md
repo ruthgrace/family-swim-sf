@@ -3,11 +3,14 @@ generate map of when family swim is scheduled at public pools
 
 ## set up
 This is hosted on Ruth's server. It uses Python 3.12
-
+0. make sure you have Python 3.12 installed. I used [these instructions](https://wiki.crowncloud.net/?How_to_Install_Python_3_12_on_AlmaLinux_9) for getting it on almalinux 9. But I also had to `sudo dnf install bzip2-devel xz-devel libffi-devel` to get it to work.
 1. clone this repo to /var/www/
-2. `pip install -r requirements.txt` # todo - set up venv
-3. hook up domain (currently swimmap.joyfulparenting.com)
-4. set up SSL certs
+2. `cd family-swim-sf`
+3. `python3.12 -m venv venv`
+4. `source venv/bin/activate`
+5. `pip3.12 install -r requirements.txt`
+6. hook up domain (currently swimmap.joyfulparenting.com)
+7. set up SSL certs
 ```
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/sites-available/family-swim-sf
 sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
