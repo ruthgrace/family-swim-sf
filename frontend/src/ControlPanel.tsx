@@ -4,7 +4,7 @@ import { Drawer } from "vaul";
 
 const snapPoints = ["245px", "350px"];
 
-const updatedAt = "2024-11-03";
+const updatedAt = "2024-11-29";
 
 export const ControlPanel = ({
   selectedDay,
