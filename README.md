@@ -24,7 +24,7 @@ sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/f
 
 sudo service nginx reload
 ```
-5. in frontend dir
+5. in frontend dir (`cd frontend`)
 ```
 npm install
 npm run build
