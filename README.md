@@ -30,6 +30,12 @@ npm install
 npm run build
 ```
 
+# update map data manually
+
+```
+python3.12 main.py
+```
+
 # 2024-10-29 the below is all outdated now
 
 ## set up for updating map
