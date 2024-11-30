@@ -32,12 +32,16 @@ sudo service nginx reload
 
 ```
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/conf.d/family-swim-sf.conf
-# ensure context is httpd_config_t
+# ensure nginx config context is httpd_config_t
 sudo chcon -t httpd_config_t /etc/nginx/conf.d/family-swim-sf.conf
 sudo semanage fcontext -a -t httpd_config_t "/etc/nginx/conf.d(/.*)?"
 sudo restorecon -Rv /etc/nginx/conf.d
+
 sudo service nginx reload
 
+# ensure webroot context is httpd_sys_content_t
+sudo semanage fcontext -a -t httpd_sys_content_t "/var/www/family-swim-sf(/.*)?"
+sudo restorecon -Rv /var/www/family-swim-sf
 sudo certbot certonly --force-renewal -a webroot -w /var/www/family-swim-sf -d swimmap.joyfulparentingsf.com -w /var/www/family-swim-sf -d swim.joyfulparentingsf.com
 
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-available/family-swim-sf
