@@ -11,6 +11,9 @@ This is hosted on Ruth's server. It uses Python 3.12
 5. `pip3.12 install -r requirements.txt`
 6. hook up domain (currently swimmap.joyfulparenting.com)
 7. set up SSL certs
+
+**instructions for UBUNTU**
+
 ```
 sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/sites-available/family-swim-sf
 sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
@@ -24,6 +27,25 @@ sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/f
 
 sudo service nginx reload
 ```
+
+**instructions for ALMALINUX**
+
+```
+sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf.bootstrap /etc/nginx/conf.d/family-swim-sf.conf
+# ensure context is httpd_config_t
+sudo chcon -t httpd_config_t /etc/nginx/conf.d/family-swim-sf.conf
+sudo semanage fcontext -a -t httpd_config_t "/etc/nginx/conf.d(/.*)?"
+sudo restorecon -Rv /etc/nginx/conf.d
+sudo service nginx reload
+
+sudo certbot certonly --force-renewal -a webroot -w /var/www/family-swim-sf -d swimmap.joyfulparentingsf.com -w /var/www/family-swim-sf -d swim.joyfulparentingsf.com
+
+sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-available/family-swim-sf
+sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
+
+sudo service nginx reload
+```
+
 5. in frontend dir (`cd frontend`)
 ```
 npm install
