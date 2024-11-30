@@ -44,8 +44,7 @@ sudo semanage fcontext -a -t httpd_sys_content_t "/var/www/family-swim-sf(/.*)?"
 sudo restorecon -Rv /var/www/family-swim-sf
 sudo certbot certonly --force-renewal -a webroot -w /var/www/family-swim-sf -d swimmap.joyfulparentingsf.com -w /var/www/family-swim-sf -d swim.joyfulparentingsf.com
 
-sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/sites-available/family-swim-sf
-sudo ln -fs /etc/nginx/sites-available/family-swim-sf /etc/nginx/sites-enabled/family-swim-sf
+sudo ln -fs /var/www/family-swim-sf/nginx/family-swim-sf /etc/nginx/conf.d/family-swim-sf.conf
 
 sudo service nginx reload
 ```
