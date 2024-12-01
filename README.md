@@ -72,3 +72,7 @@ add this line
 ```
 venv/bin/python3.12 main.py
 ```
+
+# find logs for debugging
+
+i believe logs from cron will go to `/var/log/cron`. i think these are log rotated so you may see `/var/log/cron-20241201` for example.
