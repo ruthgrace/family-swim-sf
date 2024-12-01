@@ -55,6 +55,18 @@ npm install
 npm run build
 ```
 
+6. set up auto updating cron job
+
+```
+sudo crontab -e
+```
+
+add this line
+
+```
+15 0 * * * venv/bin/python3.12 main.py
+```
+
 # update map data manually
 
 ```
