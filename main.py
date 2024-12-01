@@ -5,6 +5,7 @@ import functools
 import json
 import os
 import requests
+import subprocess
 import time
 import traceback
 
@@ -15,6 +16,7 @@ from urllib.error import HTTPError
 from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
+from zoneinfo import ZoneInfo
 
 NORTH_BEACH = "North Beach Pool"
 HAMILTON = "Hamilton Pool"
@@ -129,7 +131,7 @@ PARENT_CHILD_SWIM = "drop in parent child swim"
 LAP_SWIM = "lap swim"
 
 MAP_DATA_DIR = "map_data"
-
+FRONTEND_CONST_FILE = "frontend/src/ControlPanel.tsx"
 
 @functools.total_ordering
 class SwimSlot:
@@ -563,3 +565,13 @@ with open(f"{MAP_DATA_DIR}/family_swim_data_{timestamp}.json",
 with open(f"{MAP_DATA_DIR}/latest_family_swim_data.json",
           "w") as latest_json_file:
     json.dump(pool_schedule_data, latest_json_file, indent=4)
+
+date_today = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles")).strftime('%Y-%m-%d')
+
+sed_command = 's/const updatedAt = "[^"]*"/const updatedAt = "' + date_today + '"/'
+
+try:
+    subprocess.call(["sed", "-i", "-e", sed_command, FRONTEND_CONST_FILE])
+except Exception as e:
+    print(e)
+    traceback.print_exc()
