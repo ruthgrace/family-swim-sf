@@ -1,5 +1,3 @@
-import constants
-
 import datetime
 import functools
 import json
