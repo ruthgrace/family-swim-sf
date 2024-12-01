@@ -579,7 +579,12 @@ except Exception as e:
 # version control and deleting old files
 
 # check if latest family swim schedule has been updated by seeing if it is in the git status
-result = subprocess.run(["git", "status", "|", "grep", "latest_family_swim_data"], capture_output=True)
+result = subprocess.run(
+    "git status | grep latest_family_swim_data",
+    shell=True,
+    capture_output=True,
+    text=True,
+)
 
 # if so, git add and git commit everything new
 if result.returncode == 0:
