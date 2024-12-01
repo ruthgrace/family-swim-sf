@@ -596,7 +596,7 @@ subprocess.run(["git", "stash"], capture_output=True)
 now = time.time()
 removed = False
 for filename in os.listdir(MAP_DATA_DIR):
-    file_path = os.path.join(directory, filename)
+    file_path = os.path.join(MAP_DATA_DIR, filename)
     if os.path.isfile(file_path):
         file_time = os.path.getmtime(file_path)
         file_age = (now - file_time) / (60 * 60 * 24)  # Age in days
