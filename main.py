@@ -566,6 +566,8 @@ with open(f"{MAP_DATA_DIR}/latest_family_swim_data.json",
           "w") as latest_json_file:
     json.dump(pool_schedule_data, latest_json_file, indent=4)
 
+# update Last updated date in frontend code
+
 date_today = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles")).strftime('%Y-%m-%d')
 
 sed_command = 's/const updatedAt = "[^"]*"/const updatedAt = "' + date_today + '"/'
@@ -575,3 +577,35 @@ try:
 except Exception as e:
     print(e)
     traceback.print_exc()
+
+# version control and deleting old files
+
+# check if latest family swim schedule has been updated by seeing if it is in the git status
+result = subprocess.run(["git", "status", "|", "grep", "latest_family_swim_data"], capture_output=True)
+
+# if so, git add and git commit everything new
+if result.returncode == 0:
+    subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
+    subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
+    subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+
+# remove any uncomitted changes/new files
+subprocess.run(["git", "add", "-A"], capture_output=True)
+subprocess.run(["git", "stash"], capture_output=True)
+
+# remove any files older than 1 year
+now = time.time()
+removed = False
+for filename in os.listdir(MAP_DATA_DIR):
+    file_path = os.path.join(directory, filename)
+    if os.path.isfile(file_path):
+        file_time = os.path.getmtime(file_path)
+        file_age = (now - file_time) / (60 * 60 * 24)  # Age in days
+        if file_age > 365:
+            os.remove(file_path)
+            print(f"Removed: {file_path}")
+            removed = True
+if removed:
+    subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
+    subprocess.run(["git", "commit", "-m", f"remove schedule files older than 1 year"], capture_output=True).check_returncode()
+    subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
