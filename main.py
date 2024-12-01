@@ -441,9 +441,9 @@ for pool in POOLS:
             for slot in ordered_catalog.catalog[pool][weekday]:
                 working_families_data[pool][weekday] += hour_delta(
                     slot.end, slot.start)
-                print(
-                    f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}"
-                )
+                # print(
+                #     f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}"
+                # )
         for slot in ordered_catalog.catalog[pool][weekday]:
             if slot.end.hour > WORKDAY_END.hour:
                 if slot.start > WORKDAY_END:
