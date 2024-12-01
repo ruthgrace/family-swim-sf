@@ -583,6 +583,7 @@ result = subprocess.run(["git", "status", "|", "grep", "latest_family_swim_data"
 
 # if so, git add and git commit everything new
 if result.returncode == 0:
+    print("Detected schedule update, pushing to git.")
     subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
     subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
     subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
