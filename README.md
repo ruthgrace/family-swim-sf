@@ -55,10 +55,10 @@ npm install
 npm run build
 ```
 
-6. set up auto updating cron job
+6. set up auto updating cron job (run this as the ruth user so that it can automatically git commit changes)
 
 ```
-sudo crontab -e
+sudo -u ruth crontab -e
 ```
 
 add this line
