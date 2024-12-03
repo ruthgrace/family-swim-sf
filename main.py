@@ -592,6 +592,12 @@ if result.returncode == 0:
     subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
     subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
     subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+    subprocess.run(
+        "cd frontend && npm run build",
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
 
 # remove any uncomitted changes/new files
 subprocess.run(["git", "add", "-A"], capture_output=True)
