@@ -111,3 +111,12 @@ export function getPoolSchedule(
 
   return grouped;
 }
+
+// Get the current Weekday
+export function getCurrentWeekday(): Weekday {
+  const today = new Date().getDay();
+  // Mod and shift since 0 is Sunday for getDay()
+  const correctIndex = (today + 6) % 7;
+
+  return daysOfWeek[correctIndex];
+}

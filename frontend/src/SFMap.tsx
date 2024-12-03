@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Map, {
   CircleLayer,
   SymbolLayer,
@@ -13,8 +13,8 @@ import "@sfgov/design-system/dist/css/sfds.css";
 
 import geojson from "../../map_data/public_pools.json";
 import data from "../../map_data/latest_family_swim_data.json";
-import { PoolDictionary } from "./poolDataTypes";
-import { daysOfWeek, generateGeoJSONLayers, getPoolSchedule } from "./utils";
+import { PoolDictionary, Weekday } from "./poolDataTypes";
+import { generateGeoJSONLayers, getCurrentWeekday } from "./utils";
 import { ControlPanel } from "./ControlPanel";
 
 const poolData = data as PoolDictionary;
@@ -26,28 +26,6 @@ const circleLayerStyle: CircleLayer = {
   paint: {
     "circle-radius": 10,
     "circle-color": "#5A7A92",
-  },
-};
-
-const poolLocationStyle: SymbolLayer = {
-  id: "locations",
-  type: "symbol",
-  layout: {
-    "icon-image": "swimming",
-    "icon-size": [
-      "interpolate",
-      // Set the exponential rate of change to 1.5
-      ["exponential", 3.5],
-      ["zoom"],
-      // When zoom is 10, icon will be 50% size.
-      10,
-      0.1,
-      // When zoom is 22, icon will be 10% size.
-      22,
-      0.01,
-    ],
-
-    "text-allow-overlap": true,
   },
 };
 
@@ -86,7 +64,8 @@ const timesLayerStyle: SymbolLayer = {
 export const SFMap = () => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState(null);
-  const [selectedDay, setSelectedDay] = useState("");
+  //
+  const [selectedDay, setSelectedDay] = useState<Weekday>(getCurrentWeekday());
 
   // useEffect(() => {
   //   console.log("🚀 ~ useEffect ~ mapRef.current?:", mapRef.current);

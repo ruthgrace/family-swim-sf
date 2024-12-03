@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { daysOfWeek } from "./utils";
 import { Drawer } from "vaul";
+import { Weekday } from "./poolDataTypes";
 
 const snapPoints = ["245px", "350px"];
 
@@ -10,8 +11,8 @@ export const ControlPanel = ({
   selectedDay,
   setSelectedDay,
 }: {
-  selectedDay: string;
-  setSelectedDay: (day: string) => void;
+  selectedDay: Weekday;
+  setSelectedDay: (day: Weekday) => void;
 }) => {
   const [snap, setSnap] = useState<number | string | null>(snapPoints[0]);
 
