@@ -71,6 +71,8 @@ add this line
 
 ```
 venv/bin/python3.12 main.py
+cd frontend
+npm run build
 ```
 
 # find logs for debugging
