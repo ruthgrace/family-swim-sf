@@ -1,5 +1,5 @@
 # family-swim-sf
-generate map of when family swim is scheduled at public pools
+generate map of when family swim is scheduled at public pools. You can see the map at [swim.joyfulparentingsf.com](swim.joyfulparentingsf.com) !
 
 ## set up
 This is hosted on Ruth's server. It uses Python 3.12
