@@ -1,6 +1,8 @@
 # family-swim-sf
 generate map of when family swim is scheduled at public pools. You can see the map at [swim.joyfulparentingsf.com](https://swim.joyfulparentingsf.com) !
 
+I've also published a technical post about this project on the [Double Union blog](https://www.tumblr.com/doubleunion/770003986659131392/the-making-of-the-sf-family-swim-map?source=share).
+
 ## set up
 This is hosted on Ruth's server. It uses Python 3.12
 0. make sure you have Python 3.12 installed. I used [these instructions](https://wiki.crowncloud.net/?How_to_Install_Python_3_12_on_AlmaLinux_9) for getting it on almalinux 9. But I also had to `sudo dnf install bzip2-devel xz-devel libffi-devel` to get it to work.
