@@ -588,16 +588,24 @@ result = subprocess.run(
 
 # if so, git add and git commit everything new
 if result.returncode == 0:
-    print("Detected schedule update, pushing to git.")
-    subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
-    subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
-    subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
-    subprocess.run(
-        "cd frontend && npm run build",
-        shell=True,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        print("Detected schedule update, pushing to git.")
+        subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
+        subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
+        subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+    try:
+        subprocess.run(
+            "cd frontend && npm run build",
+            shell=True,
+            capture_output=True,
+            text=True,
+        )
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 
 # remove any uncomitted changes/new files
 subprocess.run(["git", "add", "-A"], capture_output=True)
