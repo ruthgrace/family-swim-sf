@@ -13,6 +13,13 @@
             {
                 "pool": "Coffman Pool",
                 "weekday": "Saturday",
+                "start": "9:00AM",
+                "end": "11:00AM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Coffman Pool",
+                "weekday": "Saturday",
                 "start": "1:00PM",
                 "end": "2:00PM",
                 "note": "Family Swim"
@@ -52,13 +59,28 @@
                 "note": "Family Swim"
             }
         ],
-        "Thursday": [],
+        "Thursday": [
+            {
+                "pool": "Coffman Pool",
+                "weekday": "Thursday",
+                "start": "1:00PM",
+                "end": "3:00PM",
+                "note": "Family Swim"
+            }
+        ],
         "Friday": [
             {
                 "pool": "Coffman Pool",
                 "weekday": "Friday",
                 "start": "2:00PM",
                 "end": "3:00PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Coffman Pool",
+                "weekday": "Friday",
+                "start": "3:30PM",
+                "end": "5:30PM",
                 "note": "Family Swim"
             }
         ]
@@ -69,7 +91,7 @@
             {
                 "pool": "Garfield Pool",
                 "weekday": "Sunday",
-                "start": "12:30PM",
+                "start": "12:15PM",
                 "end": "2:00PM",
                 "note": "Family Swim"
             },
@@ -92,8 +114,22 @@
             {
                 "pool": "Garfield Pool",
                 "weekday": "Monday",
+                "start": "11:00AM",
+                "end": "1:00PM",
+                "note": "Parent Child Swim"
+            },
+            {
+                "pool": "Garfield Pool",
+                "weekday": "Monday",
                 "start": "2:00PM",
                 "end": "3:30PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Garfield Pool",
+                "weekday": "Monday",
+                "start": "4:00PM",
+                "end": "6:00PM",
                 "note": "Family Swim"
             }
         ],
@@ -101,9 +137,23 @@
             {
                 "pool": "Garfield Pool",
                 "weekday": "Tuesday",
-                "start": "2:00PM",
-                "end": "3:30PM",
+                "start": "1:00PM",
+                "end": "2:00PM",
                 "note": "Parent Child Swim"
+            },
+            {
+                "pool": "Garfield Pool",
+                "weekday": "Tuesday",
+                "start": "2:30PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Garfield Pool",
+                "weekday": "Tuesday",
+                "start": "4:30PM",
+                "end": "5:30PM",
+                "note": "Family Swim"
             }
         ],
         "Wednesday": [
@@ -119,7 +169,7 @@
                 "weekday": "Wednesday",
                 "start": "1:00PM",
                 "end": "2:00PM",
-                "note": "Family Swim"
+                "note": "Parent Child Swim"
             },
             {
                 "pool": "Garfield Pool",
@@ -131,7 +181,7 @@
             {
                 "pool": "Garfield Pool",
                 "weekday": "Wednesday",
-                "start": "5:15PM",
+                "start": "4:30PM",
                 "end": "7:00PM",
                 "note": "Parent Child Swim"
             }
@@ -143,142 +193,25 @@
                 "start": "2:30PM",
                 "end": "3:30PM",
                 "note": "Family Swim"
+            },
+            {
+                "pool": "Garfield Pool",
+                "weekday": "Thursday",
+                "start": "4:30PM",
+                "end": "5:30PM",
+                "note": "Family Swim"
             }
         ],
         "Friday": []
     },
     "Hamilton Pool": {
-        "Saturday": [
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Saturday",
-                "start": "9:00AM",
-                "end": "10:30AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Saturday",
-                "start": "1:30PM",
-                "end": "3:30PM",
-                "note": "Family Swim"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Saturday",
-                "start": "4:00PM",
-                "end": "5:00PM",
-                "note": "Family Swim in Small Pool"
-            }
-        ],
+        "Saturday": [],
         "Sunday": [],
         "Monday": [],
-        "Tuesday": [
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Tuesday",
-                "start": "9:00AM",
-                "end": "11:00AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Tuesday",
-                "start": "11:00AM",
-                "end": "12:30PM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Tuesday",
-                "start": "1:00PM",
-                "end": "3:00PM",
-                "note": "Family Swim in Small Pool"
-            }
-        ],
-        "Wednesday": [
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Wednesday",
-                "start": "6:30AM",
-                "end": "8:30AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Wednesday",
-                "start": "9:00AM",
-                "end": "11:00AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Wednesday",
-                "start": "11:00AM",
-                "end": "12:30PM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Wednesday",
-                "start": "1:00PM",
-                "end": "2:45PM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Wednesday",
-                "start": "6:30PM",
-                "end": "8:00PM",
-                "note": "Family Swim in Small Pool"
-            }
-        ],
-        "Thursday": [
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Thursday",
-                "start": "9:00AM",
-                "end": "11:00AM",
-                "note": "Family Swim in Small Pool"
-            }
-        ],
-        "Friday": [
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Friday",
-                "start": "6:30AM",
-                "end": "8:30AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Friday",
-                "start": "9:00AM",
-                "end": "11:00AM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Friday",
-                "start": "11:00AM",
-                "end": "12:30PM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Friday",
-                "start": "1:00PM",
-                "end": "2:45PM",
-                "note": "Family Swim in Small Pool"
-            },
-            {
-                "pool": "Hamilton Pool",
-                "weekday": "Friday",
-                "start": "6:30PM",
-                "end": "8:00PM",
-                "note": "Family Swim"
-            }
-        ]
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [],
+        "Friday": []
     },
     "Martin Luther King Jr Pool": {
         "Saturday": [
@@ -363,8 +296,15 @@
                 "pool": "North Beach Pool",
                 "weekday": "Wednesday",
                 "start": "9:00AM",
-                "end": "10:15AM",
+                "end": "10:30AM",
                 "note": "Parent Child Swim"
+            },
+            {
+                "pool": "North Beach Pool",
+                "weekday": "Wednesday",
+                "start": "4:00PM",
+                "end": "5:00PM",
+                "note": "Family Swim"
             }
         ],
         "Thursday": [
@@ -373,6 +313,13 @@
                 "weekday": "Thursday",
                 "start": "2:15PM",
                 "end": "3:15PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "North Beach Pool",
+                "weekday": "Thursday",
+                "start": "3:45PM",
+                "end": "5:30PM",
                 "note": "Family Swim"
             },
             {
@@ -388,8 +335,15 @@
                 "pool": "North Beach Pool",
                 "weekday": "Friday",
                 "start": "9:00AM",
-                "end": "10:15AM",
+                "end": "10:30AM",
                 "note": "Parent Child Swim"
+            },
+            {
+                "pool": "North Beach Pool",
+                "weekday": "Friday",
+                "start": "4:00PM",
+                "end": "5:00PM",
+                "note": "Family Swim"
             },
             {
                 "pool": "North Beach Pool",
@@ -406,6 +360,20 @@
             {
                 "pool": "Rossi Pool",
                 "weekday": "Sunday",
+                "start": "9:00AM",
+                "end": "11:00AM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Sunday",
+                "start": "9:30AM",
+                "end": "11:00AM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Sunday",
                 "start": "12:30PM",
                 "end": "2:00PM",
                 "note": "Family Swim"
@@ -418,13 +386,28 @@
                 "note": "Family Swim"
             }
         ],
-        "Monday": [],
+        "Monday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Monday",
+                "start": "1:30PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            }
+        ],
         "Tuesday": [
             {
                 "pool": "Rossi Pool",
                 "weekday": "Tuesday",
                 "start": "10:15AM",
                 "end": "11:15AM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Tuesday",
+                "start": "1:30PM",
+                "end": "3:30PM",
                 "note": "Family Swim"
             }
         ],
@@ -438,6 +421,13 @@
             }
         ],
         "Thursday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Thursday",
+                "start": "2:30PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            },
             {
                 "pool": "Rossi Pool",
                 "weekday": "Thursday",
@@ -467,7 +457,15 @@
         ],
         "Sunday": [],
         "Monday": [],
-        "Tuesday": [],
+        "Tuesday": [
+            {
+                "pool": "Sava Pool",
+                "weekday": "Tuesday",
+                "start": "3:30PM",
+                "end": "5:00PM",
+                "note": "Family Swim"
+            }
+        ],
         "Wednesday": [
             {
                 "pool": "Sava Pool",
@@ -482,7 +480,7 @@
                 "pool": "Sava Pool",
                 "weekday": "Thursday",
                 "start": "2:30PM",
-                "end": "3:30PM",
+                "end": "5:00PM",
                 "note": "Family Swim"
             }
         ],
@@ -490,7 +488,14 @@
             {
                 "pool": "Sava Pool",
                 "weekday": "Friday",
-                "start": "6:00PM",
+                "start": "2:30PM",
+                "end": "5:00PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Sava Pool",
+                "weekday": "Friday",
+                "start": "5:30PM",
                 "end": "7:00PM",
                 "note": "Family Swim"
             }
