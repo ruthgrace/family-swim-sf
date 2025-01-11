@@ -399,6 +399,21 @@ def hour_delta(end_time, start_time):
     hr_delta += float(min_delta) / float(60)
     return hr_delta
 
+def update_git():
+    new_result = None
+    try:
+        new_result = subprocess.run(["git", "add", "-A"], capture_output=True)
+        new_result.check_returncode()
+        new_result = subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True)
+        new_result.check_returncode()
+        new_result = subprocess.run(["git", "push", "origin", "main"], capture_output=True)
+        new_result.check_returncode()
+    except subprocess.CalledProcessError as e:
+        print(e)
+        sys.stderr.write(f"ERROR WAS {e}")
+        sys.stderr.write(f"stdout {new_result.stdout}")
+        sys.stderr.write(f"stderr {new_result.stderr}")
+        traceback.print_exc()
 
 ordered_catalog = OrderedCatalog()
 
@@ -590,19 +605,8 @@ new_result = None
 # if so, git add and git commit everything new
 if result.returncode == 0:
     try:
-        sys.stderr.write("Detected schedule update, pushing to git.")
-        subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
-        sys.stderr.write("completed git add")
-        subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
-        sys.stderr.write("completed git commit")
-        new_result = subprocess.run(["git", "push", "origin", "main"], capture_output=True)
-        sys.stderr.write("completed git push")
-    except Exception as e:
-        print(e)
-        sys.stderr.write(f"ERROR WAS {e}")
-        sys.stderr.write(f"stdout {new_result.stdout}")
-        sys.stderr.write(f"stderr {new_result.stderr}")
-        traceback.print_exc()
+        print("Detected schedule update, pushing to git.")
+        update_git()
     try:
         subprocess.run(
             "cd frontend && npm run build",
@@ -631,6 +635,4 @@ for filename in os.listdir(MAP_DATA_DIR):
             print(f"Removed: {file_path}")
             removed = True
 if removed:
-    subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
-    subprocess.run(["git", "commit", "-m", f"remove schedule files older than 1 year"], capture_output=True).check_returncode()
-    subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+    update_git()
