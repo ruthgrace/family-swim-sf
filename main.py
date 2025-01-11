@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import subprocess
+import sys
 import time
 import traceback
 
@@ -585,16 +586,22 @@ result = subprocess.run(
     capture_output=True,
     text=True,
 )
-
+new_result = None
 # if so, git add and git commit everything new
 if result.returncode == 0:
     try:
-        print("Detected schedule update, pushing to git.")
+        sys.stderr.write("Detected schedule update, pushing to git.")
         subprocess.run(["git", "add", "-A"], capture_output=True).check_returncode()
+        sys.stderr.write("completed git add")
         subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
-        subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+        sys.stderr.write("completed git commit")
+        new_result = subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+        sys.stderr.write("completed git push")
     except Exception as e:
         print(e)
+        sys.stderr.write(f"ERROR WAS {e}")
+        sys.stderr.write(f"stdout {new_result.stdout}")
+        sys.stderr.write(f"stderr {new_result.stderr}")
         traceback.print_exc()
     try:
         subprocess.run(
