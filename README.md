@@ -66,7 +66,7 @@ sudo -u ruth crontab -e
 add this line to run the script at 7am every day
 
 ```
-0 15 * * * venv/bin/python3.12 main.py
+0 15 * * * cd /var/www/family-swim-sf && venv/bin/python3.12 main.py
 ```
 
 # update map data manually
