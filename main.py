@@ -595,7 +595,7 @@ if result.returncode == 0:
         sys.stderr.write("completed git add")
         subprocess.run(["git", "commit", "-m", f"update swim map data for {date_today}"], capture_output=True).check_returncode()
         sys.stderr.write("completed git commit")
-        new_result = subprocess.run(["git", "push", "origin", "main"], capture_output=True).check_returncode()
+        new_result = subprocess.run(["git", "push", "origin", "main"], capture_output=True)
         sys.stderr.write("completed git push")
     except Exception as e:
         print(e)
