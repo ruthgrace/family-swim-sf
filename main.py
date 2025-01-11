@@ -604,9 +604,8 @@ result = subprocess.run(
 new_result = None
 # if so, git add and git commit everything new
 if result.returncode == 0:
-    try:
-        print("Detected schedule update, pushing to git.")
-        update_git()
+    print("Detected schedule update, pushing to git.")
+    update_git()
     try:
         subprocess.run(
             "cd frontend && npm run build",
