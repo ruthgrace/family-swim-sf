@@ -63,10 +63,10 @@ npm run build
 sudo -u ruth crontab -e
 ```
 
-add this line
+add this line to run the script at 7am every day
 
 ```
-15 0 * * * venv/bin/python3.12 main.py
+0 15 * * * venv/bin/python3.12 main.py
 ```
 
 # update map data manually
