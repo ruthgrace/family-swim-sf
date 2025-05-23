@@ -475,10 +475,10 @@ with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.csv",
               "w") as working_families_latest_file:
         # headings for CSV file
         working_families_file.write(
-            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (Hours), Family Swim Friday After Work (Hours)\n"
         )
         working_families_latest_file.write(
-            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (5pm), Family Swim Friday After Work (Hours)\n"
+            "SF Pools Working Family Accessibility, Family Swim Saturday (hours), Family Swim Sunday (hours), Family Swim Monday After Work (hours), Family Swim Tuesday After Work (hours, Family Swim Wednesday After Work (Hours), Family Swim Thursday After Work (Hours), Family Swim Friday After Work (Hours)\n"
         )
         for pool in POOLS:
             line_arr = [pool]
