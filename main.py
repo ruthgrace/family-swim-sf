@@ -430,6 +430,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
+    print(f"RUTH DEBUG RESULTS FOR {pool}: {json.dumps(results, indent=2)}")
     process_entries(results, ordered_catalog, note="Family Swim")
 
 for pool in POOLS:
