@@ -113,16 +113,30 @@ HEADERS = {
 #     "activity_transfer_pattern": {},
 # }
 
-CENTER_ID = {
-    NORTH_BEACH: "198",
-    HAMILTON: "88",
-    ROSSI: "107",
-    MISSION: "181",
-    GARFIELD: "87",
-    SAVA: "108",
-    BALBOA: "85",
-    MLK: "177",
-    COFFMAN: "86"
+# OLD CENTER_ID (commented out for reference):
+# CENTER_ID = {
+#     NORTH_BEACH: "198",
+#     HAMILTON: "88",
+#     ROSSI: "107",
+#     MISSION: "181",
+#     GARFIELD: "87",
+#     SAVA: "108",
+#     BALBOA: "85",
+#     MLK: "177",
+#     COFFMAN: "86"
+# }
+
+# NEW SITE_ID (updated for API changes):
+SITE_ID = {
+    NORTH_BEACH: "131",
+    HAMILTON: "98", 
+    ROSSI: "165",
+    MISSION: "110",
+    GARFIELD: "60",
+    SAVA: "166",
+    BALBOA: "17",
+    MLK: "85",
+    COFFMAN: "37"
 }
 
 FAMILY_SWIM = "family swim"
@@ -389,8 +403,8 @@ def get_search_results(request_body):
                                  data=json.dumps(request_body))
         current_page = response.json()
         print(f"RUTH DEBUG CURRENT PAGE FOR POOL REQUEST: {json.dumps(request_body, indent=2)}")
-        print(f"RUTH DEBUG CURRENT PAGE FOR POOL RESULT: {json.dumps(current_page, indent=2)}")
         results = current_page["body"]["activity_items"]
+        print(f"RUTH DEBUG CURRENT PAGE FOR POOL RESULT: {json.dumps(results, indent=2)}")
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
@@ -426,7 +440,7 @@ for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "site_ids": [CENTER_ID[pool]],
+            "site_ids": [SITE_ID[pool]],
             "activity_keyword": FAMILY_SWIM
         },
         "activity_transfer_pattern": {},
@@ -439,7 +453,7 @@ for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [CENTER_ID[pool]],
+            "site_ids": [SITE_ID[pool]],
             "activity_keyword": PARENT_CHILD_SWIM
         },
         "activity_transfer_pattern": {},
@@ -503,7 +517,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [CENTER_ID[pool]],
+            "site_ids": [SITE_ID[pool]],
             "activity_keyword": LAP_SWIM
         },
         "activity_transfer_pattern": {},
@@ -522,7 +536,7 @@ for pool in SECRET_LAP_SWIM_POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [CENTER_ID[pool]],
+            "site_ids": [SITE_ID[pool]],
             "activity_keyword": "*"
         },
         "activity_transfer_pattern": {},
