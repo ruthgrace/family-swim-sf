@@ -332,6 +332,8 @@ def is_currently_active(data):
                                                   '%Y-%m-%d %H:%M:%S').date()
     else:
         current_date = datetime.date.today()
+    if "no_meeting_dates" in data["body"]["meeting_and_registration_dates"] and data["body"]["meeting_and_registration_dates"]["no_meeting_dates"] == True:
+        return False
     if "beginning_date" in data["body"]["meeting_and_registration_dates"][
             "activity_patterns"][0] and "ending_date" in data["body"][
                 "meeting_and_registration_dates"]["activity_patterns"][0]:
