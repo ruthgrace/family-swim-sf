@@ -426,7 +426,7 @@ for pool in POOLS:
     request_body = {
         "activity_search_pattern": {
             "activity_select_param": 2,
-            "center_ids": [CENTER_ID[pool]],
+            "site_ids": [CENTER_ID[pool]],
             "activity_keyword": FAMILY_SWIM
         },
         "activity_transfer_pattern": {},
