@@ -388,6 +388,7 @@ def get_search_results(request_body):
                                  headers=HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
+        print(f"RUTH DEBUG CURRENT PAGE FOR POOL {request_body['activity_search_pattern']['activity_keyword']}: {json.dumps(current_page, indent=2)}")
         results = current_page["body"]["activity_items"]
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
@@ -430,7 +431,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    print(f"RUTH DEBUG RESULTS FOR {pool}: {json.dumps(results, indent=2)}")
+    # print(f"RUTH DEBUG RESULTS FOR {pool}: {json.dumps(results, indent=2)}")
     process_entries(results, ordered_catalog, note="Family Swim")
 
 for pool in POOLS:
