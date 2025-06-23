@@ -446,7 +446,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
-    # print(f"RUTH DEBUG RESULTS FOR {pool}: {json.dumps(results, indent=2)}")
+    print(f"RUTH DEBUG RESULTS FOR FAMILY SWIM AT {pool}: {json.dumps(results, indent=2)}")
     process_entries(results, ordered_catalog, note="Family Swim")
 
 for pool in POOLS:
@@ -459,6 +459,7 @@ for pool in POOLS:
         "activity_transfer_pattern": {},
     }
     results = get_search_results(request_body)
+    print(f"RUTH DEBUG RESULTS FOR PARENT CHILD SWIM AT {pool}: {json.dumps(results, indent=2)}")
     process_entries(results, ordered_catalog, note="Parent Child Swim")
 
 ordered_catalog.sort_all()
@@ -561,6 +562,7 @@ lap_swim_catalog.delete_conflicting_lap_swim
 secret_swim_slots = lap_swim_catalog.get_slot_list()
 for slot in secret_swim_slots:
     ordered_catalog.add(slot)
+    print(f"RUTH DEBUG: added slot {slot} to ordered_catalog for SECRET SWIM")
 
 # sort the swim slots chronologically before outputting onto map or spreadsheet
 ordered_catalog.sort_all()
