@@ -402,9 +402,7 @@ def get_search_results(request_body):
                                  headers=HEADERS,
                                  data=json.dumps(request_body))
         current_page = response.json()
-        print(f"RUTH DEBUG CURRENT PAGE FOR POOL REQUEST: {json.dumps(request_body, indent=2)}")
         results = current_page["body"]["activity_items"]
-        print(f"RUTH DEBUG CURRENT PAGE FOR POOL RESULT: {json.dumps(results, indent=2)}")
     except Exception as e:
         print(f'An unexpected error occurred: {e}')
         print(traceback.format_exc())
