@@ -33,7 +33,8 @@ POOLS = [
 
 SECRET_LAP_SWIM_POOLS = {
     BALBOA: "Parent Child Swim on Steps",
-    HAMILTON: "Family Swim in Small Pool"
+    HAMILTON: "Family Swim in Small Pool",
+    GARFIELD: "Parent Child Swim in Small Pool"
 }
 
 SAT = "Sat"
