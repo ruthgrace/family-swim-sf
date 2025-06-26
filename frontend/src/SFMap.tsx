@@ -13,7 +13,7 @@ import "@sfgov/design-system/dist/css/sfds.css";
 
 import geojson from "../../map_data/public_pools.json";
 import data from "../../map_data/latest_family_swim_data.json";
-import { PoolDictionary, Weekday } from "./poolDataTypes";
+import { PoolDictionary, Weekday, PoolEnum } from "./poolDataTypes";
 import { generateGeoJSONLayers, getCurrentWeekday } from "./utils";
 import { ControlPanel } from "./ControlPanel";
 
@@ -133,6 +133,8 @@ export const SFMap = () => {
         {popupInfo && (
           <SwimLocationPopup
             popupInfo={popupInfo}
+            selectedDay={selectedDay}
+            poolData={poolData}
             onClose={() => setPopupInfo(null)}
           />
         )}
@@ -151,10 +153,14 @@ function createGoogleMapsLink(popupInfo) {
   return `https://www.google.com/maps/search/?api=1&query=${googleMapsString}`;
 }
 
-const SwimLocationPopup = ({ popupInfo, onClose }) => {
+const SwimLocationPopup = ({ popupInfo, selectedDay, poolData, onClose }) => {
+  const poolName = popupInfo.properties.name as PoolEnum;
+  const poolSchedule = poolData[poolName];
+  const daySchedule = poolSchedule ? poolSchedule[selectedDay] : [];
+
   return (
     <Popup
-      style={{ width: "300px", color: "black" }}
+      style={{ width: "350px", color: "black" }}
       className="popup-content"
       longitude={popupInfo.longitude}
       latitude={popupInfo.latitude}
@@ -203,6 +209,43 @@ const SwimLocationPopup = ({ popupInfo, onClose }) => {
           </svg>
         </a>
       </p>
+
+      {/* Detailed Schedule Section */}
+      <div style={{ marginTop: "16px", borderTop: "1px solid #e5e7eb", paddingTop: "12px" }}>
+        <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#374151" }}>
+          {selectedDay} Schedule
+        </h4>
+        {daySchedule.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {daySchedule.map((slot, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: "8px 12px",
+                  backgroundColor: slot.note.includes("Family Swim") ? "#dbeafe" : "#fef3c7",
+                  borderRadius: "6px",
+                  fontSize: "13px"
+                }}
+              >
+                <div style={{ fontWeight: "600", color: "#1f2937" }}>
+                  {slot.start} - {slot.end}
+                </div>
+                <div style={{
+                  color: slot.note.includes("Family Swim") ? "#1d4ed8" : "#d97706",
+                  fontSize: "12px",
+                  marginTop: "2px"
+                }}>
+                  {slot.note}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ color: "#6b7280", fontSize: "13px", margin: 0 }}>
+            No family swim times scheduled for {selectedDay}
+          </p>
+        )}
+      </div>
     </Popup>
   );
 };
