@@ -257,6 +257,15 @@ IMPORTANT: Only include times that are specifically labeled as "Lap Swim". Be ve
 - Do NOT include any other activities like classes, lessons, or other swim programs
 - Be especially careful with morning times (7:00AM-8:00AM) which may appear on multiple days
 
+DISTINGUISHING LAP SWIM FROM CLASSES (VERY IMPORTANT):
+- ONLY extract time slots that are explicitly labeled as "LAP SWIM" or "LAP SWIMMING"
+- DO NOT include if there are ANY paid classes happening at the same time, even if lap swim is also listed
+- Look for registration indicators: **, asterisks, "pre-registration required", "registration"
+- Activity names with "INTRO", "LESSON", "LEARN TO", "CLASS", "INSTRUCTION" indicate PAID CLASSES
+- Examples of what to SKIP: "LEARN TO SWIM", "SWIM LESSONS", "SWIM INSTRUCTION", "PARENT/CHILD INTRO"
+- If a time slot shows "LAP SWIM" AND a class/lesson simultaneously (even in different pool areas), DO NOT include it
+- This is because classes in other pool areas prevent family members from using the lap swim area for drop-in
+
 I need the data in this exact JSON format:
 {{
     "Saturday": [
@@ -276,10 +285,7 @@ Important formatting rules:
 2. Use full weekday names: Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday
 3. The "note" field should always be "Lap Swim"
 4. If no lap swim is scheduled for a day, use an empty array []
-5. ONLY include times specifically labeled as "Lap Swim" - do NOT include:
-   - Family swim
-   - Learn to Swim or any swim lessons/classes
-   - Any other activities
+5. ONLY include times specifically labeled as "Lap Swim" where NO classes or lessons are occurring simultaneously
 6. Double-check that you have the correct day for each time slot
 7. Return ONLY the JSON, no other text
 
@@ -366,9 +372,18 @@ For {weekday}, please identify all activities that are:
 - Parent & Child Swim or Parent Child Swim
 - Any variant with "family" or "parent child" for drop-in/open swim
 
+DISTINGUISHING FREE SWIM FROM PAID CLASSES (VERY IMPORTANT):
+- Look for registration indicators: **, asterisks, "pre-registration required", "registration"
+- Activity names with "INTRO", "LESSON", "LEARN TO", "CLASS", "INSTRUCTION" are typically PAID CLASSES, NOT free swim
+- Examples of FREE swim: "PARENT/CHILD SWIM", "FAMILY SWIM", "REC/FAMILY SWIM", "PARENT & CHILD SWIM"
+- Examples of PAID classes to SKIP: "PARENT/CHILD INTRO", "LEARN TO SWIM", "SWIM LESSONS", "SWIM INSTRUCTION"
+- Multiple activities can occur simultaneously in different pool areas - extract ONLY the free drop-in swim activities
+- If an activity has markers indicating pre-registration (like ** or asterisks) or is labeled as a class/lesson/intro, SKIP IT COMPLETELY
+
 Do NOT include:
 - Lap swim (unless it explicitly says "REC/FAMILY" or "parent child")
-- Learn to Swim lessons or any classes
+- Any activities with "INTRO", "LESSON", "LEARN TO", "CLASS", "INSTRUCTION" in the name
+- Activities marked with **, asterisks, or registration requirements
 - Senior activities, therapy swim, or guided exercise
 - Youth programs, synchro, or other structured activities
 
