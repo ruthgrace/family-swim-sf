@@ -11,8 +11,15 @@ This is hosted on Ruth's server. It uses Python 3.12
 3. `python3.12 -m venv venv`
 4. `source venv/bin/activate`
 5. `pip3.12 install -r requirements.txt`
-6. hook up domain (currently swimmap.joyfulparenting.com)
-7. set up SSL certs
+6. Create a `constants.py` file with your Anthropic API key:
+```python
+# constants.py
+ANTHROPIC_API_KEY = "sk-ant-api03-your-key-here"
+```
+(Note: `constants.py` is in `.gitignore` and will not be committed to git)
+
+7. hook up domain (currently swimmap.joyfulparenting.com)
+8. set up SSL certs
 
 **instructions for UBUNTU**
 

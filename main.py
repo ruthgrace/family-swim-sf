@@ -9,13 +9,35 @@ import time
 import traceback
 
 from bs4 import BeautifulSoup
-from felt_python import elements
 from urllib import request
 from urllib.error import HTTPError
 from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 from zoneinfo import ZoneInfo
+
+# Import PDF parsing utilities
+from pdf_parser import get_pool_schedule_from_pdf
+
+
+def parse_time_string(time_str):
+    """Convert time string like '9:00AM' to datetime.time object"""
+    time_str = time_str.upper().strip()
+    is_pm = time_str.endswith('PM')
+    time_str = time_str.replace('AM', '').replace('PM', '')
+
+    parts = time_str.split(':')
+    hours = int(parts[0])
+    minutes = int(parts[1]) if len(parts) > 1 else 0
+
+    # Convert to 24-hour format for datetime
+    if is_pm and hours != 12:
+        hours += 12
+    elif not is_pm and hours == 12:
+        hours = 0
+
+    return datetime.time(hour=hours, minute=minutes)
+
 
 NORTH_BEACH = "North Beach Pool"
 HAMILTON = "Hamilton Pool"
@@ -434,32 +456,59 @@ def update_git():
 
 ordered_catalog = OrderedCatalog()
 
-# get family swim slots
-for pool in POOLS:
-    request_body = {
-        "activity_search_pattern": {
-            "activity_select_param": 2,
-            "site_ids": [SITE_ID[pool]],
-            "activity_keyword": FAMILY_SWIM
-        },
-        "activity_transfer_pattern": {},
-    }
-    results = get_search_results(request_body)
-    print(f"RUTH DEBUG RESULTS FOR FAMILY SWIM AT {pool}: {json.dumps(results, indent=2)}")
-    process_entries(results, ordered_catalog, note="Family Swim")
+# Load pool facility URLs
+with open('pool_sources.json', 'r') as f:
+    POOL_URLS = json.load(f)
+
+# Get schedule data from PDFs
+current_date = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles"))
 
 for pool in POOLS:
-    request_body = {
-        "activity_search_pattern": {
-            "activity_select_param": 2,
-            "site_ids": [SITE_ID[pool]],
-            "activity_keyword": PARENT_CHILD_SWIM
-        },
-        "activity_transfer_pattern": {},
+    facility_url = POOL_URLS.get(pool)
+    if not facility_url:
+        print(f"WARNING: No facility URL found for {pool}")
+        continue
+
+    # Get complete schedule from PDF (family swim + lap swim + secret swim)
+    schedule_data = get_pool_schedule_from_pdf(
+        pool_name=pool,
+        facility_url=facility_url,
+        current_date=current_date,
+        pools_list=POOLS,
+        pdf_cache_dir="/tmp"
+    )
+
+    if not schedule_data:
+        print(f"WARNING: Failed to get schedule data for {pool}, skipping")
+        continue
+
+    # Convert PDF data format to OrderedCatalog format
+    # PDF format: {weekday: [{"pool": "...", "weekday": "...", "start": "...", "end": "...", "note": "..."}]}
+    # Need to convert to SwimSlot objects
+    weekday_map = {
+        "Saturday": SAT,
+        "Sunday": SUN,
+        "Monday": MON,
+        "Tuesday": TUE,
+        "Wednesday": WED,
+        "Thursday": THU,
+        "Friday": FRI
     }
-    results = get_search_results(request_body)
-    print(f"RUTH DEBUG RESULTS FOR PARENT CHILD SWIM AT {pool}: {json.dumps(results, indent=2)}")
-    process_entries(results, ordered_catalog, note="Parent Child Swim")
+
+    for full_weekday, slots in schedule_data.items():
+        short_weekday = weekday_map.get(full_weekday)
+        if not short_weekday:
+            continue
+
+        for slot_data in slots:
+            slot = SwimSlot(
+                pool=pool,
+                weekday=short_weekday,
+                start=parse_time_string(slot_data['start']),
+                end=parse_time_string(slot_data['end']),
+                note=slot_data['note']
+            )
+            ordered_catalog.add(slot)
 
 ordered_catalog.sort_all()
 
@@ -506,65 +555,7 @@ with open(f"{MAP_DATA_DIR}/family_swim_for_working_families_{timestamp}.csv",
             working_families_file.write(",".join(line_arr) + "\n")
             working_families_latest_file.write(",".join(line_arr) + "\n")
 
-# second, add "secret swim":
-# * balboa allows kids during lap swim if nothing else is scheduled at that time
-# * hamilton allows kids during lap swim if nothing else is scheduled at that time
-
-# get all lap swim slots for pools that have a small and big pool
-lap_swim_catalog = OrderedCatalog()
-
-for pool in SECRET_LAP_SWIM_POOLS:
-    request_body = {
-        "activity_search_pattern": {
-            "activity_select_param": 2,
-            "site_ids": [SITE_ID[pool]],
-            "activity_keyword": LAP_SWIM
-        },
-        "activity_transfer_pattern": {},
-    }
-    results = get_search_results(request_body)
-    print(f"RUTH DEBUG RESULTS FOR LAP SWIM AT {pool}: {json.dumps(results, indent=2)}")
-    process_entries(results,
-                    lap_swim_catalog,
-                    note=SECRET_LAP_SWIM_POOLS[pool])
-
-lap_swim_catalog.sort_all()
-
-non_lap_swim_catalog = OrderedCatalog()
-
-# get all non lap swim entries
-for pool in SECRET_LAP_SWIM_POOLS:
-    request_body = {
-        "activity_search_pattern": {
-            "activity_select_param": 2,
-            "site_ids": [SITE_ID[pool]],
-            "activity_keyword": "*"
-        },
-        "activity_transfer_pattern": {},
-    }
-    results = get_search_results(request_body)
-    process_entries(results, non_lap_swim_catalog, exclude=LAP_SWIM)
-
-non_lap_swim_slots = non_lap_swim_catalog.get_slot_list()
-
-lap_swim_catalog.make_deletion_marks()
-
-for slot in non_lap_swim_slots:
-    lap_swim_catalog.mark_conflicting_lap_swim(slot)
-
-# sometimes the secret swim is already in the database (not secret)
-family_swim_slots = ordered_catalog.get_slot_list()
-for slot in family_swim_slots:
-    lap_swim_catalog.mark_conflicting_lap_swim(slot)
-
-lap_swim_catalog.delete_conflicting_lap_swim
-
-secret_swim_slots = lap_swim_catalog.get_slot_list()
-for slot in secret_swim_slots:
-    ordered_catalog.add(slot)
-    print(f"RUTH DEBUG: added slot {slot} to ordered_catalog for SECRET SWIM")
-
-# sort the swim slots chronologically before outputting onto map or spreadsheet
+# PDF parsing already includes secret swim times, just need to sort and dedup
 ordered_catalog.sort_all()
 ordered_catalog.dedup()
 

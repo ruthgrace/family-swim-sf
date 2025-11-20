@@ -1,4 +1,4 @@
+anthropic
 beautifulsoup4
-felt-python
 requests
 sortedcontainers
