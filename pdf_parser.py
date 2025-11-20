@@ -319,9 +319,19 @@ Please carefully extract all lap swim times from this schedule."""
             response_text = response_text[:-3]
         response_text = response_text.strip()
 
+        if not response_text:
+            print(f"Warning: Empty response from Claude for lap swim extraction")
+            print(f"Raw response: {message.content[0].text[:200]}")
+            return None
+
         lap_swim_data = json.loads(response_text)
         return lap_swim_data
 
+    except json.JSONDecodeError as e:
+        print(f"Error parsing lap swim JSON: {e}")
+        print(f"Response text (first 500 chars): {response_text[:500]}")
+        traceback.print_exc()
+        return None
     except Exception as e:
         print(f"Error extracting lap swim times with Claude: {e}")
         traceback.print_exc()
@@ -814,16 +824,22 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             print(f"Failed to extract family swim times for {pool_name}")
             return None
 
-        # Step 5: Extract lap swim times
-        print(f"Extracting lap swim times...")
-        lap_swim_data = extract_lap_swim_times(pdf_path, pool_name)
-        if not lap_swim_data:
-            print(f"Failed to extract lap swim times for {pool_name}")
-            return None
+        # Step 5: Extract lap swim times (only for pools with secret swim times)
+        SECRET_SWIM_POOLS = ["Balboa Pool", "Hamilton Pool", "Garfield Pool"]
 
-        # Step 6: Combine and add secret swim times
-        print(f"Adding secret swim times...")
-        combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name)
+        if pool_name in SECRET_SWIM_POOLS:
+            print(f"Extracting lap swim times...")
+            lap_swim_data = extract_lap_swim_times(pdf_path, pool_name)
+            if not lap_swim_data:
+                print(f"Failed to extract lap swim times for {pool_name}")
+                return None
+
+            # Step 6: Combine and add secret swim times
+            print(f"Adding secret swim times...")
+            combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name)
+        else:
+            print(f"Skipping lap swim extraction (not needed for {pool_name})")
+            combined_data = family_swim_data
 
         print(f"✓ Successfully processed {pool_name}")
         return combined_data
