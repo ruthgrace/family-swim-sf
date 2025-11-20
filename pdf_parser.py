@@ -160,12 +160,15 @@ def minutes_to_time(minutes):
     return f"{hours}:{mins:02d}{period}"
 
 
-def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name):
+def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data=None):
     """
     Add "secret swim" times based on lap swim availability.
     For Balboa Pool: Add "Parent Child Swim on Steps" during lap swim when no other activity
     For Hamilton Pool: Add "Family Swim in Small Pool" during lap swim when no other activity
     For Garfield Pool: Add "Parent Child Swim in Small Pool" during lap swim when no other activity
+
+    Now checks against ALL activities (including classes/lessons) to ensure secret swim is only
+    added when the pool area is truly available for drop-in use.
     """
     SECRET_SWIM_POOLS = {
         "Balboa Pool": "Parent Child Swim on Steps",
@@ -184,21 +187,39 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name):
     for day in weekdays:
         combined_data[day] = list(family_swim_data.get(day, []))
         lap_slots = lap_swim_data.get(day, [])
-        family_slots = family_swim_data.get(day, [])
 
         for lap_slot in lap_slots:
             lap_start = time_to_minutes(lap_slot['start'])
             lap_end = time_to_minutes(lap_slot['end'])
 
             conflicts = []
-            for family_slot in family_slots:
-                family_start = time_to_minutes(family_slot['start'])
-                family_end = time_to_minutes(family_slot['end'])
 
-                if not (lap_end <= family_start or lap_start >= family_end):
-                    conflicts.append((family_start, family_end))
+            # Check conflicts with ALL activities if we have that data
+            if all_activities_data:
+                all_activities = all_activities_data.get(day, [])
+                for activity in all_activities:
+                    # Skip lap swim itself
+                    if 'lap swim' in activity.get('activity', '').lower():
+                        continue
+
+                    activity_start = time_to_minutes(activity['start'])
+                    activity_end = time_to_minutes(activity['end'])
+
+                    # Check for time overlap
+                    if not (lap_end <= activity_start or lap_start >= activity_end):
+                        conflicts.append((activity_start, activity_end))
+            else:
+                # Fallback to old logic: only check family swim conflicts
+                family_slots = family_swim_data.get(day, [])
+                for family_slot in family_slots:
+                    family_start = time_to_minutes(family_slot['start'])
+                    family_end = time_to_minutes(family_slot['end'])
+
+                    if not (lap_end <= family_start or lap_start >= family_end):
+                        conflicts.append((family_start, family_end))
 
             if not conflicts:
+                # No conflicts - add the full lap swim time as secret swim
                 combined_data[day].append({
                     "pool": pool_name,
                     "weekday": day,
@@ -207,6 +228,7 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name):
                     "note": secret_swim_note
                 })
             else:
+                # There are conflicts - find available time ranges within the lap swim period
                 conflicts.sort()
                 available_ranges = []
                 current_start = lap_start
@@ -219,6 +241,7 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name):
                 if current_start < lap_end:
                     available_ranges.append((current_start, lap_end))
 
+                # Add secret swim times for available ranges
                 for start_min, end_min in available_ranges:
                     combined_data[day].append({
                         "pool": pool_name,
@@ -349,6 +372,125 @@ Please carefully extract all lap swim times from this schedule."""
         return None
     except Exception as e:
         print(f"Error extracting lap swim times with Claude: {e}")
+        traceback.print_exc()
+        return None
+
+
+def extract_all_activities(pdf_path, pool_name):
+    """
+    Extract ALL activities/time slots from the schedule (including classes, lessons, etc.).
+    This is used to detect conflicts with lap swim times for secret swim calculation.
+    Returns a dict in the format: {weekday: [activity_slots]}
+    """
+    try:
+        with open(pdf_path, 'rb') as f:
+            pdf_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        prompt = f"""Please analyze this pool schedule PDF for {pool_name} and extract ALL activities and time slots.
+
+CRITICAL: This schedule is a multi-column table with days across the top.
+Before recording ANY time slot, you MUST:
+1. Locate the day column header (TUESDAY, WEDNESDAY, THURSDAY, etc.)
+2. Trace straight down that specific column to find times
+3. Do NOT accidentally shift to adjacent columns - this is a common error
+4. Double-check that each time belongs to the correct day
+
+IMPORTANT: Extract EVERY activity shown in the schedule, including:
+- Lap Swim
+- Family Swim / REC/FAMILY SWIM
+- Parent & Child Swim
+- Learn to Swim / Swim Lessons
+- Classes with **, asterisks, or registration markers
+- Senior activities, therapy swim
+- Youth programs
+- ANY other scheduled activity
+
+The goal is to capture EVERYTHING that's happening at the pool so we can identify all time slots that are occupied.
+
+Return the data in this exact JSON format:
+{{
+    "Saturday": [
+        {{"start": "9:00AM", "end": "10:30AM", "activity": "Lap Swim"}},
+        {{"start": "9:00AM", "end": "11:00AM", "activity": "Learn to Swim"}},
+        ...
+    ],
+    "Sunday": [...],
+    "Monday": [...],
+    "Tuesday": [...],
+    "Wednesday": [...],
+    "Thursday": [...],
+    "Friday": [...]
+}}
+
+Important formatting rules:
+1. Times must be formatted like "9:00AM" or "2:30PM" (no space between time and AM/PM)
+2. Use full weekday names: Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday
+3. The "activity" field should be a brief description of what's happening
+4. If no activities are scheduled for a day, use an empty array []
+5. Include ALL activities - don't filter anything out
+6. If activities happen simultaneously, list them both
+7. Return ONLY the JSON, no other text
+
+Please carefully extract all activities from this schedule."""
+
+        message = client.messages.create(
+            model="claude-opus-4-1-20250805",
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "document",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "application/pdf",
+                                "data": pdf_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        response_text = message.content[0].text.strip()
+
+        # Extract JSON from response - Claude may add explanatory text
+        if '```json' in response_text:
+            start = response_text.find('```json') + 7
+            end = response_text.find('```', start)
+            if end != -1:
+                response_text = response_text[start:end].strip()
+        elif '```' in response_text:
+            start = response_text.find('```') + 3
+            end = response_text.rfind('```')
+            if end != -1 and end > start:
+                response_text = response_text[start:end].strip()
+        elif '{' in response_text and '}' in response_text:
+            # Extract just the JSON object
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            response_text = response_text[start:end].strip()
+
+        if not response_text:
+            print(f"Warning: Empty response from Claude for all activities extraction")
+            return None
+
+        all_activities = json.loads(response_text)
+        return all_activities
+
+    except json.JSONDecodeError as e:
+        print(f"Error parsing all activities JSON: {e}")
+        print(f"Response text (first 500 chars): {response_text[:500]}")
+        return None
+    except Exception as e:
+        print(f"Error extracting all activities with Claude: {e}")
         traceback.print_exc()
         return None
 
@@ -858,9 +1000,15 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
                 print(f"Failed to extract lap swim times for {pool_name}")
                 return None
 
-            # Step 6: Combine and add secret swim times
+            # Step 6: Extract ALL activities (to detect conflicts with classes/lessons)
+            print(f"Extracting all activities (to detect class conflicts)...")
+            all_activities_data = extract_all_activities(pdf_path, pool_name)
+            if not all_activities_data:
+                print(f"Warning: Failed to extract all activities for {pool_name}, continuing without class detection")
+
+            # Step 7: Combine and add secret swim times
             print(f"Adding secret swim times...")
-            combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name)
+            combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
         else:
             print(f"Skipping lap swim extraction (not needed for {pool_name})")
             combined_data = family_swim_data
