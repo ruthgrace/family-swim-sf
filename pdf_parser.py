@@ -258,10 +258,18 @@ def extract_lap_swim_times(pdf_path, pool_name):
 
         prompt = f"""Please analyze this pool schedule PDF for {pool_name} and extract ONLY the Lap Swim times.
 
+CRITICAL: This schedule is a multi-column table with days across the top.
+Before recording ANY time slot, you MUST:
+1. Locate the day column header (TUESDAY, WEDNESDAY, THURSDAY, etc.)
+2. Trace straight down that specific column to find times
+3. Do NOT accidentally shift to adjacent columns - this is a common error
+4. Double-check that each time belongs to the correct day
+
 IMPORTANT: Only include times that are specifically labeled as "Lap Swim". Be very careful to:
 - Look at the correct day column
 - Do NOT mix up days (e.g., don't put Thursday times into Friday)
 - Do NOT include any other activities like classes, lessons, or other swim programs
+- Be especially careful with morning times (7:00AM-8:00AM) which may appear on multiple days
 
 I need the data in this exact JSON format:
 {{
