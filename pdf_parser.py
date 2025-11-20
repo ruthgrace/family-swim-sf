@@ -38,7 +38,10 @@ def get_facility_documents(facility_url):
 
 
 def select_schedule_pdf(documents, pool_name, current_date, pools_list):
-    """Filter documents for schedule PDFs and select the most appropriate one"""
+    """Filter documents for schedule PDFs and select the most appropriate one based on date ranges"""
+    import re
+    from datetime import datetime
+
     schedule_docs = []
     pool_name_lower = pool_name.lower()
     # Extract the pool name without "Pool" suffix for matching
@@ -74,30 +77,98 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
     if len(schedule_docs) == 1:
         return schedule_docs[0]
 
-    # Select based on current season
-    current_year = current_date.year
-    current_month = current_date.month
+    # Try to parse date ranges from document names to find the one that covers current_date
+    # Examples: "FALL 2025_AUG17-DEC24", "Aug19_Dec27", "6/10/2025 – 8/16/2025"
 
-    if current_month in [12, 1, 2]:
-        current_season = 'winter'
-    elif current_month in [3, 4, 5]:
-        current_season = 'spring'
-    elif current_month in [6, 7, 8]:
-        current_season = 'summer'
-    else:
-        current_season = 'fall'
+    month_map = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12
+    }
 
+    def parse_date_from_name(doc_name):
+        """Try to extract start and end dates from document name"""
+        doc_name_upper = doc_name.upper()
+
+        # Pattern 1: AUG17-DEC24 or AUG19_DEC27 (month abbreviation + day)
+        pattern1 = r'([A-Z]{3})(\d{1,2})[_-]([A-Z]{3})(\d{1,2})'
+        match = re.search(pattern1, doc_name_upper)
+        if match:
+            start_month_str, start_day, end_month_str, end_day = match.groups()
+            start_month = month_map.get(start_month_str.lower())
+            end_month = month_map.get(end_month_str.lower())
+
+            if start_month and end_month:
+                # Determine year based on season context
+                year = current_date.year
+                # If end month is before start month, it spans years
+                if end_month < start_month:
+                    end_year = year + 1
+                else:
+                    end_year = year
+
+                try:
+                    start_date = datetime(year, start_month, int(start_day))
+                    end_date = datetime(end_year, end_month, int(end_day))
+                    return start_date, end_date
+                except ValueError:
+                    pass
+
+        # Pattern 2: M/D/YYYY or MM/DD/YYYY format
+        pattern2 = r'(\d{1,2})/(\d{1,2})/(\d{4})[^0-9]+(\d{1,2})/(\d{1,2})/(\d{4})'
+        match = re.search(pattern2, doc_name)
+        if match:
+            start_month, start_day, start_year, end_month, end_day, end_year = match.groups()
+            try:
+                start_date = datetime(int(start_year), int(start_month), int(start_day))
+                end_date = datetime(int(end_year), int(end_month), int(end_day))
+                return start_date, end_date
+            except ValueError:
+                pass
+
+        return None, None
+
+    # Score each document based on date coverage and relevance
     best_doc = None
     best_score = -1
 
     for doc in schedule_docs:
-        doc_name_lower = doc['name'].lower()
         score = 0
+        doc_name_lower = doc['name'].lower()
 
-        if str(current_year) in doc_name_lower:
-            score += 10
-        if current_season in doc_name_lower:
-            score += 5
+        # Try to parse dates
+        start_date, end_date = parse_date_from_name(doc['name'])
+
+        if start_date and end_date:
+            # Check if current_date falls within the schedule range
+            if start_date <= current_date <= end_date:
+                score += 100  # Highest priority: date range includes today
+            elif current_date < start_date:
+                # Future schedule - penalize based on how far in the future
+                days_until = (start_date - current_date).days
+                score += max(0, 50 - days_until // 10)  # Reduce score for distant future schedules
+            else:
+                # Past schedule - low score
+                score += 10
+        else:
+            # Fallback to season-based scoring if no dates found
+            current_year = current_date.year
+            current_month = current_date.month
+
+            if current_month in [12, 1, 2]:
+                current_season = 'winter'
+            elif current_month in [3, 4, 5]:
+                current_season = 'spring'
+            elif current_month in [6, 7, 8]:
+                current_season = 'summer'
+            else:
+                current_season = 'fall'
+
+            if str(current_year) in doc_name_lower:
+                score += 10
+            if current_season in doc_name_lower:
+                score += 5
+
+        # Bonus for pool name match
         if pool_name_lower.replace(' pool', '') in doc_name_lower:
             score += 3
 
