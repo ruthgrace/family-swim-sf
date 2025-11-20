@@ -317,13 +317,22 @@ Please carefully extract all lap swim times from this schedule."""
 
         response_text = message.content[0].text.strip()
 
-        if response_text.startswith('```json'):
-            response_text = response_text[7:]
-        if response_text.startswith('```'):
-            response_text = response_text[3:]
-        if response_text.endswith('```'):
-            response_text = response_text[:-3]
-        response_text = response_text.strip()
+        # Extract JSON from response - Claude may add explanatory text
+        if '```json' in response_text:
+            start = response_text.find('```json') + 7
+            end = response_text.find('```', start)
+            if end != -1:
+                response_text = response_text[start:end].strip()
+        elif '```' in response_text:
+            start = response_text.find('```') + 3
+            end = response_text.rfind('```')
+            if end != -1 and end > start:
+                response_text = response_text[start:end].strip()
+        elif '{' in response_text and '}' in response_text:
+            # Extract just the JSON object
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            response_text = response_text[start:end].strip()
 
         if not response_text:
             print(f"Warning: Empty response from Claude for lap swim extraction")
