@@ -300,7 +300,7 @@ Important formatting rules:
 Please carefully extract all lap swim times from this schedule."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-opus-4-1-20250805",
             max_tokens=4096,
             messages=[
                 {
@@ -338,6 +338,340 @@ Please carefully extract all lap swim times from this schedule."""
 
     except Exception as e:
         print(f"Error extracting lap swim times with Claude: {e}")
+        traceback.print_exc()
+        return None
+
+
+def extract_single_day_schedule(pdf_path, pool_name, weekday):
+    """
+    Extract schedule for a single specific day from the PDF.
+    This reduces column confusion by focusing Claude on one day at a time.
+    Returns a list of swim slots for that day.
+    """
+    try:
+        with open(pdf_path, 'rb') as f:
+            pdf_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        prompt = f"""Please analyze this pool schedule PDF for {pool_name}.
+
+TASK: Extract ONLY the schedule for {weekday.upper()}.
+
+CRITICAL INSTRUCTIONS:
+1. This is a multi-column table with days of the week as column headers
+2. Find the column header for {weekday.upper()}
+3. Read ONLY the times directly under that {weekday.upper()} column
+4. Do NOT accidentally read times from adjacent columns (this is very important!)
+5. Trace straight down the {weekday.upper()} column to extract all time slots
+
+For {weekday}, please identify all activities that are:
+- Family Swim or REC/FAMILY SWIM
+- Parent & Child Swim or Parent Child Swim
+- Any variant with "family" or "parent child" for drop-in/open swim
+
+Do NOT include:
+- Lap swim (unless it explicitly says "REC/FAMILY" or "parent child")
+- Learn to Swim lessons or any classes
+- Senior activities, therapy swim, or guided exercise
+- Youth programs, synchro, or other structured activities
+
+Return the data in this JSON format:
+{{
+    "day": "{weekday}",
+    "slots": [
+        {{"start": "1:30PM", "end": "2:30PM", "activity": "REC/FAMILY SWIM"}},
+        ...
+    ]
+}}
+
+Important:
+- Times must be formatted like "9:00AM" or "2:30PM" (no space between time and AM/PM)
+- If no family swim is scheduled for {weekday}, return an empty slots array
+- Return ONLY the JSON, no other text
+- Double-check you're reading from the {weekday.upper()} column, not an adjacent day
+
+Please carefully extract {weekday}'s schedule."""
+
+        message = client.messages.create(
+            model="claude-opus-4-1-20250805",
+            max_tokens=2048,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "document",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "application/pdf",
+                                "data": pdf_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        response_text = message.content[0].text.strip()
+
+        # Extract JSON from response (Claude might add explanatory text)
+        # Look for JSON content between ```json and ``` or just find the first { to last }
+        if '```json' in response_text:
+            start = response_text.find('```json') + 7
+            end = response_text.find('```', start)
+            response_text = response_text[start:end].strip()
+        elif '```' in response_text:
+            start = response_text.find('```') + 3
+            end = response_text.rfind('```')
+            response_text = response_text[start:end].strip()
+        elif '{' in response_text and '}' in response_text:
+            # Extract just the JSON object
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            response_text = response_text[start:end].strip()
+
+        day_data = json.loads(response_text)
+
+        # Convert to our standard format
+        slots = []
+        for slot in day_data.get('slots', []):
+            activity = slot.get('activity', '').lower()
+
+            # Determine note based on activity text
+            if 'parent' in activity and 'child' in activity:
+                if 'small pool' in activity:
+                    note = "Parent Child Swim in Small Pool"
+                elif 'steps' in activity:
+                    note = "Parent Child Swim on Steps"
+                else:
+                    note = "Parent Child Swim"
+            elif 'small pool' in activity:
+                note = "Family Swim in Small Pool"
+            else:
+                note = "Family Swim"
+
+            slots.append({
+                "pool": pool_name,
+                "weekday": weekday,
+                "start": slot['start'],
+                "end": slot['end'],
+                "note": note
+            })
+
+        return slots
+
+    except Exception as e:
+        print(f"Error extracting {weekday} schedule: {e}")
+        traceback.print_exc()
+        return []
+
+
+def extract_family_swim_day_by_day(pdf_path, pool_name):
+    """
+    Extract family swim schedule by processing one day at a time.
+    This should reduce column confusion errors.
+    Returns a dict in the format: {weekday: [swim_slots]}
+    """
+    try:
+        schedule_data = {
+            "Saturday": [],
+            "Sunday": [],
+            "Monday": [],
+            "Tuesday": [],
+            "Wednesday": [],
+            "Thursday": [],
+            "Friday": []
+        }
+
+        for day in ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Monday"]:
+            print(f"  Extracting {day}...")
+            slots = extract_single_day_schedule(pdf_path, pool_name, day)
+            schedule_data[day] = slots
+
+        return schedule_data
+
+    except Exception as e:
+        print(f"Error in day-by-day extraction: {e}")
+        traceback.print_exc()
+        return None
+
+
+def pdf_table_to_markdown(pdf_path, pool_name):
+    """
+    First pass: Ask Claude to convert the schedule table to markdown.
+    This helps us see what Claude is reading before trying to parse it.
+    Returns markdown string representation of the schedule table.
+    """
+    try:
+        with open(pdf_path, 'rb') as f:
+            pdf_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        prompt = f"""Please analyze this pool schedule PDF for {pool_name}.
+
+I need you to convert the main schedule table into a clear markdown table format.
+
+CRITICAL INSTRUCTIONS:
+1. This is a multi-column table with days of the week as column headers
+2. Each column represents ONE day (Tuesday, Wednesday, Thursday, Friday, Saturday, etc.)
+3. You MUST carefully trace down each column to get the correct times for that day
+4. DO NOT mix up columns - verify each time slot is under the correct day header
+
+Please create a markdown table with these columns:
+| Day | Time | Activity |
+
+For each row, extract:
+- Day: The day of the week (Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, Monday)
+- Time: The time range (e.g., "1:30 pm - 2:30 pm")
+- Activity: The activity name (e.g., "REC/FAMILY SWIM", "LAP SWIM", "PARENT & CHILD FAMILY SWIM")
+
+IMPORTANT:
+- Include ALL activities (family swim, lap swim, lessons, etc.) - we'll filter later
+- Be extremely careful to match times to the correct day column
+- If unsure about which column a time belongs to, note it in the activity field
+- Return ONLY the markdown table, no other text
+
+Please carefully read the schedule table and convert it to markdown."""
+
+        message = client.messages.create(
+            model="claude-opus-4-1-20250805",
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "document",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "application/pdf",
+                                "data": pdf_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        markdown_text = message.content[0].text.strip()
+
+        # Remove markdown code blocks if present
+        if markdown_text.startswith('```markdown'):
+            markdown_text = markdown_text[11:]
+        if markdown_text.startswith('```'):
+            markdown_text = markdown_text[3:]
+        if markdown_text.endswith('```'):
+            markdown_text = markdown_text[:-3]
+        markdown_text = markdown_text.strip()
+
+        return markdown_text
+
+    except Exception as e:
+        print(f"Error converting PDF to markdown: {e}")
+        traceback.print_exc()
+        return None
+
+
+def parse_markdown_schedule(markdown_text, pool_name):
+    """
+    Parse the markdown table into schedule data.
+    This uses Python string parsing instead of relying on Claude to extract correctly.
+    Returns a dict in the format: {weekday: [swim_slots]}
+    """
+    try:
+        schedule_data = {
+            "Saturday": [],
+            "Sunday": [],
+            "Monday": [],
+            "Tuesday": [],
+            "Wednesday": [],
+            "Thursday": [],
+            "Friday": []
+        }
+
+        # Activity patterns to look for (family swim related)
+        family_patterns = [
+            'family swim',
+            'rec/family',
+            'parent & child',
+            'parent child',
+            'parent and child'
+        ]
+
+        lines = markdown_text.strip().split('\n')
+
+        for line in lines:
+            # Skip header and separator lines
+            if '|' not in line or '---' in line or 'Day' in line or 'TIME' in line:
+                continue
+
+            # Parse table row: | Day | Time | Activity |
+            parts = [p.strip() for p in line.split('|')]
+            # Remove empty first/last elements from split
+            parts = [p for p in parts if p]
+
+            if len(parts) < 3:
+                continue
+
+            day = parts[0].strip()
+            time_range = parts[1].strip()
+            activity = parts[2].strip().lower()
+
+            # Check if this is a family swim activity
+            is_family_swim = any(pattern in activity for pattern in family_patterns)
+
+            if not is_family_swim:
+                continue
+
+            # Parse time range (e.g., "1:30 pm - 2:30 pm")
+            try:
+                time_parts = time_range.split('-')
+                if len(time_parts) != 2:
+                    continue
+
+                start_time = time_parts[0].strip().upper().replace(' ', '')
+                end_time = time_parts[1].strip().upper().replace(' ', '')
+
+                # Determine note based on activity text
+                if 'parent' in activity and 'child' in activity:
+                    if 'small pool' in activity:
+                        note = "Parent Child Swim in Small Pool"
+                    elif 'steps' in activity:
+                        note = "Parent Child Swim on Steps"
+                    else:
+                        note = "Parent Child Swim"
+                elif 'small pool' in activity:
+                    note = "Family Swim in Small Pool"
+                else:
+                    note = "Family Swim"
+
+                # Validate day is in our schedule
+                if day in schedule_data:
+                    schedule_data[day].append({
+                        "pool": pool_name,
+                        "weekday": day,
+                        "start": start_time,
+                        "end": end_time,
+                        "note": note
+                    })
+            except Exception as e:
+                print(f"Warning: Could not parse time range '{time_range}': {e}")
+                continue
+
+        return schedule_data
+
+    except Exception as e:
+        print(f"Error parsing markdown schedule: {e}")
         traceback.print_exc()
         return None
 
@@ -395,7 +729,7 @@ Important formatting rules:
 Please extract all family swim and parent child swim times from this schedule."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-opus-4-1-20250805",
             max_tokens=4096,
             messages=[
                 {
@@ -471,9 +805,25 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             print(f"Failed to download PDF for {pool_name}")
             return None
 
-        # Step 4: Extract family swim times
-        print(f"Extracting family swim times...")
-        family_swim_data = parse_pdf_with_claude(pdf_path, pool_name)
+        # Step 4: Extract family swim times using day-by-day approach
+        print(f"Extracting family swim times (day-by-day)...")
+        family_swim_data = extract_family_swim_day_by_day(pdf_path, pool_name)
+
+        # Fallback to markdown approach if day-by-day fails
+        if not family_swim_data:
+            print(f"Day-by-day approach failed, trying markdown approach...")
+            markdown_table = pdf_table_to_markdown(pdf_path, pool_name)
+            if markdown_table:
+                print(f"Markdown table preview (first 500 chars):")
+                print(markdown_table[:500])
+                print("\nParsing markdown table...")
+                family_swim_data = parse_markdown_schedule(markdown_table, pool_name)
+
+        # Final fallback to direct extraction
+        if not family_swim_data:
+            print(f"Markdown approach failed, falling back to direct extraction...")
+            family_swim_data = parse_pdf_with_claude(pdf_path, pool_name)
+
         if not family_swim_data:
             print(f"Failed to extract family swim times for {pool_name}")
             return None
