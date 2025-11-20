@@ -66,22 +66,8 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
             if not is_other_pool:
                 schedule_docs.append(doc)
 
-    # Fallback: if no pool-specific PDF found, look for generic "schedule" PDFs
-    if not schedule_docs:
-        for doc in documents:
-            doc_name_lower = doc['name'].lower()
-            if 'schedule' in doc_name_lower:
-                # Make sure it's not specifically for a different pool
-                other_pools = [p.lower().replace(' pool', '') for p in pools_list if p.lower() != pool_name_lower]
-                # Exclude specific pool names but allow generic ones like "Mission Pool Schedule"
-                is_other_specific_pool = any(
-                    other_pool in doc_name_lower and other_pool not in ['mission']
-                    for other_pool in other_pools
-                )
-
-                if not is_other_specific_pool:
-                    schedule_docs.append(doc)
-
+    # No fallback - if we don't find a pool-specific PDF, assume the pool has no schedule
+    # This prevents using the wrong pool's schedule (e.g., Mission Pool Schedule for Rossi Pool)
     if not schedule_docs:
         return None
 
