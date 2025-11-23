@@ -185,40 +185,55 @@ def extract_raw_schedule(pdf_path, pool_name):
 TASK: Read the schedule and output EVERY activity as structured JSON.
 
 CRITICAL INSTRUCTIONS FOR READING MULTI-COLUMN TABLE:
-1. This is a table with days of the week as column headers (SUNDAY, MONDAY, TUESDAY, etc.)
-2. Each column represents ONE day
-3. Trace STRAIGHT DOWN each column to extract times for that specific day
-4. DO NOT accidentally shift to adjacent columns
-5. Verify each time slot is under the correct day header
+⚠️ COMMON ERROR: Accidentally reading activities from adjacent columns (e.g., reading Thursday's activities under Wednesday)
 
-For each day of the week, extract each activity. For each activity, extract:
-- Start time
-- End time
-- Activity name
-- Pool area if specified (e.g., "Warm Pool", "Shallow Pool", "Deep Pool", "Small Pool", or sometimes it will say the number of lanes like "(4)" or "(2)"). If the pool area is not specified, leave it as an empty string.
-- Note that one cell in the schedule MAY have multiple activities. You need to extract these activities separately
--- One example of multiple activities in one cell is ""REC/FAMILY SWIM/ LAP SWIM (shallow / deep)", which is a Family Swim in the shallow pool plus a Lap Swim in the deep pool.
--- Another example of muitple activities in one cell is "MAIN POOL - SENIOR/THERAPY SWIM
-SMALL POOL- NVPS CLASS
+STEP-BY-STEP PROCESS FOR EACH DAY:
+1. Locate the day column header (SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY)
+2. Draw an imaginary vertical line straight down from that header
+3. For EACH activity cell in that column:
+   a. FIRST: Look up to confirm you're still in the correct column - what is the header directly above?
+   b. VERIFY: Double-check the column header matches the day you're extracting for
+   c. ONLY THEN: Extract the activity details
+4. DO NOT drift into adjacent columns - stay within vertical boundaries
+5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
+
+For each activity you extract, you MUST include:
+- Start time (e.g., "9:00AM")
+- End time (e.g., "10:30AM")
+- Activity name (e.g., "REC/FAMILY SWIM", "LAP SWIM")
+- Pool area if specified (e.g., "Warm Pool", "Shallow Pool", "Deep Pool", "Small Pool", "Main Pool", or lane counts like "(4)" or "(2)"). If not specified, use empty string.
+- verified_day: The day column header you verified this activity is under (MUST match the day you're placing it in)
+
+HANDLING MULTI-ACTIVITY CELLS:
+When you see a cell like:
+"MAIN POOL - SENIOR/THERAPY SWIM
+SMALL POOL - NVPS CLASS
 (9:00AM - 10:00AM)
-9:00AM - 10:45AM". This is a Senior/Therapy Swim in the Main Pool from 9am-10:45am and a NVPS Class in the Small Pool from 9am to 10am.
+9:00AM - 10:45AM"
 
-DO NOT filter anything. DO NOT skip anything. Extract EVERYTHING you see that is in the schedule spreadsheet including:
+This means TWO separate activities:
+1. SENIOR/THERAPY SWIM in Main Pool from 9:00AM-10:45AM
+2. NVPS CLASS in Small Pool from 9:00AM-10:00AM
+
+Extract them as two separate entries.
+
+DO NOT filter anything. Extract EVERYTHING including:
 - REC/FAMILY SWIM, FAMILY SWIM
 - LAP SWIM, LAP SWIMMING
 - PARENT CHILD SWIM, PARENT & CHILD SWIM
 - YOUTH LESSONS, SWIM LESSONS, LEARN TO SWIM
-- Classes marked with *, **, asterisks, or registration indicators
+- Classes marked with *, **, asterisks
 - SENIOR/THERAPY SWIM
 - WATER EXERCISE, DEEP WATER EXERCISE
 - SWIM TEAM, MASTER'S SWIM TEAM
+- Staff meetings, pool closures
 - ANY other activity shown
 
-Return in this exact JSON format:
+Return in this EXACT JSON format (note the new "verified_day" field):
 {{
   "Saturday": [
-    {{"start": "9:00AM", "end": "10:30AM", "activity": " REC/FAMILY SWIM", "pool_area": "Small Pool"}},
-    {{"start": "9:00AM", "end": "10:30AM", "activity": "LAP SWIM", "pool_area": ""}},
+    {{"start": "9:00AM", "end": "10:30AM", "activity": "REC/FAMILY SWIM", "pool_area": "Small Pool", "verified_day": "Saturday"}},
+    {{"start": "9:00AM", "end": "10:30AM", "activity": "LAP SWIM", "pool_area": "Main Pool", "verified_day": "Saturday"}},
     ...
   ],
   "Sunday": [...],
@@ -229,9 +244,11 @@ Return in this exact JSON format:
   "Friday": [...]
 }}
 
-If no activities for a day, still include that day but have it map to an empty array []
+VERIFICATION REQUIREMENT: The "verified_day" field MUST match the day key you're placing the activity under. This forces you to confirm which column you're reading from.
 
-Return ONLY the JSON, no other text
+If no activities for a day, still include that day with an empty array: "Saturday": []
+
+Return ONLY the JSON, no other text.
 
 Extract the complete raw schedule now."""
 
@@ -282,6 +299,26 @@ Extract the complete raw schedule now."""
             return None
 
         raw_schedule = json.loads(response_text)
+
+        # Validate that verified_day matches the day key
+        validation_errors = []
+        for day, activities in raw_schedule.items():
+            for idx, activity in enumerate(activities):
+                verified_day = activity.get('verified_day', '')
+                if verified_day and verified_day != day:
+                    validation_errors.append(
+                        f"  ⚠️  {day} activity #{idx+1}: '{activity.get('activity', 'unknown')}' "
+                        f"has verified_day='{verified_day}' but is placed under '{day}'"
+                    )
+
+        if validation_errors:
+            print(f"\n⚠️  COLUMN VERIFICATION ERRORS DETECTED:")
+            for error in validation_errors:
+                print(error)
+            print(f"\nThe model may have misread column alignments. Review the raw schedule carefully.\n")
+        else:
+            print(f"✓ All activities passed column verification")
+
         return raw_schedule
 
     except json.JSONDecodeError as e:
