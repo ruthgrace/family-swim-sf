@@ -18,6 +18,7 @@ import base64
 from bs4 import BeautifulSoup
 from anthropic import Anthropic
 from constants import ANTHROPIC_API_KEY
+import pypdfium2 as pdfium
 
 
 def get_facility_documents(facility_url):
@@ -132,6 +133,40 @@ def download_pdf(pdf_url, output_path):
         return False
 
 
+def convert_pdf_to_image(pdf_path, output_path=None, dpi=300):
+    """
+    Convert first page of PDF to high-resolution PNG image.
+
+    Args:
+        pdf_path: Path to PDF file
+        output_path: Optional output path for PNG. If None, uses pdf_path with .png extension
+        dpi: Resolution for rendering (default 300 for high quality)
+
+    Returns:
+        Path to the generated PNG file, or None if failed
+    """
+    try:
+        if output_path is None:
+            output_path = pdf_path.rsplit('.', 1)[0] + '_page1.png'
+
+        pdf = pdfium.PdfDocument(pdf_path)
+        page = pdf[0]  # Get first page
+
+        # Render at specified DPI (default PDF DPI is 72)
+        bitmap = page.render(scale=dpi/72)
+        pil_image = bitmap.to_pil()
+
+        # Save as PNG
+        pil_image.save(output_path)
+
+        print(f"Converted PDF to image: {output_path} (size: {pil_image.size})")
+        return output_path
+    except Exception as e:
+        print(f"Error converting PDF to image: {e}")
+        traceback.print_exc()
+        return None
+
+
 def time_to_minutes(time_str):
     """Convert time string like '9:00AM' to minutes since midnight"""
     time_str = time_str.upper().strip()
@@ -170,14 +205,22 @@ def minutes_to_time(minutes):
 
 def extract_raw_schedule(pdf_path, pool_name):
     """
-    PASS 1: Extract RAW schedule from PDF.
+    PASS 1: Extract RAW schedule from PDF by converting to image first.
     Pure vision extraction - no filtering, no judgment calls.
-    Makes 7 separate API calls (one per day) to improve accuracy.
+    Makes 14 API calls (extract + 1 validation for each of 7 days) to improve accuracy.
     Returns a dict in the format: {weekday: [activity_slots]}
     """
     try:
-        with open(pdf_path, 'rb') as f:
-            pdf_data = base64.standard_b64encode(f.read()).decode('utf-8')
+        # Convert PDF to high-resolution PNG image first
+        print(f"  Converting PDF to image for better visual extraction...")
+        image_path = convert_pdf_to_image(pdf_path)
+        if not image_path:
+            print(f"  Failed to convert PDF to image, aborting extraction")
+            return None
+
+        # Read the image file and encode it
+        with open(image_path, 'rb') as f:
+            image_data = base64.standard_b64encode(f.read()).decode('utf-8')
 
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -209,14 +252,14 @@ For each activity you extract, you MUST include:
 - Start time (e.g., "9:00AM")
 - End time (e.g., "10:30AM")
 - Activity name (e.g., "REC/FAMILY SWIM", "LAP SWIM")
-- Pool area if specified (e.g., "Warm Pool", "Shallow Pool", "Deep Pool", "Small Pool", "Main Pool", or lane counts like "(4)" or "(2)"). If not specified, use empty string.
+- Pool area if specified (e.g., "Warm Pool", "Shallow Pool", "Deep Pool", "Small Pool", "Main Pool", or lane counts like "(4)" or "(2)"). IMPORTANT: Only include pool_area if it is EXPLICITLY written in the schedule. If no pool area is mentioned, use empty string "".
 
 HANDLING MULTI-ACTIVITY CELLS:
 When you see a cell like:
 "MAIN POOL - SENIOR/THERAPY SWIM
 SMALL POOL - NVPS CLASS
 (9:00AM - 10:00AM)
-9:00AM - 10:45AM"
+9:00AM - 10:45AM
 
 This means TWO separate activities:
 1. SENIOR/THERAPY SWIM in Main Pool from 9:00AM-10:45AM
@@ -257,11 +300,11 @@ Extract all {day.upper()} activities now."""
                         "role": "user",
                         "content": [
                             {
-                                "type": "document",
+                                "type": "image",
                                 "source": {
                                     "type": "base64",
-                                    "media_type": "application/pdf",
-                                    "data": pdf_data
+                                    "media_type": "image/png",
+                                    "data": image_data
                                 }
                             },
                             {
@@ -298,14 +341,130 @@ Extract all {day.upper()} activities now."""
 
             try:
                 day_activities = json.loads(response_text)
-                raw_schedule[day] = day_activities
                 print(f"    ✓ Extracted {len(day_activities)} activities for {day}")
+                print(f"       V0 (initial): {json.dumps(day_activities, indent=10)}")
+
+                # VALIDATION STEP 1: Immediately validate the extraction
+                print(f"  Validation 1 for {day}...")
+
+                validation_prompt = f"""I extracted these activities for {day.upper()} from the pool schedule PDF for {pool_name}:
+
+{json.dumps(day_activities, indent=2)}
+
+STEP-BY-STEP PROCESS FOR VALIDATION:
+242 1. Locate the {day.upper()} column header
+243 2. Draw an imaginary vertical line straight down from that header
+244 3. For EACH activity cell in that column:
+245    a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
+246    b. VERIFY: Double-check the column header says {day.upper()}
+247    c. ONLY THEN: Extract the activity details
+248 4. DO NOT drift into adjacent columns - stay within vertical boundaries
+249 5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
+
+For each activity, please verify:
+1. Are any of these activities actually from a different day (wrong column)?
+2. Are the times accurate?
+3. Are the pool locations accurate? Please double-check to make sure that the pool location is not combined with the activity name if the activity has a pool location. Also double-check to make sure that if no pool location is specified, we don't have one listed (it should be empty string in this case)
+4. Are slots in the schedule where there are two or more activities accurately represented?
+
+For example
+MAIN POOL - LAP SWIM
+SMALL POOL - WATER EXERCISE
+(11:00AM-12:00PM)
+11:00AM-1:00PM
+
+should be two activities:
+A. LAP SWIM in the Main Pool from 11:00AM-1:00PM
+B. WATER EXERCISE in the Small Pool from 11:00AM-12:00PM
+
+another example
+MAIN POOL - SEHIOR/THERAPY SWIM
+SMALL POOL - SWIM LESSONS
+9:00AM - 10:45AM
+
+should be two activities:
+A. SEHIOR/THERAPY SWIM in the Main Pool from 9:00AM-10:45AM
+B. SWIM LESSONS in the Small Pool from 9:00AM-10:45AM
+
+Based on the two examples, you need to CAREFULLY DIFFERENTIATE the case where two items in the same slot share the same time or if one item has a subtimeslot inside the larger time slot.
+
+When you check this MAKE SURE that you are looking at the correct {day.upper()} column and not at the column on either side.
+
+Please double-check the {day.upper()} column in the PDF and return the CORRECT JSON with any necessary changes.
+
+Return ONLY the corrected JSON array in this exact format:
+[
+  {{"start": "9:00AM", "end": "10:30AM", "activity": "REC/FAMILY SWIM", "pool_area": "Small Pool"}},
+  ...
+]
+
+Note that it's possible {day.upper()} is not in the schedule at all. In this case just return an empty array.
+
+If the extraction was already correct, return it unchanged. Return ONLY the JSON array, no explanations."""
+
+                validation_message = client.messages.create(
+                    model="claude-sonnet-4-5-20250929",
+                    max_tokens=4096,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image",
+                                    "source": {
+                                        "type": "base64",
+                                        "media_type": "image/png",
+                                        "data": image_data
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": validation_prompt
+                                }
+                            ]
+                        }
+                    ]
+                )
+
+                validation_response = validation_message.content[0].text.strip()
+
+                # Extract JSON from validation response
+                if '```json' in validation_response:
+                    start = validation_response.find('```json') + 7
+                    end = validation_response.find('```', start)
+                    if end != -1:
+                        validation_response = validation_response[start:end].strip()
+                elif '```' in validation_response:
+                    start = validation_response.find('```') + 3
+                    end = validation_response.rfind('```')
+                    if end != -1 and end > start:
+                        validation_response = validation_response[start:end].strip()
+                elif '[' in validation_response and ']' in validation_response:
+                    start = validation_response.find('[')
+                    end = validation_response.rfind(']') + 1
+                    validation_response = validation_response[start:end].strip()
+
+                try:
+                    validated_activities_v1 = json.loads(validation_response)
+
+                    # Check if validation made changes
+                    if validated_activities_v1 != day_activities:
+                        print(f"    ⚠ Validation 1 made changes: {len(day_activities)} -> {len(validated_activities_v1)} activities")
+                        print(f"       V1 (after val 1): {json.dumps(validated_activities_v1, indent=10)}")
+                    else:
+                        print(f"    ✓ Validation 1: No changes needed")
+
+                    raw_schedule[day] = validated_activities_v1
+                except json.JSONDecodeError as e:
+                    print(f"    Warning: Validation 1 JSON parse error for {day}, using original extraction")
+                    raw_schedule[day] = day_activities
+
             except json.JSONDecodeError as e:
                 print(f"    Error parsing JSON for {day}: {e}")
                 print(f"    Response (first 200 chars): {response_text[:200]}")
                 raw_schedule[day] = []
 
-        print(f"\n✓ Completed extraction for all days")
+        print(f"\n✓ Completed extraction and 1 validation pass for all days")
         return raw_schedule
 
     except Exception as e:
@@ -562,15 +721,17 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
                 if current_start < lap_end:
                     available_ranges.append((current_start, lap_end))
 
-                # Add secret swim times for available ranges
+                # Add secret swim times for available ranges (minimum 1 hour)
                 for start_min, end_min in available_ranges:
-                    combined_data[day].append({
-                        "pool": pool_name,
-                        "weekday": day,
-                        "start": minutes_to_time(start_min),
-                        "end": minutes_to_time(end_min),
-                        "note": secret_swim_note
-                    })
+                    duration = end_min - start_min
+                    if duration >= 60:  # Only add if at least 1 hour long
+                        combined_data[day].append({
+                            "pool": pool_name,
+                            "weekday": day,
+                            "start": minutes_to_time(start_min),
+                            "end": minutes_to_time(end_min),
+                            "note": secret_swim_note
+                        })
 
     return combined_data
 
