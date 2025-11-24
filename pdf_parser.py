@@ -2,13 +2,14 @@
 PDF parsing utilities for extracting pool schedules
 
 Simplified Multi-Pass Strategy:
-1. Extract RAW schedule from PDF (Claude Opus - vision only, no filtering)
-2. Filter for family/parent-child swim (Claude Haiku - JSON filtering)
+1. Extract RAW schedule from PDF (Claude Sonnet 4.5 - vision only, no filtering)
+2. Filter for family/parent-child swim (Claude Sonnet 4 - JSON filtering, excludes classes)
 3. Extract lap swim from raw schedule (Python - no API call)
 4. Extract all activities from raw schedule (Python - no API call)
-5. Calculate secret swims (Python logic)
+5. Calculate secret swims (Claude Sonnet 4 - AI analysis with pool-specific rules)
+6. Combine and sort schedules (Python - merge and sort by start time)
 
-This approach minimizes API calls and separates vision tasks from filtering logic.
+This approach uses AI strategically: vision extraction, intelligent filtering, and rule-based analysis.
 """
 
 import requests
@@ -271,7 +272,7 @@ DO NOT filter anything. Extract EVERYTHING including:
 - REC/FAMILY SWIM, FAMILY SWIM
 - LAP SWIM, LAP SWIMMING
 - PARENT CHILD SWIM, PARENT & CHILD SWIM
-- YOUTH LESSONS, SWIM LESSONS, LEARN TO SWIM
+- YOUTH LESSONS, SWIM LESSONS, LEARN TO SWIM, PARENT CHILD INTRO
 - Classes marked with *, **, asterisks
 - SENIOR/THERAPY SWIM
 - WATER EXERCISE, DEEP WATER EXERCISE
@@ -490,18 +491,17 @@ INCLUDE activities that are:
 - "REC/FAMILY SWIM", "FAMILY SWIM"
 - "PARENT CHILD SWIM", "PARENT & CHILD SWIM", "PARENT AND CHILD SWIM", "PARENT/CHILD SWIM" etc.
 
-EXCLUDE activities with:
-- "LESSON", "INTRO", "CLASS", "LEARN TO", "INSTRUCTION"
-- "SENIOR", "THERAPY", "YOUTH LESSONS", "SWIM TEAM", "MASTER'S"
+EXCLUDE activitiest:
+- that are classes, including "LESSON", "INTRO", "CLASS", "LEARN TO"
+  - Examples: "PARENT CHILD INTRO", "SFUSD", "SENIOR/THERAPY", "YOUTH LESSONS", "SWIM TEAM", "MASTER'S"
 - "WATER EXERCISE", "DEEP WATER EXERCISE"
-- "LAP SWIM" (unless it explicitly says "REC/FAMILY" or something else indicating family swim or parent/child swim in the same activity name)
+- "LAP SWIM"
 
 Input schedule:
 {raw_schedule_json}
 
 Return filtered schedule in this format:
 {{
-  "FAMILY_SWIM": {{
     "Saturday": [
       {{"pool": "{pool_name}", "weekday": "Saturday", "start": "9:00AM", "end": "10:30AM", "note": "Family Swim"}},
       ...
@@ -509,19 +509,11 @@ Return filtered schedule in this format:
     "Sunday": [...],
     ...
   }},
-  "PARENT CHILD SWIM": {{
-    "Saturday": [
-      {{"pool": "{pool_name}", "weekday": "Saturday", "start": "9:00AM", "end": "10:30AM", "note": "Parent Child Swim"}},
-      ...
-    ],
-    "Sunday": [...],
-    ...
-  }}
 }}
 
-Please include all days of the week. If there aren't any relevant activities for that day, it can be an empty array.
+Please include all days of the week. If there aren't any activities or relevant activities for that day, it can be an empty array.
 
-Use the "note" field if a specific location is specified, e.g. "Small pool".
+Use the "note" field to combine the name and location of the activity, if a location is provided. Otherwise just the activity name. Please normalize all forms of family swim e.g. "REC/FAMILY SWIM" to simply Family Swim, and please normalize all forms of parent child swim to simply Parent Child Swim
 
 Return ONLY the JSON, no other text."""
 
@@ -551,28 +543,14 @@ Return ONLY the JSON, no other text."""
 
         family_swim_data = json.loads(response_text)
 
-        # Merge the two categories into a single flat structure
-        merged_data = {
-            "Saturday": [],
-            "Sunday": [],
-            "Monday": [],
-            "Tuesday": [],
-            "Wednesday": [],
-            "Thursday": [],
-            "Friday": []
-        }
+        # The new prompt returns data already in the flat format with days as keys
+        # Just need to fix the pool field to use the actual pool name instead of pool area
+        for day in family_swim_data.keys():
+            for slot in family_swim_data[day]:
+                # Fix the pool field to be the actual pool name
+                slot["pool"] = pool_name
 
-        # Add family swim slots
-        if "FAMILY_SWIM" in family_swim_data:
-            for day in merged_data.keys():
-                merged_data[day].extend(family_swim_data["FAMILY_SWIM"].get(day, []))
-
-        # Add parent-child swim slots
-        if "PARENT CHILD SWIM" in family_swim_data:
-            for day in merged_data.keys():
-                merged_data[day].extend(family_swim_data["PARENT CHILD SWIM"].get(day, []))
-
-        return merged_data
+        return family_swim_data
 
     except Exception as e:
         print(f"Error filtering family swim: {e}")
@@ -644,15 +622,15 @@ def extract_all_activities_from_raw(raw_schedule):
 
 def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data=None):
     """
-    PASS 5: Calculate secret swim times (Python logic).
+    PASS 5: Calculate secret swim times using Claude AI.
     Add "secret swim" times based on lap swim availability.
     For Balboa Pool: Add "Parent Child Swim on Steps" during lap swim when no other activity
-    For Hamilton Pool: Add "Family Swim in Small Pool" during lap swim when no other activity
+    For Hamilton Pool: Add "Parent Child Swim in Small Pool" during lap swim when no other activity
     For Garfield Pool: Add "Parent Child Swim in Small Pool" during lap swim when no other activity
     """
     SECRET_SWIM_POOLS = {
         "Balboa Pool": "Parent Child Swim on Steps",
-        "Hamilton Pool": "Family Swim in Small Pool",
+        "Hamilton Pool": "Parent Child Swim in Small Pool",
         "Garfield Pool": "Parent Child Swim in Small Pool"
     }
 
@@ -660,78 +638,144 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
         return family_swim_data
 
     secret_swim_note = SECRET_SWIM_POOLS[pool_name]
-    combined_data = {}
 
+    try:
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        # Prepare the schedule data for Claude
+        schedule_data = {
+            "all_activities": all_activities_data if all_activities_data else {},
+            "family_swim": family_swim_data,
+            "lap_swim": lap_swim_data
+        }
+
+        # Build pool-specific instructions
+        if pool_name == "Hamilton Pool":
+            pool_specific_rules = """
+HAMILTON POOL SPECIFIC RULES:
+- The Small Pool is available for Parent-Child Swim during during other time slots IF it's not being used
+- Activities that specify lanes (e.g., "4 lanes", "6 lanes") are in the MAIN POOL - these do NOT conflict with Small Pool availability
+- Activities that specify "Main Pool" do NOT conflict with Small Pool availability
+- Activities that DO conflict with Small Pool:
+  1. Activities explicitly mentioning "Small Pool" in the pool_area field
+  2. Activities that do not mention a location such as Swim team activities and lessons or classes (they use both pools)
+"""
+        elif pool_name == "Balboa Pool":
+            pool_specific_rules = """
+BALBOA POOL SPECIFIC RULES:
+- The Steps area is available for Parent-Child Swim during lap swim times when no other activities conflict
+- Any activity that overlaps with lap swim time creates a conflict (except lap swim itself)
+"""
+        elif pool_name == "Garfield Pool":
+            pool_specific_rules = """
+GARFIELD POOL SPECIFIC RULES:
+- The Small Pool is available for Parent-Child Swim during lap swim times when the small pool isn't being used
+- Activities explicitly mentioning "Small Pool" conflict
+- Activities that do not mention a location such as swim team and lessons (intro/sfusd/etc) use the whole pool, so they conflict
+"""
+        else:
+            pool_specific_rules = ""
+
+        prompt = f"""Analyze this pool schedule and identify "secret swim" times for {pool_name}.
+
+{pool_specific_rules}
+
+GENERAL RULES:
+- Secret swim times are opportunistic times when families can use a separate area of the pool
+- For {pool_name}, secret swim is called: "{secret_swim_note}"
+- Secret swim times should be added for time periods when there IS an existing activity but no conflicting activity in the secret swim location.
+- When there are conflicts, identify the GAPS (available time ranges) and add secret swim for those gaps
+- IMPORTANT: Only add gap time slots if they are at least 1 HOUR long (60 minutes or more)
+- If there are no conflicts during a lap swim period, add the ENTIRE lap swim time as secret swim
+
+SCHEDULE DATA:
+{json.dumps(schedule_data, indent=2)}
+
+TASK:
+For each day of the week, analyze the schedule and determine when secret swim ("{secret_swim_note}") is available.
+
+Return the secret swim times in this exact JSON format:
+{{
+  "Saturday": [
+    {{"pool": "{pool_name}", "weekday": "Saturday", "start": "9:00AM", "end": "12:00PM", "note": "{secret_swim_note}"}},
+    ...
+  ],
+  "Sunday": [...],
+  "Monday": [...],
+  "Tuesday": [...],
+  "Wednesday": [...],
+  "Thursday": [...],
+  "Friday": [...]
+}}
+
+Return ONLY the secret swim slots you've identified (do NOT include the existing family swim data).
+
+Each day should contain only the new secret swim slots. If there aren't any secret swim slots for a day, use an empty array for that day.
+
+Return ONLY the JSON, no other text."""
+
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        response_text = message.content[0].text.strip()
+
+        # Extract JSON
+        if '```json' in response_text:
+            start = response_text.find('```json') + 7
+            end = response_text.find('```', start)
+            if end != -1:
+                response_text = response_text[start:end].strip()
+        elif '```' in response_text:
+            start = response_text.find('```') + 3
+            end = response_text.rfind('```')
+            if end != -1 and end > start:
+                response_text = response_text[start:end].strip()
+        elif '{' in response_text and '}' in response_text:
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            response_text = response_text[start:end].strip()
+
+        combined_data = json.loads(response_text)
+        return combined_data
+
+    except Exception as e:
+        print(f"Error calculating secret swim with Claude: {e}")
+        traceback.print_exc()
+        # Fallback to empty secret swim data
+        return {
+            "Saturday": [],
+            "Sunday": [],
+            "Monday": [],
+            "Tuesday": [],
+            "Wednesday": [],
+            "Thursday": [],
+            "Friday": []
+        }
+
+
+def combine_and_sort_schedules(family_swim_data, secret_swim_data):
+    """
+    Combine family swim and secret swim schedules, then sort by start time.
+    Returns a dict in the format: {weekday: [swim_slots]}
+    """
+    combined_data = {}
     weekdays = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
     for day in weekdays:
-        combined_data[day] = list(family_swim_data.get(day, []))
-        lap_slots = lap_swim_data.get(day, [])
+        # Combine family swim and secret swim slots for this day
+        day_slots = []
+        day_slots.extend(family_swim_data.get(day, []))
+        day_slots.extend(secret_swim_data.get(day, []))
 
-        for lap_slot in lap_slots:
-            lap_start = time_to_minutes(lap_slot['start'])
-            lap_end = time_to_minutes(lap_slot['end'])
+        # Sort by start time
+        def time_sort_key(slot):
+            return time_to_minutes(slot['start'])
 
-            conflicts = []
-
-            # Check conflicts with ALL activities if we have that data
-            if all_activities_data:
-                all_activities = all_activities_data.get(day, [])
-                for activity in all_activities:
-                    # Skip lap swim itself
-                    if 'lap swim' in activity.get('activity', '').lower():
-                        continue
-
-                    activity_start = time_to_minutes(activity['start'])
-                    activity_end = time_to_minutes(activity['end'])
-
-                    # Check for time overlap
-                    if not (lap_end <= activity_start or lap_start >= activity_end):
-                        conflicts.append((activity_start, activity_end))
-            else:
-                # Fallback: only check family swim conflicts
-                family_slots = family_swim_data.get(day, [])
-                for family_slot in family_slots:
-                    family_start = time_to_minutes(family_slot['start'])
-                    family_end = time_to_minutes(family_slot['end'])
-
-                    if not (lap_end <= family_start or lap_start >= family_end):
-                        conflicts.append((family_start, family_end))
-
-            if not conflicts:
-                # No conflicts - add the full lap swim time as secret swim
-                combined_data[day].append({
-                    "pool": pool_name,
-                    "weekday": day,
-                    "start": lap_slot['start'],
-                    "end": lap_slot['end'],
-                    "note": secret_swim_note
-                })
-            else:
-                # There are conflicts - find available time ranges within the lap swim period
-                conflicts.sort()
-                available_ranges = []
-                current_start = lap_start
-
-                for conflict_start, conflict_end in conflicts:
-                    if current_start < conflict_start:
-                        available_ranges.append((current_start, conflict_start))
-                    current_start = max(current_start, conflict_end)
-
-                if current_start < lap_end:
-                    available_ranges.append((current_start, lap_end))
-
-                # Add secret swim times for available ranges (minimum 1 hour)
-                for start_min, end_min in available_ranges:
-                    duration = end_min - start_min
-                    if duration >= 60:  # Only add if at least 1 hour long
-                        combined_data[day].append({
-                            "pool": pool_name,
-                            "weekday": day,
-                            "start": minutes_to_time(start_min),
-                            "end": minutes_to_time(end_min),
-                            "note": secret_swim_note
-                        })
+        day_slots.sort(key=time_sort_key)
+        combined_data[day] = day_slots
 
     return combined_data
 
@@ -741,11 +785,12 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
 
     Strategy:
-    1. Extract RAW schedule from PDF (Claude Opus - vision only)
-    2. Filter for family/parent-child swim (Claude Haiku - JSON filtering)
+    1. Extract RAW schedule from PDF (Claude Sonnet 4.5 - vision only, no filtering)
+    2. Filter for family/parent-child swim (Claude Sonnet 4 - JSON filtering, excludes classes like "Parent Child Intro")
     3. Extract lap swim from raw schedule (Python - no API call)
     4. Extract all activities from raw schedule (Python - no API call)
-    5. Calculate secret swims (Python logic)
+    5. Calculate secret swims (Claude Sonnet 4 - AI analysis with pool-specific rules)
+    6. Combine and sort schedules (Python - merge family swim + secret swim, sort by start time)
 
     Returns a dict in the format: {weekday: [swim_slots]} or None if failed.
     """
@@ -816,9 +861,13 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             all_activities_data = extract_all_activities_from_raw(raw_schedule)
             print(f"Found {sum(len(slots) for slots in all_activities_data.values())} non-lap activity slots")
 
-            # PASS 5: Calculate secret swims (Python logic)
-            print(f"PASS 5: Calculating secret swim times...")
-            combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
+            # PASS 5: Calculate secret swims using Claude AI
+            print(f"PASS 5: Calculating secret swim times with Claude...")
+            secret_swim_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
+
+            # PASS 6: Combine and sort schedules
+            print(f"PASS 6: Combining and sorting schedules...")
+            combined_data = combine_and_sort_schedules(family_swim_data, secret_swim_data)
         else:
             print(f"Skipping secret swim extraction (not needed for {pool_name})")
             combined_data = family_swim_data
