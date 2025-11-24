@@ -172,6 +172,7 @@ def extract_raw_schedule(pdf_path, pool_name):
     """
     PASS 1: Extract RAW schedule from PDF.
     Pure vision extraction - no filtering, no judgment calls.
+    Makes 7 separate API calls (one per day) to improve accuracy.
     Returns a dict in the format: {weekday: [activity_slots]}
     """
     try:
@@ -180,19 +181,26 @@ def extract_raw_schedule(pdf_path, pool_name):
 
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
-        prompt = f"""Extract ALL activities from this pool schedule PDF for {pool_name}.
+        weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        raw_schedule = {}
 
-TASK: Read the schedule and output EVERY activity as structured JSON.
+        # Extract each day separately with individual API calls
+        for day in weekdays:
+            print(f"  Extracting {day}...")
 
-CRITICAL INSTRUCTIONS FOR READING MULTI-COLUMN TABLE:
-⚠️ COMMON ERROR: Accidentally reading activities from adjacent columns (e.g., reading Thursday's activities under Wednesday)
+            prompt = f"""Extract ALL activities from this pool schedule PDF for {pool_name} for {day.upper()} ONLY.
 
-STEP-BY-STEP PROCESS FOR EACH DAY:
-1. Locate the day column header (SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY)
+TASK: Read the schedule and find the {day.upper()} column. Extract EVERY activity from that column ONLY.
+
+CRITICAL INSTRUCTIONS FOR READING THE {day.upper()} COLUMN:
+⚠️ COMMON ERROR: Accidentally reading activities from adjacent columns. You MUST only include activities that are directly below the column header for {day.upper()} only. Pools are closed some days of the week, so if there is no column header with {day.upper()}, please simply return an empty array.
+
+STEP-BY-STEP PROCESS:
+1. Locate the {day.upper()} column header
 2. Draw an imaginary vertical line straight down from that header
 3. For EACH activity cell in that column:
-   a. FIRST: Look up to confirm you're still in the correct column - what is the header directly above?
-   b. VERIFY: Double-check the column header matches the day you're extracting for
+   a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
+   b. VERIFY: Double-check the column header says {day.upper()}
    c. ONLY THEN: Extract the activity details
 4. DO NOT drift into adjacent columns - stay within vertical boundaries
 5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
@@ -202,7 +210,6 @@ For each activity you extract, you MUST include:
 - End time (e.g., "10:30AM")
 - Activity name (e.g., "REC/FAMILY SWIM", "LAP SWIM")
 - Pool area if specified (e.g., "Warm Pool", "Shallow Pool", "Deep Pool", "Small Pool", "Main Pool", or lane counts like "(4)" or "(2)"). If not specified, use empty string.
-- verified_day: The day column header you verified this activity is under (MUST match the day you're placing it in)
 
 HANDLING MULTI-ACTIVITY CELLS:
 When you see a cell like:
@@ -229,103 +236,78 @@ DO NOT filter anything. Extract EVERYTHING including:
 - Staff meetings, pool closures
 - ANY other activity shown
 
-Return in this EXACT JSON format (note the new "verified_day" field):
-{{
-  "Saturday": [
-    {{"start": "9:00AM", "end": "10:30AM", "activity": "REC/FAMILY SWIM", "pool_area": "Small Pool", "verified_day": "Saturday"}},
-    {{"start": "9:00AM", "end": "10:30AM", "activity": "LAP SWIM", "pool_area": "Main Pool", "verified_day": "Saturday"}},
-    ...
-  ],
-  "Sunday": [...],
-  "Monday": [...],
-  "Tuesday": [...],
-  "Wednesday": [...],
-  "Thursday": [...],
-  "Friday": [...]
-}}
+Return in this EXACT JSON format - an array of activities for {day.upper()}:
+[
+  {{"start": "9:00AM", "end": "10:30AM", "activity": "REC/FAMILY SWIM", "pool_area": "Small Pool"}},
+  {{"start": "9:00AM", "end": "10:30AM", "activity": "LAP SWIM", "pool_area": "Main Pool"}},
+  ...
+]
 
-VERIFICATION REQUIREMENT: The "verified_day" field MUST match the day key you're placing the activity under. This forces you to confirm which column you're reading from.
+If no activities for {day.upper()}, return an empty array: []
 
-If no activities for a day, still include that day with an empty array: "Saturday": []
+Return ONLY the JSON array, no other text.
 
-Return ONLY the JSON, no other text.
+Extract all {day.upper()} activities now."""
 
-Extract the complete raw schedule now."""
-
-        message = client.messages.create(
-            model="claude-opus-4-20250514",
-            max_tokens=8192,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "document",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "application/pdf",
-                                "data": pdf_data
+            message = client.messages.create(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "document",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "application/pdf",
+                                    "data": pdf_data
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt
                             }
-                        },
-                        {
-                            "type": "text",
-                            "text": prompt
-                        }
-                    ]
-                }
-            ]
-        )
+                        ]
+                    }
+                ]
+            )
 
-        response_text = message.content[0].text.strip()
+            response_text = message.content[0].text.strip()
 
-        # Extract JSON from response
-        if '```json' in response_text:
-            start = response_text.find('```json') + 7
-            end = response_text.find('```', start)
-            if end != -1:
+            # Extract JSON from response
+            if '```json' in response_text:
+                start = response_text.find('```json') + 7
+                end = response_text.find('```', start)
+                if end != -1:
+                    response_text = response_text[start:end].strip()
+            elif '```' in response_text:
+                start = response_text.find('```') + 3
+                end = response_text.rfind('```')
+                if end != -1 and end > start:
+                    response_text = response_text[start:end].strip()
+            elif '[' in response_text and ']' in response_text:
+                start = response_text.find('[')
+                end = response_text.rfind(']') + 1
                 response_text = response_text[start:end].strip()
-        elif '```' in response_text:
-            start = response_text.find('```') + 3
-            end = response_text.rfind('```')
-            if end != -1 and end > start:
-                response_text = response_text[start:end].strip()
-        elif '{' in response_text and '}' in response_text:
-            start = response_text.find('{')
-            end = response_text.rfind('}') + 1
-            response_text = response_text[start:end].strip()
 
-        if not response_text:
-            print(f"Warning: Empty response from Claude for raw schedule extraction")
-            return None
+            if not response_text:
+                print(f"    Warning: Empty response for {day}")
+                raw_schedule[day] = []
+                continue
 
-        raw_schedule = json.loads(response_text)
+            try:
+                day_activities = json.loads(response_text)
+                raw_schedule[day] = day_activities
+                print(f"    ✓ Extracted {len(day_activities)} activities for {day}")
+            except json.JSONDecodeError as e:
+                print(f"    Error parsing JSON for {day}: {e}")
+                print(f"    Response (first 200 chars): {response_text[:200]}")
+                raw_schedule[day] = []
 
-        # Validate that verified_day matches the day key
-        validation_errors = []
-        for day, activities in raw_schedule.items():
-            for idx, activity in enumerate(activities):
-                verified_day = activity.get('verified_day', '')
-                if verified_day and verified_day != day:
-                    validation_errors.append(
-                        f"  ⚠️  {day} activity #{idx+1}: '{activity.get('activity', 'unknown')}' "
-                        f"has verified_day='{verified_day}' but is placed under '{day}'"
-                    )
-
-        if validation_errors:
-            print(f"\n⚠️  COLUMN VERIFICATION ERRORS DETECTED:")
-            for error in validation_errors:
-                print(error)
-            print(f"\nThe model may have misread column alignments. Review the raw schedule carefully.\n")
-        else:
-            print(f"✓ All activities passed column verification")
-
+        print(f"\n✓ Completed extraction for all days")
         return raw_schedule
 
-    except json.JSONDecodeError as e:
-        print(f"Error parsing raw schedule JSON: {e}")
-        print(f"Response text (first 500 chars): {response_text[:500] if 'response_text' in locals() else 'N/A'}")
-        traceback.print_exc()
-        return None
     except Exception as e:
         print(f"Error extracting raw schedule: {e}")
         traceback.print_exc()
