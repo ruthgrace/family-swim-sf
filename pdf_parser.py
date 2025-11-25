@@ -681,12 +681,10 @@ GARFIELD POOL SPECIFIC RULES:
 {pool_specific_rules}
 
 GENERAL RULES:
-- Secret swim times are opportunistic times when families can use a separate area of the pool
+- Secret swim times are opportunistic times when families can use a separate area of the pool DURING the same time as another activity.
 - For {pool_name}, secret swim is called: "{secret_swim_note}"
 - Secret swim times should be added for time periods when there IS an existing activity but no conflicting activity in the secret swim location.
-- When there are conflicts, identify the GAPS (available time ranges) and add secret swim for those gaps
-- IMPORTANT: Only add gap time slots if they are at least 1 HOUR long (60 minutes or more)
-- If there are no conflicts during a lap swim period, add the ENTIRE lap swim time as secret swim
+- there is NEVER secret swim when there is NOT another activity scheduled because the pool won't have life guards.
 
 SCHEDULE DATA:
 {json.dumps(schedule_data, indent=2)}

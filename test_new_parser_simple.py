@@ -53,7 +53,7 @@ def minutes_to_time(minutes):
 
 
 # Now import the pdf_parser functions
-from pdf_parser import extract_raw_schedule, filter_family_swim, extract_lap_swim_from_raw, extract_all_activities_from_raw, add_secret_swim_times
+from pdf_parser import extract_raw_schedule, filter_family_swim, extract_lap_swim_from_raw, extract_all_activities_from_raw, add_secret_swim_times, combine_and_sort_schedules
 
 # Test with the Garfield Pool PDF we downloaded earlier
 pdf_path = "/tmp/garfield_fall_2025.pdf"
@@ -105,9 +105,13 @@ if raw_schedule:
         total_activity_slots = sum(len(slots) for slots in all_activities_data.values())
         print(f"✓ Found {total_activity_slots} non-lap activity slots")
 
-        # PASS 5: Calculate secret swims
-        print("\nPASS 5: Calculating secret swim times (Python)...")
-        combined_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
+        # PASS 5: Calculate secret swims with Claude
+        print("\nPASS 5: Calculating secret swim times with Claude...")
+        secret_swim_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
+
+        # PASS 6: Combine and sort
+        print("\nPASS 6: Combining and sorting schedules (Python)...")
+        combined_data = combine_and_sort_schedules(family_swim_data, secret_swim_data)
 
         print(f"\n✓ Final schedule for {pool_name}:")
         for day, slots in combined_data.items():
