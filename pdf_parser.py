@@ -99,7 +99,7 @@ Which document should I use for today's date? Please respond with ONLY the numbe
 Choose the document whose date range includes today's date. If none include today, choose the one with the closest future date range."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-5-20250929",
             max_tokens=50,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -632,10 +632,10 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
             pool_specific_rules = """
 HAMILTON POOL SPECIFIC RULES:
 - The Small Pool is available for Parent-Child Swim during during other time slots IF it's not being used
-- Activities that specify lanes (e.g., "(2)", "(4)", "(6)") are in the MAIN POOL - these do NOT conflict with Small Pool availability
+- Activities that specify lanes (e.g., "(2)", "(4)", "(6)") are in the MAIN POOL - these do NOT conflict with Small Pool availability for Parent Child Swim in Small Pool
 - Activities that specify "Main Pool" do NOT conflict with Small Pool availability
 - Activities explicitly mentioning "Small Pool" in the pool location field DO conflict with Parent Child Swim in the Small Pool
-- Activities that do not mention a location such as Swim team activities (e.g. Youth Swim Team, Masters Swim Team) and lessons or classes DO conflict Parent Child Swim in the Small Pool (they use both pools)
+- Activities that do not mention a location such as Swim team activities (e.g. Youth Swim Team, Masters Swim Team) and lessons or classes DO conflict Parent Child Swim in Small Pool (they use both pools)
 """
         elif pool_name == "Balboa Pool":
             pool_specific_rules = """
@@ -693,7 +693,7 @@ Each day should contain only the new secret swim slots. If there aren't any secr
 Return ONLY the JSON, no other text."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-5-20250929",
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}]
         )
