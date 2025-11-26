@@ -654,17 +654,17 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
             pool_specific_rules = """
 HAMILTON POOL SPECIFIC RULES:
 - The Small Pool is available for Parent-Child Swim during during other time slots IF it's not being used
-- Activities that specify lanes (e.g., "4 lanes", "6 lanes") are in the MAIN POOL - these do NOT conflict with Small Pool availability
+- Activities that specify lanes (e.g., "(2)", "(4)", "(6)") are in the MAIN POOL - these do NOT conflict with Small Pool availability
 - Activities that specify "Main Pool" do NOT conflict with Small Pool availability
-- Activities that DO conflict with Small Pool:
-  1. Activities explicitly mentioning "Small Pool" in the pool_area field
-  2. Activities that do not mention a location such as Swim team activities and lessons or classes (they use both pools)
+- Activities explicitly mentioning "Small Pool" in the pool location field DO conflict with Parent Child Swim in the Small Pool
+- Activities that do not mention a location such as Swim team activities and lessons or classes DO conflict Parent Child Swim in the Small Pool (they use both pools)
 """
         elif pool_name == "Balboa Pool":
             pool_specific_rules = """
 BALBOA POOL SPECIFIC RULES:
-- The Steps area is available for Parent-Child Swim during lap swim times when no other activities conflict
+- The Steps area is available for Parent-Child Swim during lap swim times IF there is no other conflicting activity
 - Any activity that overlaps with lap swim time creates a conflict (except lap swim itself)
+- Parent-Child Swim on Steps is NOT available during any activity that is NOT lap swim specifically
 """
         elif pool_name == "Garfield Pool":
             pool_specific_rules = """
