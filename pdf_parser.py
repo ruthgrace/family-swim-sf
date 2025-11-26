@@ -12,6 +12,7 @@ Simplified Multi-Pass Strategy:
 This approach uses AI strategically: vision extraction, intelligent filtering, and rule-based analysis.
 """
 
+import re
 import requests
 import traceback
 import json
@@ -477,85 +478,62 @@ If the extraction was already correct, return it unchanged. Return ONLY the JSON
 def filter_family_swim(raw_schedule, pool_name):
     """
     PASS 2: Filter raw schedule for family/parent-child swim activities.
-    Works on JSON data (no PDF vision needed).
+    Uses deterministic regex matching (no LLM) to avoid hallucinations.
     Returns a dict in the format: {weekday: [swim_slots]}
     """
-    try:
-        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    family_swim_data = {
+        "Saturday": [], "Sunday": [], "Monday": [],
+        "Tuesday": [], "Wednesday": [], "Thursday": [], "Friday": []
+    }
 
-        raw_schedule_json = json.dumps(raw_schedule, indent=2)
+    # Patterns to match (case-insensitive)
+    family_pattern = re.compile(r'family', re.IGNORECASE)
+    parent_child_pattern = re.compile(r'parent.*child', re.IGNORECASE)
 
-        prompt = f"""Given this pool schedule JSON, extract ONLY the family swim and parent-child swim activities.
+    # Patterns to exclude (case-insensitive)
+    exclude_pattern = re.compile(r'intro|class|lesson', re.IGNORECASE)
 
-INCLUDE activities that are:
-- "REC/FAMILY SWIM", "FAMILY SWIM"
-- "PARENT CHILD SWIM", "PARENT & CHILD SWIM", "PARENT AND CHILD SWIM", "PARENT/CHILD SWIM" etc.
+    for day in family_swim_data.keys():
+        day_activities = raw_schedule.get(day, [])
+        for activity in day_activities:
+            activity_name = activity.get("activity", "")
+            pool_area = activity.get("pool_area", "")
 
-EXCLUDE activitiest:
-- that are classes, including "LESSON", "INTRO", "CLASS", "LEARN TO"
-  - Examples: "PARENT CHILD INTRO", "SFUSD", "SENIOR/THERAPY", "YOUTH LESSONS", "SWIM TEAM", "MASTER'S"
-- "WATER EXERCISE", "DEEP WATER EXERCISE"
-- "LAP SWIM"
+            # Check if it's a family/parent-child swim
+            is_family = family_pattern.search(activity_name)
+            is_parent_child = parent_child_pattern.search(activity_name)
 
-Input schedule:
-{raw_schedule_json}
+            # Check if it should be excluded
+            is_excluded = exclude_pattern.search(activity_name)
 
-Return filtered schedule in this format:
-{{
-    "Saturday": [
-      {{"pool": "{pool_name}", "weekday": "Saturday", "start": "9:00AM", "end": "10:30AM", "note": "Family Swim"}},
-      ...
-    ],
-    "Sunday": [...],
-    ...
-  }},
-}}
+            if (is_family or is_parent_child) and not is_excluded:
+                # Normalize the note
+                if is_family:
+                    note = "Family Swim"
+                else:
+                    note = "Parent Child Swim"
 
-Please include all days of the week. If there aren't any activities or relevant activities for that day, it can be an empty array.
+                # Add pool area to note if present
+                if pool_area and pool_area.strip():
+                    area = pool_area.strip()
+                    # Clean up area formatting - remove parentheses
+                    if area.startswith("(") and area.endswith(")"):
+                        area = area[1:-1]
+                    # Add area to note if meaningful
+                    if area.lower() in ["shallow", "deep"]:
+                        note = f"{note} ({area})"
+                    elif area and area.lower() not in [""]:
+                        note = f"{note} - {area}"
 
-Use the "note" field to combine the name and location of the activity, if a location is provided. Otherwise just the activity name. Please normalize all forms of family swim e.g. "REC/FAMILY SWIM" to simply Family Swim, and please normalize all forms of parent child swim to simply Parent Child Swim
+                family_swim_data[day].append({
+                    "pool": pool_name,
+                    "weekday": day,
+                    "start": activity.get("start", ""),
+                    "end": activity.get("end", ""),
+                    "note": note
+                })
 
-Return ONLY the JSON, no other text."""
-
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        response_text = message.content[0].text.strip()
-
-        # Extract JSON
-        if '```json' in response_text:
-            start = response_text.find('```json') + 7
-            end = response_text.find('```', start)
-            if end != -1:
-                response_text = response_text[start:end].strip()
-        elif '```' in response_text:
-            start = response_text.find('```') + 3
-            end = response_text.rfind('```')
-            if end != -1 and end > start:
-                response_text = response_text[start:end].strip()
-        elif '{' in response_text and '}' in response_text:
-            start = response_text.find('{')
-            end = response_text.rfind('}') + 1
-            response_text = response_text[start:end].strip()
-
-        family_swim_data = json.loads(response_text)
-
-        # The new prompt returns data already in the flat format with days as keys
-        # Just need to fix the pool field to use the actual pool name instead of pool area
-        for day in family_swim_data.keys():
-            for slot in family_swim_data[day]:
-                # Fix the pool field to be the actual pool name
-                slot["pool"] = pool_name
-
-        return family_swim_data
-
-    except Exception as e:
-        print(f"Error filtering family swim: {e}")
-        traceback.print_exc()
-        return None
+    return family_swim_data
 
 
 def extract_lap_swim_from_raw(raw_schedule, pool_name):
