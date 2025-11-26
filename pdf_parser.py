@@ -205,6 +205,100 @@ def minutes_to_time(minutes):
     return f"{hours}:{mins:02d}{period}"
 
 
+def conflicts_with_small_pool(activity):
+    """
+    Check if activity conflicts with Secret Swim in Small Pool.
+
+    Returns True (conflict) if:
+    - Activity explicitly uses Small Pool
+    - Activity has no specified location (uses whole pool)
+
+    Returns False (no conflict) if:
+    - Activity explicitly uses Main Pool only
+    - Activity explicitly uses specific lanes (e.g., "(4)", "(2)")
+    """
+    pool_area = activity.get("pool_area", "").strip().lower()
+
+    # Explicit Small Pool - conflicts
+    if "small pool" in pool_area:
+        return True
+
+    # Explicit Main Pool - no conflict
+    if "main pool" in pool_area:
+        return False
+
+    # Lane counts (e.g., "(4)", "(2)", "(6)") - Main Pool only, no conflict
+    if re.search(r'\(\d+\)', pool_area):
+        return False
+
+    # No location specified - uses whole pool, CONFLICTS
+    if not pool_area:
+        return True
+
+    # Any other explicit location - assume no conflict
+    return False
+
+
+def times_overlap(act1, act2):
+    """Check if two activities have overlapping times."""
+    start1 = time_to_minutes(act1["start"])
+    end1 = time_to_minutes(act1["end"])
+    start2 = time_to_minutes(act2["start"])
+    end2 = time_to_minutes(act2["end"])
+
+    return start1 < end2 and start2 < end1
+
+
+def calculate_garfield_secret_swim(raw_schedule, pool_name):
+    """
+    Deterministic secret swim calculation for Garfield Pool.
+
+    For each activity that does NOT conflict with the Small Pool,
+    check if any overlapping activity DOES conflict. If no conflict,
+    that time slot gets secret swim.
+    """
+    secret_swim_data = {
+        "Saturday": [], "Sunday": [], "Monday": [],
+        "Tuesday": [], "Wednesday": [], "Thursday": [], "Friday": []
+    }
+
+    for day, activities in raw_schedule.items():
+        if day not in secret_swim_data:
+            continue
+
+        # Track added time slots to avoid duplicates
+        added_slots = set()
+
+        for activity in activities:
+            # Step 1: Skip if this activity conflicts with Small Pool
+            if conflicts_with_small_pool(activity):
+                continue
+
+            # Step 2: Check for overlapping activities that conflict
+            has_conflict = False
+            for other in activities:
+                if other == activity:
+                    continue
+                if conflicts_with_small_pool(other) and times_overlap(activity, other):
+                    has_conflict = True
+                    break
+
+            # Step 3: If no conflict, add secret swim (with deduplication)
+            if not has_conflict:
+                slot_key = (activity["start"], activity["end"])
+                if slot_key not in added_slots:
+                    added_slots.add(slot_key)
+                    secret_swim_data[day].append({
+                        "pool": pool_name,
+                        "weekday": day,
+                        "start": activity["start"],
+                        "end": activity["end"],
+                        "note": "Parent Child Swim in Small Pool"
+                    })
+
+    return secret_swim_data
+
+
 def extract_raw_schedule(pdf_path, pool_name):
     """
     PASS 1: Extract RAW schedule from PDF by converting to image first.
@@ -598,13 +692,11 @@ def extract_all_activities_from_raw(raw_schedule):
     return all_activities_data
 
 
-def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data=None):
+def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data=None, raw_schedule=None):
     """
-    PASS 5: Calculate secret swim times using Claude AI.
-    Add "secret swim" times based on lap swim availability.
-    For Balboa Pool: Add "Parent Child Swim on Steps" during lap swim when no other activity
-    For Hamilton Pool: Add "Parent Child Swim in Small Pool" during lap swim when no other activity
-    For Garfield Pool: Add "Parent Child Swim in Small Pool" during lap swim when no other activity
+    PASS 5: Calculate secret swim times.
+    For Garfield Pool: Uses deterministic Python logic (no AI)
+    For Balboa/Hamilton Pool: Uses Claude AI for complex analysis.
     """
     SECRET_SWIM_POOLS = {
         "Balboa Pool": "Parent Child Swim on Steps",
@@ -616,6 +708,11 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
         return family_swim_data
 
     secret_swim_note = SECRET_SWIM_POOLS[pool_name]
+
+    # Use deterministic logic for Garfield Pool
+    if pool_name == "Garfield Pool" and raw_schedule:
+        print(f"  Using deterministic calculation for Garfield secret swim...")
+        return calculate_garfield_secret_swim(raw_schedule, pool_name)
 
     try:
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -839,9 +936,9 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             all_activities_data = extract_all_activities_from_raw(raw_schedule)
             print(f"Found {sum(len(slots) for slots in all_activities_data.values())} non-lap activity slots")
 
-            # PASS 5: Calculate secret swims using Claude AI
-            print(f"PASS 5: Calculating secret swim times with Claude...")
-            secret_swim_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data)
+            # PASS 5: Calculate secret swims (deterministic for Garfield, AI for others)
+            print(f"PASS 5: Calculating secret swim times...")
+            secret_swim_data = add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activities_data, raw_schedule)
 
             # PASS 6: Combine and sort schedules
             print(f"PASS 6: Combining and sorting schedules...")
