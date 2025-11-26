@@ -635,20 +635,22 @@ HAMILTON POOL SPECIFIC RULES:
 - Activities that specify lanes (e.g., "(2)", "(4)", "(6)") are in the MAIN POOL - these do NOT conflict with Small Pool availability
 - Activities that specify "Main Pool" do NOT conflict with Small Pool availability
 - Activities explicitly mentioning "Small Pool" in the pool location field DO conflict with Parent Child Swim in the Small Pool
-- Activities that do not mention a location such as Swim team activities and lessons or classes DO conflict Parent Child Swim in the Small Pool (they use both pools)
+- Activities that do not mention a location such as Swim team activities (e.g. Youth Swim Team, Masters Swim Team) and lessons or classes DO conflict Parent Child Swim in the Small Pool (they use both pools)
 """
         elif pool_name == "Balboa Pool":
             pool_specific_rules = """
 BALBOA POOL SPECIFIC RULES:
 - The Steps area is available for Parent-Child Swim during lap swim times IF there is no other conflicting activity
-- Any activity that overlaps with lap swim time creates a conflict (except lap swim itself)
+- Any activity that overlaps with lap swim time creates a conflict such that there is NO Parent Child Swim on the Steps during Lap Swim, EVEN IF the overlap is only partial
 - Parent-Child Swim on Steps is NOT available during any activity that is NOT lap swim specifically
 """
         elif pool_name == "Garfield Pool":
             pool_specific_rules = """
 GARFIELD POOL SPECIFIC RULES:
-- The Small Pool is available for Parent-Child Swim during lap swim times when the small pool isn't being used
-- Activities explicitly mentioning "Small Pool" conflict
+- The Small Pool is available for Parent-Child Swim during other SCHEDULED activities IF the small pool isn't being used for another activity
+- Activities explicitly mentioning "Small Pool" conflict with Parent Child Swim in Small Pool
+- Activities in the Small Pool that only partially overlap with a Main Pool activity STILL CONFLICT with Parent Child Swim in Small Pool
+- Activities that specify number of Lanes are in the Main Pool and DO NOT conflict with Parent Child Swim in Small Pool
 - Activities that do not mention a location such as swim team and lessons (intro/sfusd/etc) use the whole pool, so they conflict
 """
         else:
