@@ -254,6 +254,50 @@ def times_overlap(act1, act2):
     return start1 < end2 and start2 < end1
 
 
+def calculate_balboa_secret_swim(raw_schedule, pool_name):
+    """
+    Deterministic secret swim calculation for Balboa Pool.
+
+    Secret swim ("Parent Child Swim on Steps") is available during LAP SWIM times
+    ONLY when no other activity overlaps with the lap swim slot.
+    """
+    secret_swim_data = {
+        "Saturday": [], "Sunday": [], "Monday": [],
+        "Tuesday": [], "Wednesday": [], "Thursday": [], "Friday": []
+    }
+
+    for day, activities in raw_schedule.items():
+        if day not in secret_swim_data:
+            continue
+
+        # Find all lap swim slots for this day
+        lap_swims = [a for a in activities if 'lap swim' in a.get('activity', '').lower()]
+
+        for lap_swim in lap_swims:
+            # Check if any OTHER activity overlaps with this lap swim
+            has_conflict = False
+            for other in activities:
+                # Skip the lap swim itself
+                if 'lap swim' in other.get('activity', '').lower():
+                    continue
+                # Check for time overlap
+                if times_overlap(lap_swim, other):
+                    has_conflict = True
+                    break
+
+            # If no conflict, add secret swim
+            if not has_conflict:
+                secret_swim_data[day].append({
+                    "pool": pool_name,
+                    "weekday": day,
+                    "start": lap_swim["start"],
+                    "end": lap_swim["end"],
+                    "note": "Parent Child Swim on Steps"
+                })
+
+    return secret_swim_data
+
+
 def calculate_garfield_secret_swim(raw_schedule, pool_name):
     """
     Deterministic secret swim calculation for Garfield Pool.
@@ -701,7 +745,8 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
     """
     PASS 5: Calculate secret swim times.
     For Garfield Pool: Uses deterministic Python logic (no AI)
-    For Balboa/Hamilton Pool: Uses Claude AI for complex analysis.
+    For Balboa Pool: Uses deterministic Python logic (no AI)
+    For Hamilton Pool: Uses Claude AI for complex analysis.
     """
     SECRET_SWIM_POOLS = {
         "Balboa Pool": "Parent Child Swim on Steps",
@@ -718,6 +763,11 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
     if pool_name == "Garfield Pool" and raw_schedule:
         print(f"  Using deterministic calculation for Garfield secret swim...")
         return calculate_garfield_secret_swim(raw_schedule, pool_name)
+
+    # Use deterministic logic for Balboa Pool
+    if pool_name == "Balboa Pool" and raw_schedule:
+        print(f"  Using deterministic calculation for Balboa secret swim...")
+        return calculate_balboa_secret_swim(raw_schedule, pool_name)
 
     try:
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -741,10 +791,15 @@ HAMILTON POOL SPECIFIC RULES:
 """
         elif pool_name == "Balboa Pool":
             pool_specific_rules = """
-BALBOA POOL SPECIFIC RULES:
-- The Steps area is available for Parent-Child Swim during lap swim times IF there is no other conflicting activity
-- Any activity that overlaps with lap swim time creates a conflict such that there is NO Parent Child Swim on the Steps during Lap Swim, EVEN IF the overlap is only partial
-- Parent-Child Swim on Steps is NOT available during any activity that is NOT lap swim specifically
+BALBOA POOL SPECIFIC RULES (FOLLOW THESE EXACTLY):
+1. Secret swim ("Parent Child Swim on Steps") is ONLY possible during LAP SWIM times
+2. For EACH lap swim slot, check ALL activities in "all_activities" for that day
+3. A lap swim slot has a CONFLICT if ANY activity in all_activities has a time that:
+   - Starts before the lap swim ends, AND
+   - Ends after the lap swim starts
+   (This catches overlaps, partial overlaps, and activities that contain the lap swim)
+4. If a lap swim slot has ANY conflict, do NOT include it as secret swim
+5. Only include lap swim slots with ZERO conflicts as secret swim
 """
         elif pool_name == "Garfield Pool":
             pool_specific_rules = """
