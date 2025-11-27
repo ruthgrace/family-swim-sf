@@ -79,24 +79,30 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
     if not schedule_docs:
         return None
 
-    if len(schedule_docs) == 1:
-        return schedule_docs[0]
-
-    # Use Claude to select the best PDF based on current date
+    # Use Claude to validate PDF date ranges and select a valid one
     try:
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
         doc_list = "\n".join([f"{i+1}. {doc['name']}" for i, doc in enumerate(schedule_docs)])
 
-        prompt = f"""Today's date is {current_date.strftime('%B %d, %Y')} (MM/DD/YYYY: {current_date.strftime('%m/%d/%Y')}).
+        prompt = f"""Today's date is {current_date.strftime('%B %d, %Y')}.
 
 I have the following pool schedule documents for {pool_name}:
 
 {doc_list}
 
-Which document should I use for today's date? Please respond with ONLY the number (1, 2, 3, etc.) of the best document to use.
+Which document(s) have a date range that INCLUDES today's date?
 
-Choose the document whose date range includes today's date. If none include today, choose the one with the closest future date range."""
+Rules for determining date ranges:
+- If filename has explicit dates (like "Nov1_Nov22" or "Aug 19 _ Dec 13"), use those
+- If filename only has a season (like "Fall 2025"), use typical season dates:
+  - Fall: Sep 1 to Dec 21
+  - Winter: Dec 22 to Mar 20
+  - Spring: Mar 21 to Jun 20
+  - Summer: Jun 21 to Aug 31
+
+Respond with ONLY the number of a valid document, or "NONE" if no document's date range includes today.
+If multiple are valid, respond with the first valid number."""
 
         message = client.messages.create(
             model="claude-sonnet-4-5-20250929",
@@ -104,7 +110,11 @@ Choose the document whose date range includes today's date. If none include toda
             messages=[{"role": "user", "content": prompt}]
         )
 
-        response = message.content[0].text.strip()
+        response = message.content[0].text.strip().upper()
+
+        if response == "NONE":
+            print(f"No valid schedule PDF for {pool_name} on {current_date.strftime('%B %d, %Y')}")
+            return None
 
         try:
             selected_index = int(response) - 1
@@ -114,9 +124,11 @@ Choose the document whose date range includes today's date. If none include toda
             pass
 
     except Exception as e:
-        print(f"Warning: Claude selection failed ({e}), falling back to first document")
+        print(f"Warning: Claude selection failed ({e}), returning None")
 
-    return schedule_docs[0]
+    # Fallback: return None instead of first doc (safer default)
+    print(f"Could not determine valid PDF for {pool_name}")
+    return None
 
 
 def download_pdf(pdf_url, output_path):
