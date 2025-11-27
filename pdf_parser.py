@@ -85,28 +85,20 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
 
         doc_list = "\n".join([f"{i+1}. {doc['name']}" for i, doc in enumerate(schedule_docs)])
 
-        prompt = f"""Today's date is {current_date.strftime('%B %d, %Y')}.
+        prompt = f"""Today: {current_date.strftime('%B %d, %Y')}
 
-I have the following pool schedule documents for {pool_name}:
-
+Documents for {pool_name}:
 {doc_list}
 
-Which document(s) have a date range that INCLUDES today's date?
+Does any document's date range include today? Date rules:
+- Explicit dates (Nov1_Nov22 = Nov 1 to Nov 22)
+- Season only: Fall=Sep1-Dec21, Winter=Dec22-Mar20, Spring=Mar21-Jun20, Summer=Jun21-Aug31
 
-Rules for determining date ranges:
-- If filename has explicit dates (like "Nov1_Nov22" or "Aug 19 _ Dec 13"), use those
-- If filename only has a season (like "Fall 2025"), use typical season dates:
-  - Fall: Sep 1 to Dec 21
-  - Winter: Dec 22 to Mar 20
-  - Spring: Mar 21 to Jun 20
-  - Summer: Jun 21 to Aug 31
-
-Respond with ONLY the number of a valid document, or "NONE" if no document's date range includes today.
-If multiple are valid, respond with the first valid number."""
+Reply with just the document number, or NONE. No explanation."""
 
         message = client.messages.create(
             model="claude-sonnet-4-5-20250929",
-            max_tokens=50,
+            max_tokens=10,
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -116,11 +108,12 @@ If multiple are valid, respond with the first valid number."""
             print(f"No valid schedule PDF for {pool_name} on {current_date.strftime('%B %d, %Y')}")
             return None
 
+        # Try to parse as a number
         try:
             selected_index = int(response) - 1
             if 0 <= selected_index < len(schedule_docs):
                 return schedule_docs[selected_index]
-        except (ValueError, IndexError):
+        except ValueError:
             pass
 
     except Exception as e:
