@@ -456,9 +456,13 @@ def update_git():
 
 ordered_catalog = OrderedCatalog()
 
-# Load pool facility URLs
-with open('pool_sources.json', 'r') as f:
-    POOL_URLS = json.load(f)
+# Load pool facility URLs from public_pools.json GeoJSON
+with open('map_data/public_pools.json', 'r') as f:
+    geojson_data = json.load(f)
+    POOL_URLS = {
+        feature['properties']['name']: feature['properties']['Website']
+        for feature in geojson_data['features']
+    }
 
 # Get schedule data from PDFs
 current_date = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles"))
