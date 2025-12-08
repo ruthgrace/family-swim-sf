@@ -90,14 +90,20 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
 Documents for {pool_name}:
 {doc_list}
 
-Does any document's date range include today? Date rules:
-- Explicit dates (Nov1_Nov22 = Nov 1 to Nov 22)
-- Season only: Fall=Sep1-Dec21, Winter=Dec22-Mar20, Spring=Mar21-Jun20, Summer=Jun21-Aug31
+Which document's date range includes today? Filename formats vary:
+- "2025 Balboa Pool Fall Pool Schedule" = Fall 2025 (Sep-Dec 2025)
+- "Coffman Pool_Fall25_Aug19_Dec27" = Aug 19 to Dec 27, 2025
+- "Garfield_FALL 2025_AUG17-DEC24" = Aug 17 to Dec 24, 2025
+- "Hamilton Pool _ Fall 25_ Aug 19 _ Dec 13" = Aug 19 to Dec 13, 2025
+- "North Beach Pool_Fall2025_31AU2025_3Jan2026 Final" = Aug 31, 2025 to Jan 3, 2026
+- "ROSSI_Fall25Aug17_Dec24" = Aug 17 to Dec 24, 2025
 
-Reply with just the document number, or NONE. No explanation."""
+If only season + year (no explicit dates), use: Fall=Sep-Dec, Winter=Dec-Mar, Spring=Mar-Jun, Summer=Jun-Aug
+
+Reply with just the document number, or NONE if no document covers today. No explanation."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model="claude-3-haiku-20240307",  # Using Haiku for simple date range matching
             max_tokens=10,
             messages=[{"role": "user", "content": prompt}]
         )
