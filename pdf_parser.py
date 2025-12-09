@@ -514,10 +514,11 @@ STEP-BY-STEP PROCESS FOR VALIDATION:
 5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
 
 For each activity, please verify:
-1. Are any of these activities actually from a different day (wrong column)?
-2. Are the times accurate?
-3. Are the pool locations accurate? Please double-check to make sure that the pool location is not combined with the activity name if the activity has a pool location. Also double-check to make sure that if no pool location is specified, we don't have one listed (it should be empty string in this case)
-4. Are slots in the schedule where there are two or more activities accurately represented?
+1. Are there any activities MISSING from my list? Check the BOTTOM row of the column - this is commonly missed.
+2. Are any of these activities actually from a different day (wrong column)?
+3. Are the times accurate?
+4. Are the pool locations accurate? Please double-check to make sure that the pool location is not combined with the activity name if the activity has a pool location. Also double-check to make sure that if no pool location is specified, we don't have one listed (it should be empty string in this case)
+5. Are slots in the schedule where there are two or more activities accurately represented?
 
 For example
 MAIN POOL - LAP SWIM
