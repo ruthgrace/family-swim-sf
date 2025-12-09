@@ -85,42 +85,50 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
 
         doc_list = "\n".join([f"{i+1}. {doc['name']}" for i, doc in enumerate(schedule_docs)])
 
-        prompt = f"""Today: {current_date.strftime('%B %d, %Y')}
+        prompt = f"""Today's date: {current_date.strftime('%B %d, %Y')}
 
-Documents for {pool_name}:
+Pool: {pool_name}
+Documents:
 {doc_list}
 
-Which document's date range includes today? Filename formats vary:
-- "2025 Balboa Pool Fall Pool Schedule" = Fall 2025 (Sep-Dec 2025)
-- "Coffman Pool_Fall25_Aug19_Dec27" = Aug 19 to Dec 27, 2025
-- "Garfield_FALL 2025_AUG17-DEC24" = Aug 17 to Dec 24, 2025
-- "Hamilton Pool _ Fall 25_ Aug 19 _ Dec 13" = Aug 19 to Dec 13, 2025
-- "North Beach Pool_Fall2025_31AU2025_3Jan2026 Final" = Aug 31, 2025 to Jan 3, 2026
-- "ROSSI_Fall25Aug17_Dec24" = Aug 17 to Dec 24, 2025
+Task: Find which document covers TODAY's date ({current_date.strftime('%B %d, %Y')}).
 
-If only season + year (no explicit dates), use: Fall=Sep-Dec, Winter=Dec-Mar, Spring=Mar-Jun, Summer=Jun-Aug
+Date parsing examples:
+- "Fall25_Aug19_Dec27" = Aug 19, 2025 to Dec 27, 2025
+- "Fall25_Nov1_Nov22" = Nov 1, 2025 to Nov 22, 2025 (EXPIRED if today is after Nov 22)
+- "Fall 2025" with no specific dates = Sep 1 to Dec 31, 2025
 
-Reply with just the document number, or NONE if no document covers today. No explanation."""
+STEP BY STEP:
+1. Parse each document's date range from its filename
+2. Check: Is {current_date.strftime('%B %d, %Y')} between the start and end dates?
+3. If YES for any document, reply with that document number
+4. If NO document covers today (all expired or no dates), reply NONE
+
+Reply with just the number or NONE."""
 
         message = client.messages.create(
-            model="claude-3-haiku-20240307",  # Using Haiku for simple date range matching
+            model="claude-sonnet-4-5-20250929",  # Using Sonnet for date range matching (Haiku struggles with date comparisons)
             max_tokens=10,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": "Answer:"}  # Prefill to force concise response
+            ]
         )
 
-        response = message.content[0].text.strip().upper()
+        raw_response = message.content[0].text.strip()
 
-        if response == "NONE":
+        # Extract number or NONE from response using regex
+        # Look for NONE first
+        if re.search(r'\bNONE\b', raw_response, re.IGNORECASE):
             print(f"No valid schedule PDF for {pool_name} on {current_date.strftime('%B %d, %Y')}")
             return None
 
-        # Try to parse as a number
-        try:
-            selected_index = int(response) - 1
+        # Look for a number (1, 2, 3, etc.)
+        number_match = re.search(r'\b(\d+)\b', raw_response)
+        if number_match:
+            selected_index = int(number_match.group(1)) - 1
             if 0 <= selected_index < len(schedule_docs):
                 return schedule_docs[selected_index]
-        except ValueError:
-            pass
 
     except Exception as e:
         print(f"Warning: Claude selection failed ({e}), returning None")
