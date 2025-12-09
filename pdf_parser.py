@@ -503,14 +503,15 @@ Extract all {day.upper()} activities now."""
 {json.dumps(day_activities, indent=2)}
 
 STEP-BY-STEP PROCESS FOR VALIDATION:
-242 1. Locate the {day.upper()} column header
-243 2. Draw an imaginary vertical line straight down from that header
-244 3. For EACH activity cell in that column:
-245    a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
-246    b. VERIFY: Double-check the column header says {day.upper()}
-247    c. ONLY THEN: Extract the activity details
-248 4. DO NOT drift into adjacent columns - stay within vertical boundaries
-249 5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
+1. Locate the {day.upper()} column header
+2. Draw an imaginary vertical line straight down from that header
+3. For EACH activity cell in that column, starting from the BOTTOM and working UP:
+   a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
+   b. VERIFY: Double-check the column header says {day.upper()}
+   c. ONLY THEN: Extract the activity details
+   (You will reverse the order to chronological when outputting the JSON)
+4. DO NOT drift into adjacent columns - stay within vertical boundaries
+5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
 
 For each activity, please verify:
 1. Are any of these activities actually from a different day (wrong column)?
