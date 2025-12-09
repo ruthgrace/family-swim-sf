@@ -770,6 +770,11 @@ def add_secret_swim_times(family_swim_data, lap_swim_data, pool_name, all_activi
         print(f"  Using deterministic calculation for Garfield secret swim...")
         return calculate_garfield_secret_swim(raw_schedule, pool_name)
 
+    # Use deterministic logic for Hamilton Pool (same logic as Garfield - lane counts indicate main pool)
+    if pool_name == "Hamilton Pool" and raw_schedule:
+        print(f"  Using deterministic calculation for Hamilton secret swim...")
+        return calculate_garfield_secret_swim(raw_schedule, pool_name)
+
     # Use deterministic logic for Balboa Pool
     if pool_name == "Balboa Pool" and raw_schedule:
         print(f"  Using deterministic calculation for Balboa secret swim...")
