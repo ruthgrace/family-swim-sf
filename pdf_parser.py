@@ -362,50 +362,60 @@ def calculate_garfield_secret_swim(raw_schedule, pool_name):
     return secret_swim_data
 
 
-def extract_raw_schedule(pdf_path, pool_name):
-    """
-    PASS 1: Extract RAW schedule from PDF by converting to image first.
-    Pure vision extraction - no filtering, no judgment calls.
-    Makes 14 API calls (extract + 1 validation for each of 7 days) to improve accuracy.
-    Returns a dict in the format: {weekday: [activity_slots]}
-    """
-    try:
-        # Convert PDF to high-resolution PNG image first
-        print(f"  Converting PDF to image for better visual extraction...")
-        image_path = convert_pdf_to_image(pdf_path)
-        if not image_path:
-            print(f"  Failed to convert PDF to image, aborting extraction")
-            return None
+def parse_json_response(response_text):
+    """Helper function to extract JSON from API response text."""
+    if '```json' in response_text:
+        start = response_text.find('```json') + 7
+        end = response_text.find('```', start)
+        if end != -1:
+            return response_text[start:end].strip()
+    elif '```' in response_text:
+        start = response_text.find('```') + 3
+        end = response_text.rfind('```')
+        if end != -1 and end > start:
+            return response_text[start:end].strip()
+    elif '[' in response_text and ']' in response_text:
+        start = response_text.find('[')
+        end = response_text.rfind(']') + 1
+        return response_text[start:end].strip()
+    return response_text
 
-        # Read the image file and encode it
-        with open(image_path, 'rb') as f:
-            image_data = base64.standard_b64encode(f.read()).decode('utf-8')
 
-        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+def get_extraction_prompt(pool_name, day, direction="top-down"):
+    """Generate extraction prompt for a specific day and direction."""
+    if direction == "bottom-up":
+        direction_instructions = """CRITICAL: Read the column from BOTTOM TO TOP. Start at the bottom row and work your way up, then output in chronological order.
 
-        weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        raw_schedule = {}
+STEP-BY-STEP PROCESS:
+1. Locate the {day} column header
+2. Go to the BOTTOM of that column
+3. Starting from the BOTTOM row, read each activity cell moving UPWARD
+4. For EACH cell:
+   a. FIRST: Look up to confirm you're still in the {day} column - what is the header directly above?
+   b. VERIFY: Double-check the column header says {day}
+   c. ONLY THEN: Extract the activity details
+5. DO NOT drift into adjacent columns - stay within vertical boundaries
+6. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
+7. Output in chronological order (earliest first) when done""".format(day=day.upper())
+    else:
+        direction_instructions = """CRITICAL INSTRUCTIONS FOR READING THE {day} COLUMN:
+⚠️ COMMON ERROR: Accidentally reading activities from adjacent columns. You MUST only include activities that are directly below the column header for {day} only. Pools are closed some days of the week, so if there is no column header with {day}, please simply return an empty array.
 
-        # Extract each day separately with individual API calls
-        for day in weekdays:
-            print(f"  Extracting {day}...")
+STEP-BY-STEP PROCESS:
+1. Locate the {day} column header
+2. Draw an imaginary vertical line straight down from that header
+3. For EACH activity cell in that column:
+   a. FIRST: Look up to confirm you're still in the {day} column - what is the header directly above?
+   b. VERIFY: Double-check the column header says {day}
+   c. ONLY THEN: Extract the activity details
+4. DO NOT drift into adjacent columns - stay within vertical boundaries
+5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries""".format(day=day.upper())
 
-            prompt = f"""Extract ALL activities from this pool schedule PDF for {pool_name} for {day.upper()} ONLY.
+    return f"""Extract ALL activities from this pool schedule PDF for {pool_name} for {day.upper()} ONLY.
 
 TASK: Read the schedule and find the {day.upper()} column. Extract EVERY activity from that column ONLY.
 
-CRITICAL INSTRUCTIONS FOR READING THE {day.upper()} COLUMN:
-⚠️ COMMON ERROR: Accidentally reading activities from adjacent columns. You MUST only include activities that are directly below the column header for {day.upper()} only. Pools are closed some days of the week, so if there is no column header with {day.upper()}, please simply return an empty array.
-
-STEP-BY-STEP PROCESS:
-1. Locate the {day.upper()} column header
-2. Draw an imaginary vertical line straight down from that header
-3. For EACH activity cell in that column:
-   a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
-   b. VERIFY: Double-check the column header says {day.upper()}
-   c. ONLY THEN: Extract the activity details
-4. DO NOT drift into adjacent columns - stay within vertical boundaries
-5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
+{direction_instructions}
 
 For each activity you extract, you MUST include:
 - Start time (e.g., "9:00AM")
@@ -451,6 +461,58 @@ Return ONLY the JSON array, no other text.
 
 Extract all {day.upper()} activities now."""
 
+
+def normalize_time(time_str):
+    """Normalize time string for comparison (e.g., '9:00AM' -> '09:00AM')."""
+    time_str = time_str.upper().strip()
+    # Add leading zero if needed
+    if time_str[0].isdigit() and (time_str[1] == ':' or time_str[1].isdigit() and time_str[2] == ':'):
+        if time_str[1] == ':':
+            time_str = '0' + time_str
+    return time_str
+
+
+def get_time_slots(activities):
+    """Extract unique time slots (start, end) from activities list."""
+    slots = set()
+    for act in activities:
+        start = normalize_time(act.get('start', ''))
+        end = normalize_time(act.get('end', ''))
+        if start and end:
+            slots.add((start, end))
+    return slots
+
+
+def extract_raw_schedule(pdf_path, pool_name):
+    """
+    PASS 1: Extract RAW schedule from PDF by converting to image first.
+    Uses dual extraction (top-down + bottom-up) with reconciliation for accuracy.
+    Returns a dict in the format: {weekday: [activity_slots]}
+    """
+    try:
+        # Convert PDF to high-resolution PNG image first
+        print(f"  Converting PDF to image for better visual extraction...")
+        image_path = convert_pdf_to_image(pdf_path)
+        if not image_path:
+            print(f"  Failed to convert PDF to image, aborting extraction")
+            return None
+
+        # Read the image file and encode it
+        with open(image_path, 'rb') as f:
+            image_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        raw_schedule = {}
+
+        # Extract each day separately with individual API calls
+        for day in weekdays:
+            print(f"  Extracting {day}...")
+
+            # STEP 1: Top-down extraction
+            top_down_prompt = get_extraction_prompt(pool_name, day, "top-down")
+
             message = client.messages.create(
                 model="claude-sonnet-4-5-20250929",
                 max_tokens=4096,
@@ -468,30 +530,14 @@ Extract all {day.upper()} activities now."""
                             },
                             {
                                 "type": "text",
-                                "text": prompt
+                                "text": top_down_prompt
                             }
                         ]
                     }
                 ]
             )
 
-            response_text = message.content[0].text.strip()
-
-            # Extract JSON from response
-            if '```json' in response_text:
-                start = response_text.find('```json') + 7
-                end = response_text.find('```', start)
-                if end != -1:
-                    response_text = response_text[start:end].strip()
-            elif '```' in response_text:
-                start = response_text.find('```') + 3
-                end = response_text.rfind('```')
-                if end != -1 and end > start:
-                    response_text = response_text[start:end].strip()
-            elif '[' in response_text and ']' in response_text:
-                start = response_text.find('[')
-                end = response_text.rfind(']') + 1
-                response_text = response_text[start:end].strip()
+            response_text = parse_json_response(message.content[0].text.strip())
 
             if not response_text:
                 print(f"    Warning: Empty response for {day}")
@@ -499,71 +545,14 @@ Extract all {day.upper()} activities now."""
                 continue
 
             try:
-                day_activities = json.loads(response_text)
-                print(f"    ✓ Extracted {len(day_activities)} activities for {day}")
-                print(f"       V0 (initial): {json.dumps(day_activities, indent=10)}")
+                top_down_activities = json.loads(response_text)
+                print(f"    ✓ Top-down: {len(top_down_activities)} activities")
 
-                # VALIDATION STEP 1: Immediately validate the extraction
-                print(f"  Validation 1 for {day}...")
+                # STEP 2: Bottom-up extraction (independent, doesn't see top-down results)
+                print(f"    Running bottom-up extraction...")
+                bottom_up_prompt = get_extraction_prompt(pool_name, day, "bottom-up")
 
-                validation_prompt = f"""I extracted these activities for {day.upper()} from the pool schedule PDF for {pool_name}:
-
-{json.dumps(day_activities, indent=2)}
-
-STEP-BY-STEP PROCESS FOR VALIDATION:
-1. Locate the {day.upper()} column header
-2. Draw an imaginary vertical line straight down from that header
-3. For EACH activity cell in that column, starting from the BOTTOM and working UP:
-   a. FIRST: Look up to confirm you're still in the {day.upper()} column - what is the header directly above?
-   b. VERIFY: Double-check the column header says {day.upper()}
-   c. ONLY THEN: Extract the activity details
-   (You will reverse the order to chronological when outputting the JSON)
-4. DO NOT drift into adjacent columns - stay within vertical boundaries
-5. If a cell has multiple activities (e.g., "MAIN POOL - LAP SWIM" and "SMALL POOL - FAMILY SWIM"), extract them as SEPARATE entries
-
-For each activity, please verify:
-1. Are there any activities MISSING from my list? Check the BOTTOM row of the column - this is commonly missed.
-2. Are any of these activities actually from a different day (wrong column)?
-3. Are the times accurate?
-4. Are the pool locations accurate? Please double-check to make sure that the pool location is not combined with the activity name if the activity has a pool location. Also double-check to make sure that if no pool location is specified, we don't have one listed (it should be empty string in this case)
-5. Are slots in the schedule where there are two or more activities accurately represented?
-
-For example
-MAIN POOL - LAP SWIM
-SMALL POOL - WATER EXERCISE
-(11:00AM-12:00PM)
-11:00AM-1:00PM
-
-should be two activities:
-A. LAP SWIM in the Main Pool from 11:00AM-1:00PM
-B. WATER EXERCISE in the Small Pool from 11:00AM-12:00PM
-
-another example
-MAIN POOL - SEHIOR/THERAPY SWIM
-SMALL POOL - SWIM LESSONS
-9:00AM - 10:45AM
-
-should be two activities:
-A. SEHIOR/THERAPY SWIM in the Main Pool from 9:00AM-10:45AM
-B. SWIM LESSONS in the Small Pool from 9:00AM-10:45AM
-
-Based on the two examples, you need to CAREFULLY DIFFERENTIATE the case where two items in the same slot share the same time or if one item has a subtimeslot inside the larger time slot.
-
-When you check this MAKE SURE that you are looking at the correct {day.upper()} column and not at the column on either side.
-
-Please double-check the {day.upper()} column in the PDF and return the CORRECT JSON with any necessary changes.
-
-Return ONLY the corrected JSON array in this exact format:
-[
-  {{"start": "9:00AM", "end": "10:30AM", "activity": "REC/FAMILY SWIM", "pool_area": "Small Pool"}},
-  ...
-]
-
-Note that it's possible {day.upper()} is not in the schedule at all. In this case just return an empty array.
-
-If the extraction was already correct, return it unchanged. Return ONLY the JSON array, no explanations."""
-
-                validation_message = client.messages.create(
+                bottom_up_message = client.messages.create(
                     model="claude-sonnet-4-5-20250929",
                     max_tokens=4096,
                     messages=[
@@ -580,52 +569,95 @@ If the extraction was already correct, return it unchanged. Return ONLY the JSON
                                 },
                                 {
                                     "type": "text",
-                                    "text": validation_prompt
+                                    "text": bottom_up_prompt
                                 }
                             ]
                         }
                     ]
                 )
 
-                validation_response = validation_message.content[0].text.strip()
+                bottom_up_response = parse_json_response(bottom_up_message.content[0].text.strip())
+                bottom_up_activities = json.loads(bottom_up_response) if bottom_up_response else []
+                print(f"    ✓ Bottom-up: {len(bottom_up_activities)} activities")
 
-                # Extract JSON from validation response
-                if '```json' in validation_response:
-                    start = validation_response.find('```json') + 7
-                    end = validation_response.find('```', start)
-                    if end != -1:
-                        validation_response = validation_response[start:end].strip()
-                elif '```' in validation_response:
-                    start = validation_response.find('```') + 3
-                    end = validation_response.rfind('```')
-                    if end != -1 and end > start:
-                        validation_response = validation_response[start:end].strip()
-                elif '[' in validation_response and ']' in validation_response:
-                    start = validation_response.find('[')
-                    end = validation_response.rfind(']') + 1
-                    validation_response = validation_response[start:end].strip()
+                # STEP 3: Compare time slots
+                top_down_slots = get_time_slots(top_down_activities)
+                bottom_up_slots = get_time_slots(bottom_up_activities)
 
-                try:
-                    validated_activities_v1 = json.loads(validation_response)
+                if top_down_slots == bottom_up_slots:
+                    print(f"    ✓ Time slots match - using top-down extraction")
+                    raw_schedule[day] = top_down_activities
+                else:
+                    # Time slots differ - need reconciliation
+                    only_in_top_down = top_down_slots - bottom_up_slots
+                    only_in_bottom_up = bottom_up_slots - top_down_slots
+                    print(f"    ⚠ Time slots DIFFER:")
+                    if only_in_top_down:
+                        print(f"       Only in top-down: {only_in_top_down}")
+                    if only_in_bottom_up:
+                        print(f"       Only in bottom-up: {only_in_bottom_up}")
 
-                    # Check if validation made changes
-                    if validated_activities_v1 != day_activities:
-                        print(f"    ⚠ Validation 1 made changes: {len(day_activities)} -> {len(validated_activities_v1)} activities")
-                        print(f"       V1 (after val 1): {json.dumps(validated_activities_v1, indent=10)}")
-                    else:
-                        print(f"    ✓ Validation 1: No changes needed")
+                    # STEP 4: Reconciliation
+                    print(f"    Running reconciliation...")
+                    reconcile_prompt = f"""I have two different extractions for the {day.upper()} column from this pool schedule. The time slots don't match.
 
-                    raw_schedule[day] = validated_activities_v1
-                except json.JSONDecodeError as e:
-                    print(f"    Warning: Validation 1 JSON parse error for {day}, using original extraction")
-                    raw_schedule[day] = day_activities
+EXTRACTION A (top-down):
+{json.dumps(top_down_activities, indent=2)}
+
+EXTRACTION B (bottom-up):
+{json.dumps(bottom_up_activities, indent=2)}
+
+Please look at the {day.upper()} column in the image again and determine the CORRECT schedule.
+
+IMPORTANT: If a time slot appears in one extraction but not the other, look at the actual image to verify:
+- Does that time range ACTUALLY appear in the {day.upper()} column?
+- Look carefully at the times written in the schedule cells
+- Is it a real slot or was it hallucinated/misread?
+
+Return the CORRECT and COMPLETE schedule for {day.upper()} based on what you actually see in the image.
+Make sure to split multi-activity cells into separate entries.
+
+Return ONLY the JSON array, no explanations."""
+
+                    reconcile_message = client.messages.create(
+                        model="claude-sonnet-4-5-20250929",
+                        max_tokens=4096,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "image",
+                                        "source": {
+                                            "type": "base64",
+                                            "media_type": "image/png",
+                                            "data": image_data
+                                        }
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": reconcile_prompt
+                                    }
+                                ]
+                            }
+                        ]
+                    )
+
+                    reconcile_response = parse_json_response(reconcile_message.content[0].text.strip())
+                    try:
+                        reconciled_activities = json.loads(reconcile_response)
+                        print(f"    ✓ Reconciled: {len(reconciled_activities)} activities")
+                        raw_schedule[day] = reconciled_activities
+                    except json.JSONDecodeError:
+                        print(f"    Warning: Reconciliation JSON parse error, using top-down")
+                        raw_schedule[day] = top_down_activities
 
             except json.JSONDecodeError as e:
                 print(f"    Error parsing JSON for {day}: {e}")
                 print(f"    Response (first 200 chars): {response_text[:200]}")
                 raw_schedule[day] = []
 
-        print(f"\n✓ Completed extraction and 1 validation pass for all days")
+        print(f"\n✓ Completed dual extraction for all days")
         return raw_schedule
 
     except Exception as e:
