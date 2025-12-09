@@ -45,7 +45,7 @@
                 "weekday": "Tuesday",
                 "start": "2:30PM",
                 "end": "3:30PM",
-                "note": "Family Swim - shallow / deep"
+                "note": "Parent Child Swim on Steps"
             }
         ],
         "Wednesday": [
@@ -145,7 +145,7 @@
                 "weekday": "Wednesday",
                 "start": "5:45PM",
                 "end": "7:00PM",
-                "note": "Family Swim - Shared Pool"
+                "note": "Family Swim"
             }
         ],
         "Thursday": [],
@@ -243,15 +243,8 @@
             {
                 "pool": "Garfield Pool",
                 "weekday": "Thursday",
-                "start": "7:00AM",
-                "end": "8:45AM",
-                "note": "Family Swim - Small Pool"
-            },
-            {
-                "pool": "Garfield Pool",
-                "weekday": "Thursday",
                 "start": "9:00AM",
-                "end": "10:30AM",
+                "end": "10:45AM",
                 "note": "Parent Child Swim in Small Pool"
             },
             {
@@ -397,7 +390,7 @@
                 "weekday": "Saturday",
                 "start": "2:00PM",
                 "end": "3:30PM",
-                "note": "Family Swim - 10"
+                "note": "Family Swim"
             }
         ],
         "Sunday": [],
@@ -408,7 +401,7 @@
                 "weekday": "Tuesday",
                 "start": "2:30PM",
                 "end": "5:30PM",
-                "note": "Family Swim"
+                "note": "Family Swim (shallow)"
             }
         ],
         "Wednesday": [
@@ -513,11 +506,50 @@
     },
     "Rossi Pool": {
         "Saturday": [],
-        "Sunday": [],
+        "Sunday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Sunday",
+                "start": "12:30PM",
+                "end": "2:00PM",
+                "note": "Family Swim"
+            },
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Sunday",
+                "start": "2:30PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            }
+        ],
         "Monday": [],
-        "Tuesday": [],
-        "Wednesday": [],
-        "Thursday": [],
+        "Tuesday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Tuesday",
+                "start": "2:00PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            }
+        ],
+        "Wednesday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Wednesday",
+                "start": "2:00PM",
+                "end": "3:30PM",
+                "note": "Family Swim"
+            }
+        ],
+        "Thursday": [
+            {
+                "pool": "Rossi Pool",
+                "weekday": "Thursday",
+                "start": "6:30PM",
+                "end": "7:30PM",
+                "note": "Family Swim"
+            }
+        ],
         "Friday": []
     },
     "Sava Pool": {

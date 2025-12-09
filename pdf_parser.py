@@ -67,6 +67,10 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
         if key in pool_name_lower:
             search_terms.extend(variants)
 
+    # Log all documents found for debugging
+    print(f"  Documents on page: {[d['name'] for d in documents]}")
+    print(f"  Search terms: {search_terms}")
+
     for doc in documents:
         doc_name_lower = doc['name'].lower()
         if any(term in doc_name_lower for term in search_terms):
@@ -75,8 +79,17 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
 
             if not is_other_pool:
                 schedule_docs.append(doc)
+            else:
+                print(f"  Rejected '{doc['name']}' - matches another pool name")
+        else:
+            # Only log non-empty document names that didn't match
+            if doc['name'].strip():
+                print(f"  Skipped '{doc['name']}' - no search term match")
+
+    print(f"  Candidate schedule PDFs: {[d['name'] for d in schedule_docs]}")
 
     if not schedule_docs:
+        print(f"  No candidate PDFs found for {pool_name}")
         return None
 
     # Use Claude to validate PDF date ranges and select a valid one
@@ -116,6 +129,7 @@ Reply with just the number or NONE."""
         )
 
         raw_response = message.content[0].text.strip()
+        print(f"  Claude date selection response: '{raw_response}'")
 
         # Extract number or NONE from response using regex
         # Look for NONE first
@@ -128,7 +142,11 @@ Reply with just the number or NONE."""
         if number_match:
             selected_index = int(number_match.group(1)) - 1
             if 0 <= selected_index < len(schedule_docs):
-                return schedule_docs[selected_index]
+                selected = schedule_docs[selected_index]
+                print(f"Selected: {selected['name']}")
+                return selected
+            else:
+                print(f"  Warning: Claude returned index {selected_index + 1} but only {len(schedule_docs)} candidates")
 
     except Exception as e:
         print(f"Warning: Claude selection failed ({e}), returning None")
