@@ -454,6 +454,18 @@ This means TWO separate activities:
 
 Extract them as two separate entries.
 
+SHARED TIME SLOT CELLS:
+When a cell shows multiple activities at the SAME time like:
+"REC/FAMILY SWIM (3 lanes)
+Lap Swim (3 Lanes)
+6:30-7:30PM"
+
+Extract BOTH as separate entries with the SAME time:
+1. REC/FAMILY SWIM with pool_area "(3 lanes)" from 6:30PM-7:30PM
+2. LAP SWIM with pool_area "(3 Lanes)" from 6:30PM-7:30PM
+
+IMPORTANT: Make sure to extract the VERY LAST ROW at the bottom of the column - this is commonly missed!
+
 DO NOT filter anything. Extract EVERYTHING including:
 - REC/FAMILY SWIM, FAMILY SWIM
 - LAP SWIM, LAP SWIMMING
