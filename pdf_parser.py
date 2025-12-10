@@ -117,7 +117,7 @@ STEP BY STEP:
 3. If YES for any document, reply with that document number
 4. If NO document covers today (all expired or no dates), reply NONE
 
-Your answer will be parsed by code. You must reply with JUST THE NUMBER in digit form, or NONE."""
+Your answer will be parsed by code. You must reply with ONLY the index value in digit form, or NONE. Do NOT include any other text in your response."""
 
         # Retry loop for flaky responses (e.g., Claude returns verbose text with year "2025" instead of "1")
         for attempt in range(3):  # Up to 3 attempts (1 initial + 2 retries)
@@ -150,8 +150,10 @@ Your answer will be parsed by code. You must reply with JUST THE NUMBER in digit
                 else:
                     print(f"  Attempt {attempt + 1}: Invalid index {selected_index + 1} (only {len(schedule_docs)} candidates), retrying...")
                     continue
-            # No number found, exit retry loop
-            break
+            else:
+                # No number found, retry
+                print(f"  Attempt {attempt + 1}: No number in response, retrying...")
+                continue
 
     except Exception as e:
         print(f"Warning: Claude selection failed ({e}), returning None")
