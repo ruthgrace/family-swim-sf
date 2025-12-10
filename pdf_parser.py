@@ -117,36 +117,41 @@ STEP BY STEP:
 3. If YES for any document, reply with that document number
 4. If NO document covers today (all expired or no dates), reply NONE
 
-Reply with just the number or NONE."""
+Your answer will be parsed by code. You must reply with JUST THE NUMBER in digit form, or NONE."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",  # Using Sonnet for date range matching (Haiku struggles with date comparisons)
-            max_tokens=10,
-            messages=[
-                {"role": "user", "content": prompt},
-                {"role": "assistant", "content": "Answer:"}  # Prefill to force concise response
-            ]
-        )
+        # Retry loop for flaky responses (e.g., Claude returns verbose text with year "2025" instead of "1")
+        for attempt in range(3):  # Up to 3 attempts (1 initial + 2 retries)
+            message = client.messages.create(
+                model="claude-sonnet-4-5-20250929",  # Using Sonnet for date range matching (Haiku struggles with date comparisons)
+                max_tokens=10,
+                messages=[
+                    {"role": "user", "content": prompt},
+                    {"role": "assistant", "content": "Answer:"}  # Prefill to force concise response
+                ]
+            )
 
-        raw_response = message.content[0].text.strip()
-        print(f"  Claude date selection response: '{raw_response}'")
+            raw_response = message.content[0].text.strip()
+            print(f"  Claude date selection response: '{raw_response}'")
 
-        # Extract number or NONE from response using regex
-        # Look for NONE first
-        if re.search(r'\bNONE\b', raw_response, re.IGNORECASE):
-            print(f"No valid schedule PDF for {pool_name} on {current_date.strftime('%B %d, %Y')}")
-            return None
+            # Extract number or NONE from response using regex
+            # Look for NONE first
+            if re.search(r'\bNONE\b', raw_response, re.IGNORECASE):
+                print(f"No valid schedule PDF for {pool_name} on {current_date.strftime('%B %d, %Y')}")
+                return None
 
-        # Look for a number (1, 2, 3, etc.)
-        number_match = re.search(r'\b(\d+)\b', raw_response)
-        if number_match:
-            selected_index = int(number_match.group(1)) - 1
-            if 0 <= selected_index < len(schedule_docs):
-                selected = schedule_docs[selected_index]
-                print(f"Selected: {selected['name']}")
-                return selected
-            else:
-                print(f"  Warning: Claude returned index {selected_index + 1} but only {len(schedule_docs)} candidates")
+            # Look for a number (1, 2, 3, etc.)
+            number_match = re.search(r'\b(\d+)\b', raw_response)
+            if number_match:
+                selected_index = int(number_match.group(1)) - 1
+                if 0 <= selected_index < len(schedule_docs):
+                    selected = schedule_docs[selected_index]
+                    print(f"Selected: {selected['name']}")
+                    return selected
+                else:
+                    print(f"  Attempt {attempt + 1}: Invalid index {selected_index + 1} (only {len(schedule_docs)} candidates), retrying...")
+                    continue
+            # No number found, exit retry loop
+            break
 
     except Exception as e:
         print(f"Warning: Claude selection failed ({e}), returning None")
