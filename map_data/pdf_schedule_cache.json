@@ -437,5 +437,192 @@
         }
       ]
     }
+  },
+  "Martin Luther King Jr Pool": {
+    "pdf_signature": [
+      "MLK_Fall25_nov25_dec27"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Martin Luther King Jr Pool",
+          "weekday": "Saturday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 10"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Martin Luther King Jr Pool",
+          "weekday": "Tuesday",
+          "start": "2:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim (shallow)"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Martin Luther King Jr Pool",
+          "weekday": "Wednesday",
+          "start": "2:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim (shallow)"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Martin Luther King Jr Pool",
+          "weekday": "Thursday",
+          "start": "4:00PM",
+          "end": "5:30PM",
+          "note": "Family Swim (shallow)"
+        }
+      ],
+      "Friday": [
+        {
+          "pool": "Martin Luther King Jr Pool",
+          "weekday": "Friday",
+          "start": "2:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim (shallow)"
+        }
+      ]
+    }
+  },
+  "Mission Community Pool": {
+    "pdf_signature": [
+      "Mission Pool Rules and Guidelines (1/5/21 Update)",
+      "Mission Pool Schedule",
+      "Mission_Fall25_Nov1_Nov22"
+    ],
+    "schedule_data": null
+  },
+  "North Beach Pool": {
+    "pdf_signature": [
+      "North Beach Pool_Fall2025_31AU2025_3Jan2026 Final"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Saturday",
+          "start": "1:45PM",
+          "end": "3:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Saturday",
+          "start": "3:30PM",
+          "end": "5:00PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Tuesday",
+          "start": "3:30PM",
+          "end": "5:00PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Wednesday",
+          "start": "5:30PM",
+          "end": "6:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Thursday",
+          "start": "4:15PM",
+          "end": "5:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Friday": [
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Friday",
+          "start": "9:00AM",
+          "end": "10:15AM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "North Beach Pool",
+          "weekday": "Friday",
+          "start": "5:30PM",
+          "end": "7:00PM",
+          "note": "Family Swim"
+        }
+      ]
+    }
+  },
+  "Rossi Pool": {
+    "pdf_signature": [
+      "ROSSI_Fall25Aug17_Dec24"
+    ],
+    "schedule_data": {
+      "Saturday": [],
+      "Sunday": [
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Sunday",
+          "start": "12:30PM",
+          "end": "2:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Sunday",
+          "start": "2:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Tuesday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Wednesday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Thursday",
+          "start": "6:30PM",
+          "end": "7:30PM",
+          "note": "Family Swim - 3 lanes"
+        }
+      ],
+      "Friday": []
+    }
+  },
+  "Sava Pool": {
+    "pdf_signature": [],
+    "schedule_data": null
   }
 }
