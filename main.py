@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import functools
 import json
@@ -454,6 +455,12 @@ def update_git():
         sys.stderr.write(f"stderr {new_result.stderr}")
         traceback.print_exc()
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Parse SF pool schedules from PDFs')
+parser.add_argument('--force-refresh', action='store_true',
+                    help='Force re-parsing all pools, ignoring cache')
+args = parser.parse_args()
+
 ordered_catalog = OrderedCatalog()
 
 # Load pool facility URLs from public_pools.json GeoJSON
@@ -479,7 +486,8 @@ for pool in POOLS:
         facility_url=facility_url,
         current_date=current_date,
         pools_list=POOLS,
-        pdf_cache_dir="/tmp"
+        pdf_cache_dir="/tmp",
+        force_refresh=args.force_refresh
     )
 
     if not schedule_data:

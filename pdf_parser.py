@@ -17,10 +17,47 @@ import requests
 import traceback
 import json
 import base64
+import os
 from bs4 import BeautifulSoup
 from anthropic import Anthropic
 from constants import ANTHROPIC_API_KEY
 import pypdfium2 as pdfium
+
+# Cache file for storing PDF lists and parsed schedules
+CACHE_FILE = "map_data/pdf_schedule_cache.json"
+
+
+def load_cache():
+    """Load the PDF schedule cache from disk."""
+    try:
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, 'r') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load cache: {e}")
+    return {}
+
+
+def save_cache(cache):
+    """Save the PDF schedule cache to disk."""
+    try:
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(cache, f, indent=2)
+    except Exception as e:
+        print(f"Warning: Could not save cache: {e}")
+
+
+def get_pdf_list_signature(documents, pool_name, search_terms):
+    """
+    Get a signature of the PDFs available for a pool.
+    Returns a sorted list of PDF names that match the pool's search terms.
+    """
+    matching_pdfs = []
+    for doc in documents:
+        doc_name_lower = doc['name'].lower()
+        if any(term in doc_name_lower for term in search_terms):
+            matching_pdfs.append(doc['name'])
+    return sorted(matching_pdfs)
 
 
 def get_facility_documents(facility_url):
@@ -1005,7 +1042,7 @@ def combine_and_sort_schedules(family_swim_data, secret_swim_data):
     return combined_data
 
 
-def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp"):
+def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp", force_refresh=False):
     """
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
 
@@ -1033,10 +1070,44 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
 
         print(f"Found {len(documents)} documents")
 
+        # Build search terms for this pool (same logic as select_schedule_pdf)
+        pool_name_lower = pool_name.lower()
+        pool_name_base = pool_name_lower.replace(' pool', '')
+        pool_name_variants = {
+            'martin luther king jr': ['mlk'],
+            'mission community': ['mission'],
+        }
+        search_terms = [pool_name_lower, pool_name_base]
+        for key, variants in pool_name_variants.items():
+            if key in pool_name_lower:
+                search_terms.extend(variants)
+
+        # Get current PDF signature
+        current_pdf_signature = get_pdf_list_signature(documents, pool_name, search_terms)
+        print(f"  PDF signature: {current_pdf_signature}")
+
+        # Load cache and check if we can use cached data
+        cache = load_cache()
+        if not force_refresh and pool_name in cache:
+            cached_signature = cache[pool_name].get('pdf_signature', [])
+            if cached_signature == current_pdf_signature and cache[pool_name].get('schedule_data'):
+                print(f"  ✓ PDF list unchanged, using cached schedule data")
+                return cache[pool_name]['schedule_data']
+            else:
+                print(f"  PDF list changed (was: {cached_signature}), re-parsing...")
+        elif force_refresh:
+            print(f"  Force refresh enabled, re-parsing...")
+
         # Step 2: Select the appropriate schedule PDF
         selected_pdf = select_schedule_pdf(documents, pool_name, current_date, pools_list)
         if not selected_pdf:
             print(f"No schedule PDF found for {pool_name}")
+            # Cache the empty result so we don't keep retrying
+            cache[pool_name] = {
+                'pdf_signature': current_pdf_signature,
+                'schedule_data': None
+            }
+            save_cache(cache)
             return None
 
         print(f"Selected: {selected_pdf['name']}")
@@ -1098,6 +1169,14 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             combined_data = family_swim_data
 
         print(f"✓ Successfully processed {pool_name}")
+
+        # Save to cache
+        cache[pool_name] = {
+            'pdf_signature': current_pdf_signature,
+            'schedule_data': combined_data
+        }
+        save_cache(cache)
+
         return combined_data
 
     except Exception as e:

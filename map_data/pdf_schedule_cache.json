@@ -1,0 +1,441 @@
+{
+  "Balboa Pool": {
+    "pdf_signature": [
+      "2025 Balboa Pool Fall Pool Schedule"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Saturday",
+          "start": "12:30PM",
+          "end": "2:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Saturday",
+          "start": "2:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Saturday",
+          "start": "4:00PM",
+          "end": "5:00PM",
+          "note": "Parent Child Swim on Steps"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Tuesday",
+          "start": "7:00AM",
+          "end": "8:00AM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Tuesday",
+          "start": "12:30PM",
+          "end": "2:00PM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Tuesday",
+          "start": "2:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim - shallow / deep"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Wednesday",
+          "start": "9:00AM",
+          "end": "10:15AM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Wednesday",
+          "start": "11:00AM",
+          "end": "12:00PM",
+          "note": "Parent Child Swim - shallow pool"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Wednesday",
+          "start": "2:00PM",
+          "end": "3:00PM",
+          "note": "Family Swim - shallow pool"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "7:00AM",
+          "end": "8:00AM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "2:30PM",
+          "end": "5:00PM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "5:45PM",
+          "end": "7:00PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Friday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Friday",
+          "start": "1:30PM",
+          "end": "3:00PM",
+          "note": "Parent Child Swim on Steps"
+        }
+      ]
+    }
+  },
+  "Coffman Pool": {
+    "pdf_signature": [
+      "Coffman Pool_Fall25_Aug19_Dec27"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Saturday",
+          "start": "1:00PM",
+          "end": "2:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Saturday",
+          "start": "2:30PM",
+          "end": "3:45PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Tuesday",
+          "start": "2:00PM",
+          "end": "4:00PM",
+          "note": "Family Swim - (Shared Pool)^"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Wednesday",
+          "start": "1:30PM",
+          "end": "2:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Wednesday",
+          "start": "5:45PM",
+          "end": "7:00PM",
+          "note": "Family Swim - Shared Pool"
+        }
+      ],
+      "Thursday": [],
+      "Friday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Friday",
+          "start": "2:00PM",
+          "end": "3:00PM",
+          "note": "Family Swim"
+        }
+      ]
+    }
+  },
+  "Garfield Pool": {
+    "pdf_signature": [
+      "Garfield_FALL 2025_AUG17-DEC24"
+    ],
+    "schedule_data": {
+      "Saturday": [],
+      "Sunday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Sunday",
+          "start": "12:30PM",
+          "end": "2:00PM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Sunday",
+          "start": "2:30PM",
+          "end": "4:00PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Monday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "7:00AM",
+          "end": "8:45AM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "2:00PM",
+          "end": "3:45PM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "4:30PM",
+          "end": "6:00PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Tuesday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Tuesday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "7:00AM",
+          "end": "8:45AM",
+          "note": "Family Swim - SMALL POOL"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "9:00AM",
+          "end": "10:45AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "2:00PM",
+          "end": "3:45PM",
+          "note": "Family Swim - SMALL POOL"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "4:30PM",
+          "end": "7:00PM",
+          "note": "Family Swim - SMALL POOL"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "7:00AM",
+          "end": "8:45AM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "9:00AM",
+          "end": "10:45AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "9:00AM",
+          "end": "10:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "2:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Friday": []
+    }
+  },
+  "Hamilton Pool": {
+    "pdf_signature": [
+      "Hamilton Pool _ Fall 25_ Aug 19 _ Dec 13"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Saturday",
+          "start": "1:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Saturday",
+          "start": "4:00PM",
+          "end": "5:00PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "1:00PM",
+          "end": "3:00PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "1:00PM",
+          "end": "3:00PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "6:30AM",
+          "end": "8:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "6:30PM",
+          "end": "8:00PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Thursday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Friday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "6:30AM",
+          "end": "8:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "6:30PM",
+          "end": "8:00PM",
+          "note": "Family Swim"
+        }
+      ]
+    }
+  }
+}
