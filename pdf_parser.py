@@ -154,7 +154,7 @@ STEP BY STEP:
 3. If YES for any document, reply with that document number
 4. If NO document covers today (all expired or no dates), reply NONE
 
-Your answer will be parsed by code. You must reply with ONLY the index value in digit form, or NONE. Do NOT include any other text in your response."""
+Your answer will be parsed by code. You must reply with ONLY the index value in digit form, or NONE. Do NOT include any other text in your response. It is very important that you say NONE if there isn't a schedule with a date indicator that would include today's date."""
 
         # Retry loop for flaky responses (e.g., Claude returns verbose text with year "2025" instead of "1")
         for attempt in range(3):  # Up to 3 attempts (1 initial + 2 retries)
