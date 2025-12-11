@@ -557,123 +557,86 @@ def get_time_slots(activities):
     return slots
 
 
-def extract_raw_schedule(pdf_path, pool_name):
+def extract_single_day(pool_name, day, image_data, client):
     """
-    PASS 1: Extract RAW schedule from PDF by converting to image first.
-    Uses dual extraction (top-down + bottom-up) with reconciliation for accuracy.
-    Returns a dict in the format: {weekday: [activity_slots]}
+    Extract activities for a single day using dual extraction (top-down + bottom-up).
+    Returns the list of activities for that day, or [] on failure.
     """
-    try:
-        # Convert PDF to high-resolution PNG image first
-        print(f"  Converting PDF to image for better visual extraction...")
-        image_path = convert_pdf_to_image(pdf_path)
-        if not image_path:
-            print(f"  Failed to convert PDF to image, aborting extraction")
-            return None
+    # STEP 1: Top-down extraction
+    top_down_prompt = get_extraction_prompt(pool_name, day, "top-down")
 
-        # Read the image file and encode it
-        with open(image_path, 'rb') as f:
-            image_data = base64.standard_b64encode(f.read()).decode('utf-8')
-
-        client = Anthropic(api_key=ANTHROPIC_API_KEY)
-
-        weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        raw_schedule = {}
-
-        # Extract each day separately with individual API calls
-        for day in weekdays:
-            print(f"  Extracting {day}...")
-
-            # STEP 1: Top-down extraction
-            top_down_prompt = get_extraction_prompt(pool_name, day, "top-down")
-
-            message = client.messages.create(
-                model="claude-sonnet-4-5-20250929",
-                max_tokens=4096,
-                messages=[
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=4096,
+        messages=[
+            {
+                "role": "user",
+                "content": [
                     {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/png",
-                                    "data": image_data
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": top_down_prompt
-                            }
-                        ]
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": image_data
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": top_down_prompt
                     }
                 ]
-            )
+            }
+        ]
+    )
 
-            response_text = parse_json_response(message.content[0].text.strip())
+    response_text = parse_json_response(message.content[0].text.strip())
 
-            if not response_text:
-                print(f"    Warning: Empty response for {day}")
-                raw_schedule[day] = []
-                continue
+    if not response_text:
+        return []
 
-            try:
-                top_down_activities = json.loads(response_text)
-                print(f"    ✓ Top-down: {len(top_down_activities)} activities")
+    try:
+        top_down_activities = json.loads(response_text)
 
-                # STEP 2: Bottom-up extraction (independent, doesn't see top-down results)
-                print(f"    Running bottom-up extraction...")
-                bottom_up_prompt = get_extraction_prompt(pool_name, day, "bottom-up")
+        # STEP 2: Bottom-up extraction (independent, doesn't see top-down results)
+        bottom_up_prompt = get_extraction_prompt(pool_name, day, "bottom-up")
 
-                bottom_up_message = client.messages.create(
-                    model="claude-sonnet-4-5-20250929",
-                    max_tokens=4096,
-                    messages=[
+        bottom_up_message = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
                         {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "image",
-                                    "source": {
-                                        "type": "base64",
-                                        "media_type": "image/png",
-                                        "data": image_data
-                                    }
-                                },
-                                {
-                                    "type": "text",
-                                    "text": bottom_up_prompt
-                                }
-                            ]
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": bottom_up_prompt
                         }
                     ]
-                )
+                }
+            ]
+        )
 
-                bottom_up_response = parse_json_response(bottom_up_message.content[0].text.strip())
-                bottom_up_activities = json.loads(bottom_up_response) if bottom_up_response else []
-                print(f"    ✓ Bottom-up: {len(bottom_up_activities)} activities")
+        bottom_up_response = parse_json_response(bottom_up_message.content[0].text.strip())
+        bottom_up_activities = json.loads(bottom_up_response) if bottom_up_response else []
 
-                # STEP 3: Compare time slots
-                top_down_slots = get_time_slots(top_down_activities)
-                bottom_up_slots = get_time_slots(bottom_up_activities)
+        # STEP 3: Compare time slots
+        top_down_slots = get_time_slots(top_down_activities)
+        bottom_up_slots = get_time_slots(bottom_up_activities)
 
-                if top_down_slots == bottom_up_slots:
-                    print(f"    ✓ Time slots match - using top-down extraction")
-                    raw_schedule[day] = top_down_activities
-                else:
-                    # Time slots differ - need reconciliation
-                    only_in_top_down = top_down_slots - bottom_up_slots
-                    only_in_bottom_up = bottom_up_slots - top_down_slots
-                    print(f"    ⚠ Time slots DIFFER:")
-                    if only_in_top_down:
-                        print(f"       Only in top-down: {only_in_top_down}")
-                    if only_in_bottom_up:
-                        print(f"       Only in bottom-up: {only_in_bottom_up}")
-
-                    # STEP 4: Reconciliation
-                    print(f"    Running reconciliation...")
-                    reconcile_prompt = f"""I have two different extractions for the {day.upper()} column from this pool schedule. The time slots don't match.
+        if top_down_slots == bottom_up_slots:
+            return top_down_activities
+        else:
+            # Time slots differ - need reconciliation
+            # STEP 4: Reconciliation
+            reconcile_prompt = f"""I have two different extractions for the {day.upper()} column from this pool schedule. The time slots don't match.
 
 EXTRACTION A (top-down):
 {json.dumps(top_down_activities, indent=2)}
@@ -693,45 +656,165 @@ Make sure to split multi-activity cells into separate entries.
 
 Return ONLY the JSON array, no explanations."""
 
-                    reconcile_message = client.messages.create(
-                        model="claude-sonnet-4-5-20250929",
-                        max_tokens=4096,
-                        messages=[
+            reconcile_message = client.messages.create(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
                             {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "image",
-                                        "source": {
-                                            "type": "base64",
-                                            "media_type": "image/png",
-                                            "data": image_data
-                                        }
-                                    },
-                                    {
-                                        "type": "text",
-                                        "text": reconcile_prompt
-                                    }
-                                ]
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/png",
+                                    "data": image_data
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": reconcile_prompt
                             }
                         ]
-                    )
+                    }
+                ]
+            )
 
-                    reconcile_response = parse_json_response(reconcile_message.content[0].text.strip())
-                    try:
-                        reconciled_activities = json.loads(reconcile_response)
-                        print(f"    ✓ Reconciled: {len(reconciled_activities)} activities")
-                        raw_schedule[day] = reconciled_activities
-                    except json.JSONDecodeError:
-                        print(f"    Warning: Reconciliation JSON parse error, using top-down")
-                        raw_schedule[day] = top_down_activities
+            reconcile_response = parse_json_response(reconcile_message.content[0].text.strip())
+            try:
+                reconciled_activities = json.loads(reconcile_response)
+                return reconciled_activities
+            except json.JSONDecodeError:
+                return top_down_activities
 
-            except json.JSONDecodeError as e:
-                print(f"    Error parsing JSON for {day}: {e}")
-                print(f"    Response (first 200 chars): {response_text[:200]}")
-                raw_schedule[day] = []
+    except json.JSONDecodeError:
+        return []
 
-        print(f"\n✓ Completed dual extraction for all days")
+
+def pick_best_of_three(extractions, day, image_data, client):
+    """
+    Compare 3 extractions and return the best one.
+    - If 2+ match by time slots, return the matching result
+    - If all 3 differ, ask Claude to consolidate
+    """
+    slots = [get_time_slots(e) for e in extractions]
+
+    # Check for matches (majority vote)
+    if slots[0] == slots[1]:
+        print(f"      ✓ Extractions 1 & 2 match - using extraction 1")
+        return extractions[0]
+    elif slots[0] == slots[2]:
+        print(f"      ✓ Extractions 1 & 3 match - using extraction 1")
+        return extractions[0]
+    elif slots[1] == slots[2]:
+        print(f"      ✓ Extractions 2 & 3 match - using extraction 2")
+        return extractions[1]
+    else:
+        # All 3 differ - ask Claude to consolidate
+        print(f"      ⚠ All 3 extractions differ - asking Claude to consolidate")
+        print(f"        Slots 1: {slots[0]}")
+        print(f"        Slots 2: {slots[1]}")
+        print(f"        Slots 3: {slots[2]}")
+
+        consolidate_prompt = f"""I have three different extractions for the {day.upper()} column from this pool schedule. None of them match exactly.
+
+EXTRACTION 1:
+{json.dumps(extractions[0], indent=2)}
+
+EXTRACTION 2:
+{json.dumps(extractions[1], indent=2)}
+
+EXTRACTION 3:
+{json.dumps(extractions[2], indent=2)}
+
+Please look at the {day.upper()} column in the image again and determine the CORRECT schedule.
+
+IMPORTANT:
+- Look at the actual image to verify which time slots are real
+- If a time slot appears in multiple extractions, it's likely correct
+- If a time slot only appears in one extraction, verify it exists in the image
+- Don't hallucinate slots that don't exist
+
+Return the CORRECT and COMPLETE schedule for {day.upper()} based on what you actually see in the image.
+Make sure to split multi-activity cells into separate entries.
+
+Return ONLY the JSON array, no explanations."""
+
+        consolidate_message = client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": consolidate_prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        consolidate_response = parse_json_response(consolidate_message.content[0].text.strip())
+        try:
+            consolidated_activities = json.loads(consolidate_response)
+            print(f"      ✓ Consolidated: {len(consolidated_activities)} activities")
+            return consolidated_activities
+        except json.JSONDecodeError:
+            # Fallback to the extraction with the most activities
+            print(f"      Warning: Consolidation JSON parse error, using extraction with most activities")
+            return max(extractions, key=len)
+
+
+def extract_raw_schedule(pdf_path, pool_name):
+    """
+    PASS 1: Extract RAW schedule from PDF by converting to image first.
+    Uses best-of-three extraction strategy: runs dual extraction 3 times and picks the best.
+    Returns a dict in the format: {weekday: [activity_slots]}
+    """
+    try:
+        # Convert PDF to high-resolution PNG image first
+        print(f"  Converting PDF to image for better visual extraction...")
+        image_path = convert_pdf_to_image(pdf_path)
+        if not image_path:
+            print(f"  Failed to convert PDF to image, aborting extraction")
+            return None
+
+        # Read the image file and encode it
+        with open(image_path, 'rb') as f:
+            image_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        raw_schedule = {}
+
+        # Extract each day separately with best-of-three strategy
+        for day in weekdays:
+            print(f"  Extracting {day} (best of 3)...")
+
+            # Run 3 independent dual extractions
+            extractions = []
+            for run in range(3):
+                print(f"    Run {run + 1}/3...")
+                day_result = extract_single_day(pool_name, day, image_data, client)
+                extractions.append(day_result)
+                print(f"      Got {len(day_result)} activities")
+
+            # Pick the best of three
+            raw_schedule[day] = pick_best_of_three(extractions, day, image_data, client)
+            print(f"    Final: {len(raw_schedule[day])} activities for {day}")
+
+        print(f"\n✓ Completed best-of-three extraction for all days")
         return raw_schedule
 
     except Exception as e:
