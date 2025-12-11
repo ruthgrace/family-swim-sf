@@ -23,15 +23,15 @@ result = get_pool_schedule_from_pdf(
 
 ## Pool URLs (from public_pools.json)
 
-- Balboa Pool: `https://sfrecpark.org/facilities/facility/details/Balboa-Pool-191`
-- Coffman Pool: `https://sfrecpark.org/facilities/facility/details/Coffman-Pool-195`
-- Garfield Pool: `https://sfrecpark.org/facilities/facility/details/Garfield-Pool-200`
-- Hamilton Pool: `https://sfrecpark.org/facilities/facility/details/Hamilton-Pool-202`
-- Martin Luther King Jr Pool: `https://sfrecpark.org/facilities/facility/details/Martin-Luther-King-Jr-Pool-208`
-- Mission Community Pool: `https://sfrecpark.org/facilities/facility/details/Mission-Pool-211`
-- North Beach Pool: `https://sfrecpark.org/facilities/facility/details/North-Beach-Pool-214`
+- Balboa Pool: `https://sfrecpark.org/facilities/facility/details/Balboa-Pool-212`
+- Coffman Pool: `https://sfrecpark.org/facilities/facility/details/Coffman-Pool-213`
+- Garfield Pool: `https://sfrecpark.org/facilities/facility/details/Garfield-Pool-214`
+- Hamilton Pool: `https://sfrecpark.org/facilities/facility/details/Hamilton-Pool-215`
+- Martin Luther King Jr Pool: `https://sfrecpark.org/Facilities/Facility/Details/Martin-Luther-King-Jr-Pool-216`
+- Mission Community Pool: `https://sfrecpark.org/facilities/facility/details/Mission-Community-Pool-217`
+- North Beach Pool: `https://sfrecpark.org/facilities/facility/details/North-Beach-Pool-218`
 - Rossi Pool: `https://sfrecpark.org/facilities/facility/details/Rossi-Pool-219`
-- Sava Pool: `https://sfrecpark.org/facilities/facility/details/Sava-Pool-221`
+- Sava Pool: `https://sfrecpark.org/facilities/facility/details/Sava-Pool-220`
 
 ## Running the Full Parser
 

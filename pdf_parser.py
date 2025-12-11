@@ -1125,6 +1125,240 @@ def combine_and_sort_schedules(family_swim_data, secret_swim_data):
     return combined_data
 
 
+# =============================================================================
+# Phantom Entry Detection (Garfield Pool only)
+# =============================================================================
+
+WEEKDAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+
+def get_adjacent_days(day):
+    """Return the days before and after the given day."""
+    idx = WEEKDAY_ORDER.index(day)
+    adjacent = []
+    if idx > 0:
+        adjacent.append(WEEKDAY_ORDER[idx - 1])
+    if idx < len(WEEKDAY_ORDER) - 1:
+        adjacent.append(WEEKDAY_ORDER[idx + 1])
+    return adjacent
+
+
+def find_suspicious_duplicates(schedule_data, use_raw_format=False):
+    """
+    Find slots that have an identical entry on an adjacent day.
+    For raw schedule format, compares (start, end, activity, pool_area) case-insensitively.
+    For family swim format, compares (start, end, note).
+    Returns list of (day, slot, adjacent_day) tuples.
+    """
+    suspicious = []
+
+    for day, slots in schedule_data.items():
+        if day not in WEEKDAY_ORDER:
+            continue
+        adjacent_days = get_adjacent_days(day)
+
+        for slot in slots:
+            if use_raw_format:
+                # Case-insensitive comparison for raw format
+                slot_key = (
+                    slot['start'].upper(),
+                    slot['end'].upper(),
+                    slot.get('activity', '').upper(),
+                    slot.get('pool_area', '').upper()
+                )
+            else:
+                slot_key = (slot['start'], slot['end'], slot['note'])
+
+            for adj_day in adjacent_days:
+                adj_slots = schedule_data.get(adj_day, [])
+                for adj_slot in adj_slots:
+                    if use_raw_format:
+                        adj_key = (
+                            adj_slot['start'].upper(),
+                            adj_slot['end'].upper(),
+                            adj_slot.get('activity', '').upper(),
+                            adj_slot.get('pool_area', '').upper()
+                        )
+                    else:
+                        adj_key = (adj_slot['start'], adj_slot['end'], adj_slot['note'])
+                    if slot_key == adj_key:
+                        suspicious.append((day, slot, adj_day))
+                        break
+
+    return suspicious
+
+
+def verify_slot_exists(day, slot, image_path, use_raw_format=False):
+    """
+    Ask Claude to verify if a specific slot actually exists on the schedule image.
+    Returns (is_real, explanation).
+    """
+    client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+    with open(image_path, 'rb') as f:
+        image_data = base64.standard_b64encode(f.read()).decode('utf-8')
+
+    # Get activity description based on format
+    if use_raw_format:
+        activity_name = slot.get('activity', '')
+        pool_area = slot.get('pool_area', '')
+        if pool_area:
+            activity_desc = f"{activity_name} in {pool_area}"
+        else:
+            activity_desc = activity_name
+    else:
+        activity_desc = slot['note']
+
+    prompt = f"""I need you to verify if a specific activity exists on this pool schedule.
+
+QUESTION: Does the {day.upper()} column have a "{activity_desc}" activity from {slot['start']} to {slot['end']}?
+
+IMPORTANT INSTRUCTIONS:
+1. Look ONLY at the {day.upper()} column - find the column header that says "{day.upper()}"
+2. Draw an imaginary vertical line straight down from that header
+3. Look at ONLY the cells in that vertical column
+4. Check if there is an activity matching:
+   - Time: {slot['start']} to {slot['end']}
+   - Activity type: {activity_desc} (or similar wording like REC/FAMILY SWIM, FAMILY SWIM, PARENT CHILD SWIM)
+
+DO NOT look at adjacent columns. The question is ONLY about {day.upper()}.
+
+This is a verification check because the same time slot appears on an adjacent day, and we want to confirm this isn't a column-reading error.
+
+Please respond with EXACTLY one of these formats:
+- "YES - [brief reason why you see it]"
+- "NO - [brief reason why it's not there]"
+
+Be very careful and look closely at the column boundaries."""
+
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=200,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": image_data
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    )
+
+    response = message.content[0].text.strip()
+    response_upper = response.upper()
+
+    # Look for YES or NO in the response
+    if "**YES" in response_upper or response_upper.startswith("YES"):
+        is_real = True
+    elif "**NO" in response_upper or response_upper.startswith("NO"):
+        is_real = False
+    else:
+        # Fallback: look for YES/NO as standalone words
+        is_real = " YES " in response_upper or response_upper.startswith("YES")
+
+    return is_real, response
+
+
+def remove_phantom_entries(schedule_data, image_path, pool_name, use_raw_format=False):
+    """
+    Detect and remove phantom entries from the schedule.
+    A phantom is a slot that appears identically on adjacent days but doesn't
+    actually exist (column-reading error during extraction).
+
+    Only runs for Garfield Pool.
+
+    Args:
+        schedule_data: The schedule dict (raw or family swim format)
+        image_path: Path to the schedule PNG image
+        pool_name: Name of the pool
+        use_raw_format: If True, uses raw schedule format (activity/pool_area)
+                       If False, uses family swim format (note)
+    """
+    print(f"  Checking for phantom entries (Garfield only)...")
+
+    suspicious = find_suspicious_duplicates(schedule_data, use_raw_format=use_raw_format)
+
+    if not suspicious:
+        print(f"    No suspicious duplicates found")
+        return schedule_data
+
+    print(f"    Found {len(suspicious)} suspicious entries to verify...")
+
+    # Track which slots we've verified to avoid duplicate API calls
+    verified = {}
+    phantoms_to_remove = []
+
+    for day, slot, adj_day in suspicious:
+        if use_raw_format:
+            slot_key = (day, slot['start'], slot['end'], slot.get('activity', ''), slot.get('pool_area', ''))
+            slot_desc = f"{slot.get('activity', '')} ({slot.get('pool_area', '')})"
+        else:
+            slot_key = (day, slot['start'], slot['end'], slot['note'])
+            slot_desc = slot['note']
+
+        if slot_key in verified:
+            is_real = verified[slot_key]
+        else:
+            print(f"      Verifying: {day} {slot['start']}-{slot['end']} ({slot_desc})...")
+            is_real, explanation = verify_slot_exists(day, slot, image_path, use_raw_format=use_raw_format)
+            verified[slot_key] = is_real
+
+            if is_real:
+                print(f"        ✓ Confirmed real")
+            else:
+                print(f"        ✗ Phantom detected: {explanation[:80]}...")
+
+        if not is_real:
+            phantoms_to_remove.append((day, slot))
+
+    if not phantoms_to_remove:
+        print(f"    All suspicious entries verified as real")
+        return schedule_data
+
+    # Remove phantoms from schedule
+    print(f"    Removing {len(phantoms_to_remove)} phantom entries...")
+    cleaned_data = {}
+    for day, slots in schedule_data.items():
+        cleaned_slots = []
+        for slot in slots:
+            if use_raw_format:
+                # Case-insensitive comparison for raw format
+                is_phantom = any(
+                    d == day
+                    and s['start'].upper() == slot['start'].upper()
+                    and s['end'].upper() == slot['end'].upper()
+                    and s.get('activity', '').upper() == slot.get('activity', '').upper()
+                    and s.get('pool_area', '').upper() == slot.get('pool_area', '').upper()
+                    for d, s in phantoms_to_remove
+                )
+                slot_desc = f"{slot.get('activity', '')} ({slot.get('pool_area', '')})"
+            else:
+                is_phantom = any(
+                    d == day and s['start'] == slot['start'] and s['end'] == slot['end'] and s['note'] == slot['note']
+                    for d, s in phantoms_to_remove
+                )
+                slot_desc = slot['note']
+
+            if not is_phantom:
+                cleaned_slots.append(slot)
+            else:
+                print(f"      Removed: {day} {slot['start']}-{slot['end']} ({slot_desc})")
+        cleaned_data[day] = cleaned_slots
+
+    return cleaned_data
+
+
 def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp", force_refresh=False):
     """
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
@@ -1216,6 +1450,16 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
         with open(debug_path, 'w') as f:
             json.dump(raw_schedule, f, indent=2)
         print(f"Saved raw schedule to {debug_path}")
+
+        # PASS 1b: Phantom detection on raw schedule (Garfield only)
+        # Must happen before PASS 2+ so secret swim calculations use clean data
+        if pool_name == "Garfield Pool":
+            image_path = f"{pdf_cache_dir}/{pool_name.replace(' ', '_')}_schedule_page1.png"
+            raw_schedule = remove_phantom_entries(raw_schedule, image_path, pool_name, use_raw_format=True)
+            # Save cleaned raw schedule
+            with open(debug_path, 'w') as f:
+                json.dump(raw_schedule, f, indent=2)
+            print(f"  Saved cleaned raw schedule to {debug_path}")
 
         # PASS 2: Filter for family/parent-child swim
         print(f"PASS 2: Filtering for family/parent-child swim...")

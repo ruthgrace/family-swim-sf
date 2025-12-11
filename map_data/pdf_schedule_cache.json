@@ -279,13 +279,6 @@
         {
           "pool": "Garfield Pool",
           "weekday": "Thursday",
-          "start": "7:00AM",
-          "end": "8:45AM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Thursday",
           "start": "9:00AM",
           "end": "10:45AM",
           "note": "Parent Child Swim in Small Pool"
