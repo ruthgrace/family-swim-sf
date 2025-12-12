@@ -4,10 +4,28 @@ import functools
 import json
 import os
 import requests
+import signal
 import subprocess
 import sys
 import time
 import traceback
+
+
+def signal_handler(signum, frame):
+    """Log when we receive a signal that would kill the process."""
+    sig_name = signal.Signals(signum).name
+    print(f"\n{'='*60}")
+    print(f"SIGNAL RECEIVED: {sig_name} ({signum})")
+    print(f"Timestamp: {datetime.datetime.now()}")
+    print(f"{'='*60}")
+    sys.stdout.flush()
+    sys.exit(128 + signum)
+
+
+# Register signal handlers
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGHUP, signal_handler)
 
 from bs4 import BeautifulSoup
 from urllib import request
@@ -474,53 +492,76 @@ with open('map_data/public_pools.json', 'r') as f:
 # Get schedule data from PDFs
 current_date = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles"))
 
-for pool in POOLS:
-    facility_url = POOL_URLS.get(pool)
-    if not facility_url:
-        print(f"WARNING: No facility URL found for {pool}")
-        continue
+print(f"\n{'='*60}")
+print(f"Starting pool schedule extraction at {current_date}")
+print(f"Processing {len(POOLS)} pools: {', '.join(POOLS)}")
+print(f"{'='*60}\n")
+sys.stdout.flush()
 
-    # Get complete schedule from PDF (family swim + lap swim + secret swim)
-    schedule_data = get_pool_schedule_from_pdf(
-        pool_name=pool,
-        facility_url=facility_url,
-        current_date=current_date,
-        pools_list=POOLS,
-        pdf_cache_dir="/tmp",
-        force_refresh=args.force_refresh
-    )
-
-    if not schedule_data:
-        print(f"WARNING: Failed to get schedule data for {pool}, skipping")
-        continue
-
-    # Convert PDF data format to OrderedCatalog format
-    # PDF format: {weekday: [{"pool": "...", "weekday": "...", "start": "...", "end": "...", "note": "..."}]}
-    # Need to convert to SwimSlot objects
-    weekday_map = {
-        "Saturday": SAT,
-        "Sunday": SUN,
-        "Monday": MON,
-        "Tuesday": TUE,
-        "Wednesday": WED,
-        "Thursday": THU,
-        "Friday": FRI
-    }
-
-    for full_weekday, slots in schedule_data.items():
-        short_weekday = weekday_map.get(full_weekday)
-        if not short_weekday:
+try:
+    for pool in POOLS:
+        facility_url = POOL_URLS.get(pool)
+        if not facility_url:
+            print(f"WARNING: No facility URL found for {pool}")
             continue
 
-        for slot_data in slots:
-            slot = SwimSlot(
-                pool=pool,
-                weekday=short_weekday,
-                start=parse_time_string(slot_data['start']),
-                end=parse_time_string(slot_data['end']),
-                note=slot_data['note']
-            )
-            ordered_catalog.add(slot)
+        # Get complete schedule from PDF (family swim + lap swim + secret swim)
+        schedule_data = get_pool_schedule_from_pdf(
+            pool_name=pool,
+            facility_url=facility_url,
+            current_date=current_date,
+            pools_list=POOLS,
+            pdf_cache_dir="/tmp",
+            force_refresh=args.force_refresh
+        )
+
+        if not schedule_data:
+            print(f"WARNING: Failed to get schedule data for {pool}, skipping")
+            continue
+
+        # Convert PDF data format to OrderedCatalog format
+        # PDF format: {weekday: [{"pool": "...", "weekday": "...", "start": "...", "end": "...", "note": "..."}]}
+        # Need to convert to SwimSlot objects
+        weekday_map = {
+            "Saturday": SAT,
+            "Sunday": SUN,
+            "Monday": MON,
+            "Tuesday": TUE,
+            "Wednesday": WED,
+            "Thursday": THU,
+            "Friday": FRI
+        }
+
+        for full_weekday, slots in schedule_data.items():
+            short_weekday = weekday_map.get(full_weekday)
+            if not short_weekday:
+                continue
+
+            for slot_data in slots:
+                slot = SwimSlot(
+                    pool=pool,
+                    weekday=short_weekday,
+                    start=parse_time_string(slot_data['start']),
+                    end=parse_time_string(slot_data['end']),
+                    note=slot_data['note']
+                )
+                ordered_catalog.add(slot)
+
+    print(f"\n{'='*60}")
+    print(f"Pool extraction complete at {datetime.datetime.now(tz=ZoneInfo('America/Los_Angeles'))}")
+    print(f"{'='*60}\n")
+    sys.stdout.flush()
+
+except Exception as e:
+    print(f"\n{'='*60}")
+    print(f"FATAL ERROR during pool extraction:")
+    print(f"Exception type: {type(e).__name__}")
+    print(f"Exception message: {e}")
+    print(f"Timestamp: {datetime.datetime.now()}")
+    print(f"{'='*60}")
+    traceback.print_exc()
+    sys.stdout.flush()
+    sys.exit(1)
 
 ordered_catalog.sort_all()
 
@@ -659,3 +700,9 @@ for filename in os.listdir(MAP_DATA_DIR):
             removed = True
 if removed:
     update_git()
+
+print(f"\n{'='*60}")
+print(f"SCRIPT COMPLETED SUCCESSFULLY")
+print(f"Timestamp: {datetime.datetime.now(tz=ZoneInfo('America/Los_Angeles'))}")
+print(f"{'='*60}")
+sys.stdout.flush()
