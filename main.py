@@ -477,7 +477,15 @@ def update_git():
 parser = argparse.ArgumentParser(description='Parse SF pool schedules from PDFs')
 parser.add_argument('--force-refresh', action='store_true',
                     help='Force re-parsing all pools, ignoring cache')
+parser.add_argument('--pool', type=str,
+                    help='Force re-parsing only this specific pool (e.g., "Balboa Pool")')
 args = parser.parse_args()
+
+# Validate --pool argument if provided
+if args.pool and args.pool not in POOLS:
+    print(f"ERROR: Unknown pool '{args.pool}'")
+    print(f"Valid pools: {', '.join(POOLS)}")
+    sys.exit(1)
 
 ordered_catalog = OrderedCatalog()
 
@@ -495,6 +503,12 @@ current_date = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles"))
 print(f"\n{'='*60}")
 print(f"Starting pool schedule extraction at {current_date}")
 print(f"Processing {len(POOLS)} pools: {', '.join(POOLS)}")
+if args.force_refresh:
+    print(f"Mode: Force refresh ALL pools")
+elif args.pool:
+    print(f"Mode: Force refresh ONLY '{args.pool}' (others use cache)")
+else:
+    print(f"Mode: Using cache where available")
 print(f"{'='*60}\n")
 sys.stdout.flush()
 
@@ -506,13 +520,15 @@ try:
             continue
 
         # Get complete schedule from PDF (family swim + lap swim + secret swim)
+        # Force refresh if --force-refresh flag is set, or if this is the specific --pool requested
+        should_force_refresh = args.force_refresh or (args.pool == pool)
         schedule_data = get_pool_schedule_from_pdf(
             pool_name=pool,
             facility_url=facility_url,
             current_date=current_date,
             pools_list=POOLS,
             pdf_cache_dir="/tmp",
-            force_refresh=args.force_refresh
+            force_refresh=should_force_refresh
         )
 
         if not schedule_data:
