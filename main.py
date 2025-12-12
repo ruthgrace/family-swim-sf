@@ -387,7 +387,7 @@ def is_currently_active(data):
         current_date = datetime.datetime.strptime(current_date_string,
                                                   '%Y-%m-%d %H:%M:%S').date()
     else:
-        current_date = datetime.date.today()
+        current_date = datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles")).date()
     if "no_meeting_dates" in data["body"]["meeting_and_registration_dates"] and data["body"]["meeting_and_registration_dates"]["no_meeting_dates"] == True:
         return False
     if "beginning_date" in data["body"]["meeting_and_registration_dates"][
