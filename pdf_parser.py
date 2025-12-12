@@ -1406,7 +1406,7 @@ Most SF pools are closed on one or two weekend days. Looking at the PDF image:
 Which day (if any) has phantom activities that should be removed?
 Reply with ONLY the day name (e.g., "Sunday") or "NONE" if all days appear correct."""
 
-    client = anthropic.Anthropic()
+    client = Anthropic()
     message = client.messages.create(
         model="claude-sonnet-4-5-20250929",
         max_tokens=20,
