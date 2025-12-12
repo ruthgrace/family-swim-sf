@@ -27,29 +27,7 @@
           "note": "Parent Child Swim on Steps"
         }
       ],
-      "Sunday": [
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Sunday",
-          "start": "12:30PM",
-          "end": "2:00PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Sunday",
-          "start": "2:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Sunday",
-          "start": "4:00PM",
-          "end": "5:00PM",
-          "note": "Parent Child Swim on Steps"
-        }
-      ],
+      "Sunday": [],
       "Monday": [],
       "Tuesday": [
         {

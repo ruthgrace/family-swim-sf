@@ -1359,6 +1359,117 @@ def remove_phantom_entries(schedule_data, image_path, pool_name, use_raw_format=
     return cleaned_data
 
 
+def identify_phantom_day(raw_schedule, image_path, pool_name):
+    """
+    Ask Claude to identify which day likely has phantom (copied) activities.
+
+    Most pools operate ~5 days/week. If we see 6+ days with activities,
+    one day may have been incorrectly copied from an adjacent day
+    (e.g., Sunday copied from Saturday).
+
+    Args:
+        raw_schedule: Dict of {day: [activities]}
+        image_path: Path to schedule PNG for Claude verification
+        pool_name: Name of the pool
+
+    Returns:
+        Day name string (e.g., "Sunday") or None if no phantom detected
+    """
+    # Format the schedule data for the prompt
+    schedule_summary = []
+    for day in ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]:
+        activities = raw_schedule.get(day, [])
+        if activities:
+            schedule_summary.append(f"{day}: {len(activities)} activities")
+            for act in activities:
+                schedule_summary.append(f"  - {act.get('start', '?')}-{act.get('end', '?')}: {act.get('activity', '?')}")
+        else:
+            schedule_summary.append(f"{day}: (empty)")
+
+    schedule_text = "\n".join(schedule_summary)
+
+    # Read image
+    with open(image_path, "rb") as f:
+        image_data = base64.b64encode(f.read()).decode("utf-8")
+
+    prompt = f"""Look at this pool schedule image for {pool_name}.
+
+I extracted the following activities per day:
+
+{schedule_text}
+
+Most SF pools are closed on one or two weekend days. Looking at the PDF image:
+
+1. Check if both Saturday and Sunday columns actually have activities, or if one is empty/closed
+2. If you see that one day's column is actually empty or says "CLOSED" but I extracted activities for it, that day has phantom (incorrectly copied) data
+
+Which day (if any) has phantom activities that should be removed?
+Reply with ONLY the day name (e.g., "Sunday") or "NONE" if all days appear correct."""
+
+    client = anthropic.Anthropic()
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=20,
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": image_data}},
+                {"type": "text", "text": prompt}
+            ]
+        }]
+    )
+
+    response = message.content[0].text.strip()
+    print(f"    Claude response: {response}")
+
+    # Parse response
+    valid_days = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    for day in valid_days:
+        if day.lower() in response.lower():
+            return day
+
+    return None
+
+
+def validate_day_count(raw_schedule, image_path, pool_name):
+    """
+    Validate that the schedule doesn't have too many active days.
+    Most pools operate ~5 days/week. If 6+ days have activities,
+    one day may have been incorrectly copied from an adjacent day.
+
+    Args:
+        raw_schedule: Dict of {day: [activities]}
+        image_path: Path to schedule PNG for Claude verification
+        pool_name: Name of the pool
+
+    Returns:
+        Cleaned raw_schedule with phantom day emptied if detected
+    """
+    # Count days with activities
+    days_with_activities = [day for day, activities in raw_schedule.items() if activities]
+    active_day_count = len(days_with_activities)
+
+    if active_day_count <= 5:
+        print(f"  Day count OK: {active_day_count} days with activities")
+        return raw_schedule
+
+    print(f"  WARNING: {active_day_count} days have activities (expected <=5)")
+    print(f"  Active days: {', '.join(days_with_activities)}")
+    print(f"  Asking Claude to identify phantom day...")
+
+    # Call Claude with image + data to identify suspect day
+    suspect_day = identify_phantom_day(raw_schedule, image_path, pool_name)
+
+    if suspect_day and suspect_day in raw_schedule:
+        print(f"  Identified phantom day: {suspect_day}")
+        print(f"  Removing {len(raw_schedule[suspect_day])} activities from {suspect_day}")
+        raw_schedule[suspect_day] = []
+    else:
+        print(f"  Could not identify phantom day, keeping all data")
+
+    return raw_schedule
+
+
 def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp", force_refresh=False):
     """
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
@@ -1450,6 +1561,12 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
         with open(debug_path, 'w') as f:
             json.dump(raw_schedule, f, indent=2)
         print(f"Saved raw schedule to {debug_path}")
+
+        # PASS 1a: Validate day count (all pools)
+        # Most pools operate ~5 days/week; if 6+ days have activities, one may be phantom
+        print(f"PASS 1a: Validating day count...")
+        image_path = f"{pdf_cache_dir}/{pool_name.replace(' ', '_')}_schedule_page1.png"
+        raw_schedule = validate_day_count(raw_schedule, image_path, pool_name)
 
         # PASS 1b: Phantom detection on raw schedule (Garfield only)
         # Must happen before PASS 2+ so secret swim calculations use clean data
