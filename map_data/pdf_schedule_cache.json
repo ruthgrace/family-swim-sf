@@ -286,7 +286,145 @@
     "pdf_signature": [
       "Hamilton Pool _  Holiday Schedule _Dec 30 _ Jan 3"
     ],
-    "schedule_data": null
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Saturday",
+          "start": "9:00AM",
+          "end": "10:30AM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Saturday",
+          "start": "1:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Saturday",
+          "start": "4:00PM",
+          "end": "5:00PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Tuesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "6:30AM",
+          "end": "8:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Wednesday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        }
+      ],
+      "Thursday": [],
+      "Friday": [
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "6:30AM",
+          "end": "8:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "11:00AM",
+          "end": "12:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - 2"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "1:00PM",
+          "end": "3:30PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Hamilton Pool",
+          "weekday": "Friday",
+          "start": "6:30PM",
+          "end": "8:00PM",
+          "note": "Family Swim"
+        }
+      ]
+    }
   },
   "Martin Luther King Jr Pool": {
     "pdf_signature": [
