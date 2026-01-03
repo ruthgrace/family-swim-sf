@@ -110,7 +110,8 @@
   },
   "Coffman Pool": {
     "pdf_signature": [
-      "Coffman Pool Holiday2026_Dec30_Jan3"
+      "Coffman Pool Holiday2026_Dec30_Jan3",
+      "Coffman Pool_Winter26_Jan6_Mar14"
     ],
     "schedule_data": {
       "Saturday": [
@@ -184,123 +185,15 @@
   },
   "Garfield Pool": {
     "pdf_signature": [
-      "Garfield_HOLIDAY 2025_DEC28-JAN1"
+      "Garfield_HOLIDAY 2025_DEC28-JAN1",
+      "Garfield_WINTER 2026_Jan 4-Mar 12"
     ],
-    "schedule_data": {
-      "Saturday": [],
-      "Sunday": [
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Sunday",
-          "start": "9:00AM",
-          "end": "10:30AM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Sunday",
-          "start": "12:30PM",
-          "end": "2:00PM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Sunday",
-          "start": "2:30PM",
-          "end": "4:00PM",
-          "note": "Family Swim"
-        }
-      ],
-      "Monday": [
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Monday",
-          "start": "7:00AM",
-          "end": "8:45AM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Monday",
-          "start": "9:00AM",
-          "end": "10:45AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Monday",
-          "start": "2:00PM",
-          "end": "3:45PM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Monday",
-          "start": "4:30PM",
-          "end": "6:00PM",
-          "note": "Family Swim - Small Pool"
-        }
-      ],
-      "Tuesday": [
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Tuesday",
-          "start": "9:00AM",
-          "end": "10:45AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Tuesday",
-          "start": "2:00PM",
-          "end": "3:30PM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Tuesday",
-          "start": "3:45PM",
-          "end": "5:30PM",
-          "note": "Family Swim - Small Pool"
-        }
-      ],
-      "Wednesday": [
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Wednesday",
-          "start": "7:00AM",
-          "end": "8:45AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Wednesday",
-          "start": "9:00AM",
-          "end": "10:45AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Wednesday",
-          "start": "11:00AM",
-          "end": "1:00PM",
-          "note": "Family Swim - Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Wednesday",
-          "start": "2:00PM",
-          "end": "3:45PM",
-          "note": "Parent Child Swim in Small Pool"
-        }
-      ],
-      "Thursday": [],
-      "Friday": []
-    }
+    "schedule_data": null
   },
   "Hamilton Pool": {
     "pdf_signature": [
-      "Hamilton Pool _  Holiday Schedule _Dec 30 _ Jan 3"
+      "Hamilton Pool _  Holiday Schedule _Dec 30 _ Jan 3",
+      "Hamilton Pool _ Winter Schedule _ Jan 6 _ March 14"
     ],
     "schedule_data": {
       "Saturday": [
@@ -444,7 +337,8 @@
   },
   "Martin Luther King Jr Pool": {
     "pdf_signature": [
-      "MLK_Holiday Schedule_Dec30_Jan03_FINAL"
+      "MLK_Holiday Schedule_Dec30_Jan03_FINAL",
+      "MLK_Winter26_Jan06_Mar14_FINAL"
     ],
     "schedule_data": {
       "Saturday": [
@@ -471,7 +365,7 @@
           "weekday": "Tuesday",
           "start": "2:30PM",
           "end": "5:30PM",
-          "note": "Family Swim"
+          "note": "Family Swim (shallow)"
         }
       ],
       "Wednesday": [
@@ -480,7 +374,7 @@
           "weekday": "Wednesday",
           "start": "2:30PM",
           "end": "5:30PM",
-          "note": "Family Swim (shallow)"
+          "note": "Family Swim"
         }
       ],
       "Thursday": [],
@@ -566,6 +460,7 @@
   },
   "North Beach Pool": {
     "pdf_signature": [
+      "North Beach Pool_ Winter 2026_06JAN to 14MAR r9",
       "North Beach Pool_ Winterbreak 2026_12_30-1_3"
     ],
     "schedule_data": {
@@ -661,7 +556,8 @@
   },
   "Rossi Pool": {
     "pdf_signature": [
-      "Rossi_HolidaySchedule_Dec28_Dec31"
+      "Rossi_HolidaySchedule_Dec28_Dec31",
+      "Rossi_Winter26Jan4_March12"
     ],
     "schedule_data": {
       "Saturday": [],
@@ -669,7 +565,7 @@
         {
           "pool": "Rossi Pool",
           "weekday": "Sunday",
-          "start": "11:30AM",
+          "start": "12:30PM",
           "end": "2:00PM",
           "note": "Family Swim"
         },
@@ -681,22 +577,14 @@
           "note": "Family Swim"
         }
       ],
-      "Monday": [
-        {
-          "pool": "Rossi Pool",
-          "weekday": "Monday",
-          "start": "2:00PM",
-          "end": "3:30PM",
-          "note": "Family Swim"
-        }
-      ],
+      "Monday": [],
       "Tuesday": [
         {
           "pool": "Rossi Pool",
           "weekday": "Tuesday",
-          "start": "2:00PM",
-          "end": "3:30PM",
-          "note": "Family Swim"
+          "start": "6:15PM",
+          "end": "7:30PM",
+          "note": "Family Swim - 2 lanes"
         }
       ],
       "Wednesday": [
@@ -705,10 +593,18 @@
           "weekday": "Wednesday",
           "start": "2:00PM",
           "end": "3:30PM",
-          "note": "Family Swim"
+          "note": "Family Swim - 2 lanes"
         }
       ],
-      "Thursday": [],
+      "Thursday": [
+        {
+          "pool": "Rossi Pool",
+          "weekday": "Thursday",
+          "start": "6:15PM",
+          "end": "7:30PM",
+          "note": "Family Swim - 3 lanes"
+        }
+      ],
       "Friday": []
     }
   },
