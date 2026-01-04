@@ -188,7 +188,118 @@
       "Garfield_HOLIDAY 2025_DEC28-JAN1",
       "Garfield_WINTER 2026_Jan 4-Mar 12"
     ],
-    "schedule_data": null
+    "schedule_data": {
+      "Saturday": [],
+      "Sunday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Sunday",
+          "start": "12:30PM",
+          "end": "2:00PM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Sunday",
+          "start": "2:30PM",
+          "end": "4:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Monday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "7:00AM",
+          "end": "8:45AM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "2:00PM",
+          "end": "3:45PM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Monday",
+          "start": "5:15PM",
+          "end": "6:30PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Tuesday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Tuesday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "7:00AM",
+          "end": "8:45AM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "9:00AM",
+          "end": "10:45AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "2:00PM",
+          "end": "3:45PM",
+          "note": "Family Swim - Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Wednesday",
+          "start": "5:15PM",
+          "end": "7:00PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Thursday": [
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "9:00AM",
+          "end": "10:45AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "9:30AM",
+          "end": "10:30AM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "11:00AM",
+          "end": "1:00PM",
+          "note": "Parent Child Swim in Small Pool"
+        },
+        {
+          "pool": "Garfield Pool",
+          "weekday": "Thursday",
+          "start": "2:00PM",
+          "end": "3:30PM",
+          "note": "Family Swim - Small Pool"
+        }
+      ],
+      "Friday": []
+    }
   },
   "Hamilton Pool": {
     "pdf_signature": [
