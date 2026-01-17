@@ -1,17 +1,10 @@
 {
   "Balboa Pool": {
     "pdf_signature": [
-      "2025-26 Balboa Pool Holiday Schedule"
+      "2026 Balboa Pool Winter Schedule"
     ],
     "schedule_data": {
       "Saturday": [
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Saturday",
-          "start": "9:00AM",
-          "end": "11:00AM",
-          "note": "Parent Child Swim on Steps"
-        },
         {
           "pool": "Balboa Pool",
           "weekday": "Saturday",
@@ -41,21 +34,28 @@
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
           "start": "7:00AM",
-          "end": "10:00AM",
+          "end": "8:00AM",
           "note": "Parent Child Swim on Steps"
         },
         {
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
           "start": "12:30PM",
-          "end": "2:30PM",
-          "note": "Family Swim"
+          "end": "2:00PM",
+          "note": "Parent Child Swim on Steps"
         },
         {
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
-          "start": "3:00PM",
-          "end": "5:00PM",
+          "start": "2:30PM",
+          "end": "3:30PM",
+          "note": "Family Swim - shallow / deep"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Tuesday",
+          "start": "2:30PM",
+          "end": "3:30PM",
           "note": "Parent Child Swim on Steps"
         }
       ],
@@ -70,40 +70,55 @@
         {
           "pool": "Balboa Pool",
           "weekday": "Wednesday",
-          "start": "12:30PM",
-          "end": "2:00PM",
-          "note": "Family Swim - deep / shallow"
-        },
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Wednesday",
-          "start": "2:30PM",
-          "end": "5:30PM",
-          "note": "Family Swim - shallow pool"
+          "start": "2:00PM",
+          "end": "3:00PM",
+          "note": "Family Swim (shallow)"
         }
       ],
-      "Thursday": [],
-      "Friday": [
+      "Thursday": [
         {
           "pool": "Balboa Pool",
-          "weekday": "Friday",
-          "start": "8:30AM",
-          "end": "10:00AM",
+          "weekday": "Thursday",
+          "start": "7:00AM",
+          "end": "8:00AM",
           "note": "Parent Child Swim on Steps"
         },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "11:30AM",
+          "end": "2:00PM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "2:30PM",
+          "end": "4:00PM",
+          "note": "Family Swim - shallow/deep"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "2:30PM",
+          "end": "4:00PM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Thursday",
+          "start": "6:00PM",
+          "end": "7:30PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Friday": [
         {
           "pool": "Balboa Pool",
           "weekday": "Friday",
           "start": "1:30PM",
           "end": "3:00PM",
           "note": "Parent Child Swim on Steps"
-        },
-        {
-          "pool": "Balboa Pool",
-          "weekday": "Friday",
-          "start": "3:30PM",
-          "end": "5:30PM",
-          "note": "Family Swim"
         }
       ]
     }
