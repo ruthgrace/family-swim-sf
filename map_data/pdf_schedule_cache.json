@@ -124,85 +124,8 @@
     }
   },
   "Coffman Pool": {
-    "pdf_signature": [
-      "Coffman Pool_Winter26_Jan6_Feb7"
-    ],
-    "schedule_data": {
-      "Saturday": [
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Saturday",
-          "start": "9:00AM",
-          "end": "11:00AM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Saturday",
-          "start": "1:00PM",
-          "end": "2:00PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Saturday",
-          "start": "2:30PM",
-          "end": "3:45PM",
-          "note": "Family Swim"
-        }
-      ],
-      "Sunday": [],
-      "Monday": [],
-      "Tuesday": [
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Tuesday",
-          "start": "2:00PM",
-          "end": "4:00PM",
-          "note": "Family Swim - (Shared Pool)^"
-        }
-      ],
-      "Wednesday": [
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Wednesday",
-          "start": "1:30PM",
-          "end": "2:30PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Wednesday",
-          "start": "3:30PM",
-          "end": "5:30PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Wednesday",
-          "start": "5:45PM",
-          "end": "7:00PM",
-          "note": "Family Swim - (Shared Pool)^"
-        }
-      ],
-      "Thursday": [],
-      "Friday": [
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Friday",
-          "start": "2:00PM",
-          "end": "3:00PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Coffman Pool",
-          "weekday": "Friday",
-          "start": "3:30PM",
-          "end": "5:30PM",
-          "note": "Family Swim"
-        }
-      ]
-    }
+    "pdf_signature": [],
+    "schedule_data": null
   },
   "Garfield Pool": {
     "pdf_signature": [
@@ -495,58 +418,8 @@
     }
   },
   "Martin Luther King Jr Pool": {
-    "pdf_signature": [
-      "MLK_Winter26_Jan06_Mar14_FINAL"
-    ],
-    "schedule_data": {
-      "Saturday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Saturday",
-          "start": "2:00PM",
-          "end": "3:30PM",
-          "note": "Family Swim - 10"
-        }
-      ],
-      "Sunday": [],
-      "Monday": [],
-      "Tuesday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Tuesday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Wednesday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Wednesday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Thursday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Thursday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Friday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Friday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ]
-    }
+    "pdf_signature": [],
+    "schedule_data": null
   },
   "Mission Community Pool": {
     "pdf_signature": [
