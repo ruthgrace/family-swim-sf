@@ -473,72 +473,9 @@
   },
   "Mission Community Pool": {
     "pdf_signature": [
-      "Mission Pool Rules and Guidelines (1/5/21 Update)",
-      "Mission Pool Schedule"
+      "Mission Pool Rules and Guidelines (1/5/21 Update)"
     ],
-    "schedule_data": {
-      "Saturday": [
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Saturday",
-          "start": "10:45AM",
-          "end": "12:30PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Saturday",
-          "start": "2:00PM",
-          "end": "3:15PM",
-          "note": "Family Swim"
-        }
-      ],
-      "Sunday": [],
-      "Monday": [],
-      "Tuesday": [
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Tuesday",
-          "start": "2:00PM",
-          "end": "3:00PM",
-          "note": "Family Swim"
-        }
-      ],
-      "Wednesday": [
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Wednesday",
-          "start": "2:00PM",
-          "end": "4:00PM",
-          "note": "Family Swim"
-        }
-      ],
-      "Thursday": [
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Thursday",
-          "start": "2:00 pm",
-          "end": "3:00 pm",
-          "note": "Family Swim"
-        }
-      ],
-      "Friday": [
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Friday",
-          "start": "11:00AM",
-          "end": "12:30PM",
-          "note": "Family Swim"
-        },
-        {
-          "pool": "Mission Community Pool",
-          "weekday": "Friday",
-          "start": "4:30PM",
-          "end": "7:00PM",
-          "note": "Family Swim"
-        }
-      ]
-    }
+    "schedule_data": null
   },
   "North Beach Pool": {
     "pdf_signature": [
