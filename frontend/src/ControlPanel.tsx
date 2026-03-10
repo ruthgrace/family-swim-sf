@@ -5,7 +5,7 @@ import { Weekday } from "./poolDataTypes";
 
 const snapPoints = ["245px", "350px"];
 
-const updatedAt = "2026-03-09";
+const updatedAt = "2026-03-10";
 
 export const ControlPanel = ({
   selectedDay,
