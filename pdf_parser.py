@@ -2,7 +2,7 @@
 PDF parsing utilities for extracting pool schedules
 
 Simplified Multi-Pass Strategy:
-1. Extract RAW schedule from PDF (Claude Sonnet 4.5 - vision only, no filtering)
+1. Extract RAW schedule from PDF (Claude Opus 4.6 - vision only, no filtering)
 2. Filter for family/parent-child swim (Claude Sonnet 4 - JSON filtering, excludes classes)
 3. Extract lap swim from raw schedule (Python - no API call)
 4. Extract all activities from raw schedule (Python - no API call)
@@ -159,7 +159,7 @@ Your answer will be parsed by code. You must reply with ONLY the index value in 
         # Retry loop for flaky responses (e.g., Claude returns verbose text with year "2025" instead of "1")
         for attempt in range(3):  # Up to 3 attempts (1 initial + 2 retries)
             message = client.messages.create(
-                model="claude-sonnet-4-5-20250929",  # Using Sonnet for date range matching (Haiku struggles with date comparisons)
+                model="claude-opus-4-6",  # Using Opus for date range matching (Haiku struggles with date comparisons)
                 max_tokens=10,
                 messages=[
                     {"role": "user", "content": prompt},
@@ -566,7 +566,7 @@ def extract_single_day(pool_name, day, image_data, client):
     top_down_prompt = get_extraction_prompt(pool_name, day, "top-down")
 
     message = client.messages.create(
-        model="claude-sonnet-4-5-20250929",
+        model="claude-opus-4-6",
         max_tokens=4096,
         messages=[
             {
@@ -601,7 +601,7 @@ def extract_single_day(pool_name, day, image_data, client):
         bottom_up_prompt = get_extraction_prompt(pool_name, day, "bottom-up")
 
         bottom_up_message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model="claude-opus-4-6",
             max_tokens=4096,
             messages=[
                 {
@@ -657,7 +657,7 @@ Make sure to split multi-activity cells into separate entries.
 Return ONLY the JSON array, no explanations."""
 
             reconcile_message = client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-opus-4-6",
                 max_tokens=4096,
                 messages=[
                     {
@@ -741,7 +741,7 @@ Make sure to split multi-activity cells into separate entries.
 Return ONLY the JSON array, no explanations."""
 
         consolidate_message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model="claude-opus-4-6",
             max_tokens=4096,
             messages=[
                 {
@@ -1060,7 +1060,7 @@ Each day should contain only the new secret swim slots. If there aren't any secr
 Return ONLY the JSON, no other text."""
 
         message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",
+            model="claude-opus-4-6",
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -1232,7 +1232,7 @@ Please respond with EXACTLY one of these formats:
 Be very careful and look closely at the column boundaries."""
 
     message = client.messages.create(
-        model="claude-sonnet-4-5-20250929",
+        model="claude-opus-4-6",
         max_tokens=200,
         messages=[
             {
@@ -1408,7 +1408,7 @@ Reply with ONLY the day name (e.g., "Sunday") or "NONE" if all days appear corre
 
     client = Anthropic()
     message = client.messages.create(
-        model="claude-sonnet-4-5-20250929",
+        model="claude-opus-4-6",
         max_tokens=20,
         messages=[{
             "role": "user",
@@ -1475,7 +1475,7 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
 
     Strategy:
-    1. Extract RAW schedule from PDF (Claude Sonnet 4.5 - vision only, no filtering)
+    1. Extract RAW schedule from PDF (Claude Opus 4.6 - vision only, no filtering)
     2. Filter for family/parent-child swim (Claude Sonnet 4 - JSON filtering, excludes classes like "Parent Child Intro")
     3. Extract lap swim from raw schedule (Python - no API call)
     4. Extract all activities from raw schedule (Python - no API call)
