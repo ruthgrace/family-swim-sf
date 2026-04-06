@@ -1,10 +1,18 @@
 {
   "Balboa Pool": {
     "pdf_signature": [
-      "2026 Balboa Pool Winter Schedule"
+      "2026 Balboa Pool Spring Break Schedule",
+      "2026 Balboa Pool Spring Schedule"
     ],
     "schedule_data": {
       "Saturday": [
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Saturday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Parent Child Swim on Steps"
+        },
         {
           "pool": "Balboa Pool",
           "weekday": "Saturday",
@@ -34,7 +42,7 @@
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
           "start": "7:00AM",
-          "end": "8:00AM",
+          "end": "10:00AM",
           "note": "Parent Child Swim on Steps"
         },
         {
@@ -48,14 +56,14 @@
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
           "start": "2:30PM",
-          "end": "3:30PM",
+          "end": "4:00PM",
           "note": "Family Swim - shallow / deep"
         },
         {
           "pool": "Balboa Pool",
           "weekday": "Tuesday",
           "start": "2:30PM",
-          "end": "3:30PM",
+          "end": "4:00PM",
           "note": "Parent Child Swim on Steps"
         }
       ],
@@ -71,8 +79,8 @@
           "pool": "Balboa Pool",
           "weekday": "Wednesday",
           "start": "2:00PM",
-          "end": "3:00PM",
-          "note": "Family Swim (shallow)"
+          "end": "4:00PM",
+          "note": "Family Swim - shallow pool"
         }
       ],
       "Thursday": [
@@ -80,7 +88,7 @@
           "pool": "Balboa Pool",
           "weekday": "Thursday",
           "start": "7:00AM",
-          "end": "8:00AM",
+          "end": "10:00AM",
           "note": "Parent Child Swim on Steps"
         },
         {
@@ -95,7 +103,7 @@
           "weekday": "Thursday",
           "start": "2:30PM",
           "end": "4:00PM",
-          "note": "Family Swim - shallow/deep"
+          "note": "Family Swim - shallow / deep"
         },
         {
           "pool": "Balboa Pool",
@@ -116,20 +124,119 @@
         {
           "pool": "Balboa Pool",
           "weekday": "Friday",
+          "start": "8:30AM",
+          "end": "10:00AM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Friday",
           "start": "1:30PM",
           "end": "3:00PM",
+          "note": "Parent Child Swim on Steps"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Friday",
+          "start": "3:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim - shallow / deep"
+        },
+        {
+          "pool": "Balboa Pool",
+          "weekday": "Friday",
+          "start": "3:30PM",
+          "end": "5:30PM",
           "note": "Parent Child Swim on Steps"
         }
       ]
     }
   },
   "Coffman Pool": {
-    "pdf_signature": [],
-    "schedule_data": null
+    "pdf_signature": [
+      "Coffman Pool_Spring One 26_Mar17_April18"
+    ],
+    "schedule_data": {
+      "Saturday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Saturday",
+          "start": "9:00AM",
+          "end": "11:00AM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Saturday",
+          "start": "1:00PM",
+          "end": "2:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Saturday",
+          "start": "2:30PM",
+          "end": "3:45PM",
+          "note": "Family Swim"
+        }
+      ],
+      "Sunday": [],
+      "Monday": [],
+      "Tuesday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Tuesday",
+          "start": "2:00PM",
+          "end": "4:00PM",
+          "note": "Family Swim - Shared Pool"
+        }
+      ],
+      "Wednesday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Wednesday",
+          "start": "1:30PM",
+          "end": "2:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Wednesday",
+          "start": "3:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Wednesday",
+          "start": "5:45PM",
+          "end": "7:00PM",
+          "note": "Family Swim - Shared Pool"
+        }
+      ],
+      "Thursday": [],
+      "Friday": [
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Friday",
+          "start": "2:00PM",
+          "end": "3:00PM",
+          "note": "Family Swim"
+        },
+        {
+          "pool": "Coffman Pool",
+          "weekday": "Friday",
+          "start": "3:30PM",
+          "end": "5:30PM",
+          "note": "Family Swim"
+        }
+      ]
+    }
   },
   "Garfield Pool": {
     "pdf_signature": [
-      "Garfield_WINTER 2026_Jan 4-Mar 12"
+      "Garfield Pool_SPRING BREAK_Schedule March 29_April 2 (2)",
+      "Garfield_Spring 2026 Schedule March 15 to June 4"
     ],
     "schedule_data": {
       "Saturday": [],
@@ -194,7 +301,7 @@
           "weekday": "Wednesday",
           "start": "9:00AM",
           "end": "10:45AM",
-          "note": "Parent Child Swim in Small Pool"
+          "note": "Family Swim - Small Pool"
         },
         {
           "pool": "Garfield Pool",
@@ -212,27 +319,6 @@
         }
       ],
       "Thursday": [
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Thursday",
-          "start": "9:00AM",
-          "end": "10:45AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Thursday",
-          "start": "9:30AM",
-          "end": "10:30AM",
-          "note": "Parent Child Swim in Small Pool"
-        },
-        {
-          "pool": "Garfield Pool",
-          "weekday": "Thursday",
-          "start": "11:00AM",
-          "end": "1:00PM",
-          "note": "Parent Child Swim in Small Pool"
-        },
         {
           "pool": "Garfield Pool",
           "weekday": "Thursday",
@@ -419,57 +505,9 @@
   },
   "Martin Luther King Jr Pool": {
     "pdf_signature": [
-      "MLK_Winter26_Jan06_Mar14_FINAL"
+      "MLK_Spring26_Apr07_Jun06_FINAL v2.0"
     ],
-    "schedule_data": {
-      "Saturday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Saturday",
-          "start": "2:00PM",
-          "end": "3:30PM",
-          "note": "Family Swim - 10"
-        }
-      ],
-      "Sunday": [],
-      "Monday": [],
-      "Tuesday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Tuesday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Wednesday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Wednesday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Thursday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Thursday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ],
-      "Friday": [
-        {
-          "pool": "Martin Luther King Jr Pool",
-          "weekday": "Friday",
-          "start": "12:30PM",
-          "end": "3:30PM",
-          "note": "Family Swim (shallow)"
-        }
-      ]
-    }
+    "schedule_data": null
   },
   "Mission Community Pool": {
     "pdf_signature": [
@@ -479,7 +517,8 @@
   },
   "North Beach Pool": {
     "pdf_signature": [
-      "North Beach Pool_ Winter 2026_06JAN to 14MAR r16 Swim Teams"
+      "North Beach Pool_ Spring 2026_ 15MAR to 12JUN",
+      "North Beach Pool_SPRING BREAK_Schedule March 30_April 3"
     ],
     "schedule_data": {
       "Saturday": [
@@ -547,7 +586,8 @@
   },
   "Rossi Pool": {
     "pdf_signature": [
-      "Rossi_Winter26Jan4_March12"
+      "Rossi_SPRING BREAK_Schedule March 27_April 3",
+      "Rossi_Spring 2026 Schedule March 15 to June 4"
     ],
     "schedule_data": {
       "Saturday": [],
@@ -574,7 +614,7 @@
           "weekday": "Tuesday",
           "start": "6:15PM",
           "end": "7:30PM",
-          "note": "Family Swim - (2 lanes)**"
+          "note": "Family Swim - 2 lanes"
         }
       ],
       "Wednesday": [
