@@ -70,10 +70,10 @@ npm run build
 sudo -u ruth crontab -e
 ```
 
-add this line to run the script at 7am every day
+add this line to run the script daily (currently 1pm UTC / 6am Pacific). Output is logged to `cron.log` in the project directory, overwritten each run.
 
 ```
-0 15 * * * cd /var/www/family-swim-sf && stdbuf -i0 -o0 -e0 venv/bin/python3.12 main.py
+0 13 * * * cd /var/www/family-swim-sf && stdbuf -i0 -o0 -e0 venv/bin/python3.12 main.py > /var/www/family-swim-sf/cron.log 2>&1
 ```
 
 # update map data manually
@@ -86,4 +86,4 @@ npm run build
 
 # find logs for debugging
 
-i believe logs from cron will go to `/var/log/cron`. i think these are log rotated so you may see `/var/log/cron-20241201` for example.
+The cron job writes its output to `/var/www/family-swim-sf/cron.log` (overwritten each run, so it only contains the most recent run).
