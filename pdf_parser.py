@@ -163,7 +163,6 @@ Your answer will be parsed by code. You must reply with ONLY the index value in 
                 max_tokens=10,
                 messages=[
                     {"role": "user", "content": prompt},
-                    {"role": "assistant", "content": "Answer:"}  # Prefill to force concise response
                 ]
             )
 
