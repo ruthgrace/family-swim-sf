@@ -13,6 +13,7 @@ This approach uses AI strategically: vision extraction, intelligent filtering, a
 """
 
 import re
+import time
 import requests
 import traceback
 import json
@@ -25,6 +26,24 @@ import pypdfium2 as pdfium
 
 # Cache file for storing PDF lists and parsed schedules
 CACHE_FILE = "map_data/pdf_schedule_cache.json"
+
+
+def requests_get_with_retry(url, max_retries=3, backoff_base=1):
+    """Wrapper around requests.get with retry and exponential backoff."""
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ChunkedEncodingError,
+                requests.exceptions.Timeout) as e:
+            if attempt < max_retries - 1:
+                wait = backoff_base * (2 ** attempt)
+                print(f"  Retry {attempt + 1}/{max_retries - 1} after {wait}s: {e}")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def load_cache():
@@ -63,8 +82,7 @@ def get_pdf_list_signature(documents, pool_name, search_terms):
 def get_facility_documents(facility_url):
     """Scrape a facility page and extract all documents"""
     try:
-        response = requests.get(facility_url)
-        response.raise_for_status()
+        response = requests_get_with_retry(facility_url)
         soup = BeautifulSoup(response.content, 'html.parser')
 
         documents = []
@@ -202,8 +220,7 @@ Your answer will be parsed by code. You must reply with ONLY the index value in 
 def download_pdf(pdf_url, output_path):
     """Download a PDF from the given URL"""
     try:
-        response = requests.get(pdf_url)
-        response.raise_for_status()
+        response = requests_get_with_retry(pdf_url)
 
         with open(output_path, 'wb') as f:
             f.write(response.content)
@@ -298,6 +315,11 @@ def conflicts_with_small_pool(activity):
     - Activity explicitly uses specific lanes (e.g., "(4)", "(2)")
     """
     pool_area = activity.get("pool_area", "").strip().lower()
+
+    # Closures don't use the pool - no conflict
+    activity_name = activity.get("activity", "").strip().lower()
+    if "closed" in activity_name:
+        return False
 
     # Explicit Small Pool - conflicts
     if "small pool" in pool_area:
