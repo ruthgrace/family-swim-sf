@@ -538,6 +538,8 @@ Extract all {day.upper()} activities now."""
 def normalize_time(time_str):
     """Normalize time string for comparison (e.g., '9:00AM' -> '09:00AM')."""
     time_str = time_str.upper().strip()
+    if len(time_str) < 2:
+        return time_str
     # Add leading zero if needed
     if time_str[0].isdigit() and (time_str[1] == ':' or time_str[1].isdigit() and time_str[2] == ':'):
         if time_str[1] == ':':
@@ -549,10 +551,14 @@ def get_time_slots(activities):
     """Extract unique time slots (start, end) from activities list."""
     slots = set()
     for act in activities:
-        start = normalize_time(act.get('start', ''))
-        end = normalize_time(act.get('end', ''))
-        if start and end:
-            slots.add((start, end))
+        raw_start = act.get('start', '')
+        raw_end = act.get('end', '')
+        if not raw_start or not raw_end:
+            print(f"  WARNING: Activity with missing time field: {act}")
+            continue
+        start = normalize_time(raw_start)
+        end = normalize_time(raw_end)
+        slots.add((start, end))
     return slots
 
 
@@ -696,6 +702,16 @@ def pick_best_of_three(extractions, day, image_data, client):
     - If 2+ match by time slots, return the matching result
     - If all 3 differ, ask Claude to consolidate
     """
+    # Filter out malformed activities (missing start/end times) before comparison
+    for i, extraction in enumerate(extractions):
+        cleaned = []
+        for act in extraction:
+            if not act.get('start') or not act.get('end'):
+                print(f"      WARNING: Run {i + 1} returned malformed activity (missing time): {act}")
+                continue
+            cleaned.append(act)
+        extractions[i] = cleaned
+
     slots = [get_time_slots(e) for e in extractions]
 
     # Check for matches (majority vote)

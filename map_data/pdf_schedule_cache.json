@@ -332,7 +332,7 @@
   },
   "Hamilton Pool": {
     "pdf_signature": [
-      "Hamilton Pool _ Winter Schedule _ Jan 6 _ March 14"
+      "Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6"
     ],
     "schedule_data": {
       "Saturday": [
@@ -342,13 +342,6 @@
           "start": "1:30PM",
           "end": "3:30PM",
           "note": "Family Swim"
-        },
-        {
-          "pool": "Hamilton Pool",
-          "weekday": "Saturday",
-          "start": "4:00PM",
-          "end": "5:00PM",
-          "note": "Parent Child Swim in Small Pool"
         }
       ],
       "Sunday": [],
