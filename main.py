@@ -36,7 +36,7 @@ from urllib.request import urlopen
 from zoneinfo import ZoneInfo
 
 # Import PDF parsing utilities
-from pdf_parser import get_pool_schedule_from_pdf
+from pdf_parser import get_pool_schedule_from_pdf, lookup_spring_break_dates
 
 
 def parse_time_string(time_str):
@@ -512,6 +512,9 @@ else:
 print(f"{'='*60}\n")
 sys.stdout.flush()
 
+# Look up spring break dates once for all pools
+spring_break_dates = lookup_spring_break_dates(current_date)
+
 try:
     for pool in POOLS:
         facility_url = POOL_URLS.get(pool)
@@ -528,7 +531,8 @@ try:
             current_date=current_date,
             pools_list=POOLS,
             pdf_cache_dir="/tmp",
-            force_refresh=should_force_refresh
+            force_refresh=should_force_refresh,
+            spring_break_dates=spring_break_dates
         )
 
         if not schedule_data:

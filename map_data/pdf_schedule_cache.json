@@ -634,5 +634,10 @@
   "Sava Pool": {
     "pdf_signature": [],
     "schedule_data": null
+  },
+  "spring_break_dates": {
+    "year": 2026,
+    "start": "2026-03-27",
+    "end": "2026-04-03"
   }
 }

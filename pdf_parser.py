@@ -46,6 +46,84 @@ def requests_get_with_retry(url, max_retries=3, backoff_base=1):
                 raise
 
 
+def lookup_spring_break_dates(current_date):
+    """
+    Look up SFUSD spring break dates for the current year using web search.
+    Uses the existing cache to avoid repeated lookups within the same year.
+
+    Returns:
+        dict with keys 'start' and 'end' (date strings like "2026-03-27"),
+        or None if lookup fails.
+    """
+    year = current_date.year
+
+    # Check cache first
+    cache = load_cache()
+    cached = cache.get('spring_break_dates')
+    if cached and cached.get('year') == year:
+        print(f"  Using cached spring break dates: {cached['start']} to {cached['end']}")
+        return {'start': cached['start'], 'end': cached['end']}
+
+    print(f"  Looking up SFUSD spring break dates for {year}...")
+    try:
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        message = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=256,
+            tools=[{"type": "web_search_20260209", "name": "web_search"}],
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"What are the SFUSD (San Francisco Unified School District) spring break dates for {year}? "
+                               f"Search the web and reply with ONLY a JSON object in this exact format: "
+                               f'{{"start": "YYYY-MM-DD", "end": "YYYY-MM-DD"}} '
+                               f"where start is the first day of spring break and end is the last day. "
+                               f"No other text."
+                }
+            ]
+        )
+
+        # Extract text from response - may need to handle tool use loop
+        # With web_search, Claude may return results directly or need multiple turns
+        response_text = ""
+        for block in message.content:
+            if hasattr(block, 'text') and block.text:
+                response_text = block.text.strip()
+
+        # If stop_reason is "end_turn" and we have text, we're done
+        # If not, the model might still be processing (shouldn't happen with web_search server tool)
+        print(f"  Spring break lookup response: '{response_text}'")
+
+        # Parse JSON from response
+        json_match = re.search(r'\{[^}]+\}', response_text)
+        if json_match:
+            dates = json.loads(json_match.group())
+            if 'start' in dates and 'end' in dates:
+                # Validate dates are parseable
+                from datetime import datetime
+                datetime.strptime(dates['start'], '%Y-%m-%d')
+                datetime.strptime(dates['end'], '%Y-%m-%d')
+
+                # Cache the result
+                cache['spring_break_dates'] = {
+                    'year': year,
+                    'start': dates['start'],
+                    'end': dates['end']
+                }
+                save_cache(cache)
+
+                print(f"  Spring break dates: {dates['start']} to {dates['end']}")
+                return dates
+
+        print(f"  Warning: Could not parse spring break dates from response")
+        return None
+
+    except Exception as e:
+        print(f"  Warning: Could not look up spring break dates: {e}")
+        return None
+
+
 def load_cache():
     """Load the PDF schedule cache from disk."""
     try:
@@ -104,7 +182,7 @@ def get_facility_documents(facility_url):
         return []
 
 
-def select_schedule_pdf(documents, pool_name, current_date, pools_list):
+def select_schedule_pdf(documents, pool_name, current_date, pools_list, spring_break_dates=None):
     """Filter documents for schedule PDFs and select the most appropriate one based on date ranges"""
     schedule_docs = []
     pool_name_lower = pool_name.lower()
@@ -153,12 +231,26 @@ def select_schedule_pdf(documents, pool_name, current_date, pools_list):
 
         doc_list = "\n".join([f"{i+1}. {doc['name']}" for i, doc in enumerate(schedule_docs)])
 
+        # Build spring break context if available
+        spring_break_context = ""
+        if spring_break_dates:
+            from datetime import datetime
+            sb_start = datetime.strptime(spring_break_dates['start'], '%Y-%m-%d').date()
+            sb_end = datetime.strptime(spring_break_dates['end'], '%Y-%m-%d').date()
+            today = current_date.date() if hasattr(current_date, 'date') else current_date
+            is_during = sb_start <= today <= sb_end
+            spring_break_context = f"""
+SPRING BREAK CONTEXT:
+SFUSD Spring Break runs from {spring_break_dates['start']} to {spring_break_dates['end']}.
+Today ({current_date.strftime('%B %d, %Y')}) {"IS" if is_during else "is NOT"} during spring break.
+"""
+
         prompt = f"""Today's date: {current_date.strftime('%B %d, %Y')}
 
 Pool: {pool_name}
 Documents:
 {doc_list}
-
+{spring_break_context}
 Task: Find which document covers TODAY's date ({current_date.strftime('%B %d, %Y')}).
 
 Date parsing examples:
@@ -169,8 +261,15 @@ Date parsing examples:
 STEP BY STEP:
 1. Parse each document's date range from its filename
 2. Check: Is {current_date.strftime('%B %d, %Y')} between the start and end dates?
-3. If YES for any document, reply with that document number
-4. If NO document covers today (all expired or no dates), reply NONE
+3. If multiple documents cover today, apply the SPECIFICITY RULE below
+4. If exactly one document covers today, reply with that document number
+5. If NO document covers today (all expired or no dates), reply NONE
+
+SPECIFICITY RULE:
+If multiple documents cover today's date, prefer the MORE SPECIFIC schedule:
+- A "Spring Break" schedule is MORE SPECIFIC than a general "Spring" schedule
+- A schedule with a narrower date range is MORE SPECIFIC than one with a wider range
+- If today is during spring break and a spring break PDF exists (even without explicit dates in the filename), prefer it over the general seasonal schedule
 
 Your answer will be parsed by code. You must reply with ONLY the index value in digit form, or NONE. Do NOT include any other text in your response. It is very important that you say NONE if there isn't a schedule with a date indicator that would include today's date."""
 
@@ -1507,7 +1606,7 @@ def validate_day_count(raw_schedule, image_path, pool_name):
     return raw_schedule
 
 
-def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp", force_refresh=False):
+def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list, pdf_cache_dir="/tmp", force_refresh=False, spring_break_dates=None):
     """
     Complete workflow to get pool schedule from PDF using simplified multi-pass strategy.
 
@@ -1564,7 +1663,7 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
             print(f"  Force refresh enabled, re-parsing...")
 
         # Step 2: Select the appropriate schedule PDF
-        selected_pdf = select_schedule_pdf(documents, pool_name, current_date, pools_list)
+        selected_pdf = select_schedule_pdf(documents, pool_name, current_date, pools_list, spring_break_dates=spring_break_dates)
         if not selected_pdf:
             print(f"No schedule PDF found for {pool_name}")
             # Cache the empty result so we don't keep retrying
