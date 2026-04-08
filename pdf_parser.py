@@ -28,11 +28,11 @@ import pypdfium2 as pdfium
 CACHE_FILE = "map_data/pdf_schedule_cache.json"
 
 
-def requests_get_with_retry(url, max_retries=3, backoff_base=1):
+def requests_get_with_retry(url, max_retries=5, backoff_base=5, timeout=60):
     """Wrapper around requests.get with retry and exponential backoff."""
     for attempt in range(max_retries):
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=timeout)
             response.raise_for_status()
             return response
         except (requests.exceptions.ConnectionError,
