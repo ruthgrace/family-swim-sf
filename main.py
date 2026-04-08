@@ -36,7 +36,7 @@ from urllib.request import urlopen
 from zoneinfo import ZoneInfo
 
 # Import PDF parsing utilities
-from pdf_parser import get_pool_schedule_from_pdf, lookup_spring_break_dates
+from pdf_parser import get_pool_schedule_from_pdf, lookup_spring_break_dates, load_cache
 
 
 def parse_time_string(time_str):
@@ -56,6 +56,74 @@ def parse_time_string(time_str):
         hours = 0
 
     return datetime.time(hour=hours, minute=minutes)
+
+
+def apply_closures_to_schedule(schedule_data, closures, current_date, pool_name):
+    """
+    Apply date-specific closures to the weekly schedule for the current week.
+    - Full day closures: add a closure banner entry, mark existing slots with closure=True
+    - Activity-specific closures: add closure_note to matching slots
+    Returns modified schedule_data.
+    """
+    import copy
+    schedule_data = copy.deepcopy(schedule_data)
+
+    # Compute current week's Monday-Sunday range
+    today = current_date.date() if hasattr(current_date, 'date') else current_date
+    monday = today - datetime.timedelta(days=today.weekday())
+    sunday = monday + datetime.timedelta(days=6)
+
+    day_name_map = {
+        0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday",
+        4: "Friday", 5: "Saturday", 6: "Sunday"
+    }
+
+    for closure in closures:
+        try:
+            start_date = datetime.date.fromisoformat(closure['start_date'])
+            end_date = datetime.date.fromisoformat(closure['end_date'])
+        except (KeyError, ValueError):
+            continue
+
+        # Check each date in the closure range
+        d = start_date
+        while d <= end_date:
+            if monday <= d <= sunday:
+                weekday_name = day_name_map[d.weekday()]
+                date_str = d.strftime("%B %-d")
+
+                if closure.get('scope') == 'full':
+                    # Mark all existing slots as closed
+                    for slot in schedule_data.get(weekday_name, []):
+                        slot['closure'] = True
+                    # Add a closure banner entry
+                    schedule_data.setdefault(weekday_name, []).insert(0, {
+                        'pool': pool_name,
+                        'weekday': weekday_name,
+                        'start': '',
+                        'end': '',
+                        'note': f"Pool closed on {date_str}",
+                        'closure': True
+                    })
+                elif closure.get('scope') == 'activity':
+                    activity_pattern = closure.get('activity_pattern', '').lower()
+                    closure_start = closure.get('start_time', '').upper()
+                    closure_end = closure.get('end_time', '').upper()
+                    for slot in schedule_data.get(weekday_name, []):
+                        # Match by activity name (substring) and optionally by time
+                        note_matches = activity_pattern and activity_pattern in slot.get('note', '').lower()
+                        if note_matches:
+                            # If closure has specific times, also check time match
+                            if closure_start and closure_end:
+                                slot_start = slot.get('start', '').upper()
+                                slot_end = slot.get('end', '').upper()
+                                if slot_start == closure_start and slot_end == closure_end:
+                                    slot['closure_note'] = f"Closed on {date_str}"
+                            else:
+                                slot['closure_note'] = f"Closed on {date_str}"
+            d += datetime.timedelta(days=1)
+
+    return schedule_data
 
 
 NORTH_BEACH = "North Beach Pool"
@@ -191,23 +259,30 @@ FRONTEND_CONST_FILE = "frontend/src/ControlPanel.tsx"
 @functools.total_ordering
 class SwimSlot:
 
-    def __init__(self, pool, weekday, start, end, note):
+    def __init__(self, pool, weekday, start, end, note, closure=False, closure_note=None):
         self.pool = pool
         self.weekday = weekday
         self.start = start
         self.end = end
-        self.start_12h = self.start.strftime("%I:%M%p").lstrip('0')
-        self.end_12h = self.end.strftime("%I:%M%p").lstrip('0')
-        self.timeslot_string = f"{self.start_12h} - {self.end_12h}"
+        if self.start and self.end:
+            self.start_12h = self.start.strftime("%I:%M%p").lstrip('0')
+            self.end_12h = self.end.strftime("%I:%M%p").lstrip('0')
+            self.timeslot_string = f"{self.start_12h} - {self.end_12h}"
+        else:
+            self.start_12h = ''
+            self.end_12h = ''
+            self.timeslot_string = ''
         self.note = note
+        self.closure = closure
+        self.closure_note = closure_note
 
     def __str__(self):
         return f"SwimSlot({self.pool}, {self.weekday}, {self.start}, {self.end}, {self.note})"
 
     def spreadsheet_output(self):
         # convert times from 18:30:00 to more human readable e.g. 6:30pm
-        start_12h = self.start.strftime("%I:%M%p").lstrip('0')
-        end_12h = self.end.strftime("%I:%M%p").lstrip('0')
+        start_12h = self.start.strftime("%I:%M%p").lstrip('0') if self.start else ''
+        end_12h = self.end.strftime("%I:%M%p").lstrip('0') if self.end else ''
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
         return f"{self.pool},{WEEKDAY_CONVERSION[self.weekday]},{start_12h},{end_12h},{self.note}\n"
 
@@ -217,9 +292,13 @@ class SwimSlot:
         # convert weekday from short name e.g. "Mon" to long name e.g. "Monday"
         return_dict["weekday"] = WEEKDAY_CONVERSION[self.weekday]
         # convert times from 18:30:00 to more human readable e.g. 6:30pm
-        return_dict["start"] = self.start.strftime("%I:%M%p").lstrip('0')
-        return_dict["end"] = self.end.strftime("%I:%M%p").lstrip('0')
+        return_dict["start"] = self.start.strftime("%I:%M%p").lstrip('0') if self.start else ''
+        return_dict["end"] = self.end.strftime("%I:%M%p").lstrip('0') if self.end else ''
         return_dict["note"] = self.note
+        if self.closure:
+            return_dict["closure"] = True
+        if self.closure_note:
+            return_dict["closure_note"] = self.closure_note
         return return_dict
 
     def time_str(self):
@@ -229,6 +308,11 @@ class SwimSlot:
         return self.start == other.start
 
     def __lt__(self, other):
+        # Closure entries (None start) sort to the top
+        if self.start is None:
+            return True
+        if other.start is None:
+            return False
         return self.start < other.start
 
 
@@ -539,6 +623,13 @@ try:
             print(f"WARNING: Failed to get schedule data for {pool}, skipping")
             continue
 
+        # Apply closures for the current week
+        cache = load_cache()
+        closures = cache.get(pool, {}).get('closures', [])
+        if closures:
+            schedule_data = apply_closures_to_schedule(schedule_data, closures, current_date, pool)
+            print(f"Applied {len(closures)} closure entries for {pool}")
+
         # Convert PDF data format to OrderedCatalog format
         # PDF format: {weekday: [{"pool": "...", "weekday": "...", "start": "...", "end": "...", "note": "..."}]}
         # Need to convert to SwimSlot objects
@@ -558,12 +649,16 @@ try:
                 continue
 
             for slot_data in slots:
+                start_time = parse_time_string(slot_data['start']) if slot_data.get('start') else None
+                end_time = parse_time_string(slot_data['end']) if slot_data.get('end') else None
                 slot = SwimSlot(
                     pool=pool,
                     weekday=short_weekday,
-                    start=parse_time_string(slot_data['start']),
-                    end=parse_time_string(slot_data['end']),
-                    note=slot_data['note']
+                    start=start_time,
+                    end=end_time,
+                    note=slot_data['note'],
+                    closure=slot_data.get('closure', False),
+                    closure_note=slot_data.get('closure_note')
                 )
                 ordered_catalog.add(slot)
 
@@ -594,12 +689,16 @@ for pool in POOLS:
         working_families_data[pool][weekday] = float(0)
         if weekday in ["Sat", "Sun"]:
             for slot in ordered_catalog.catalog[pool][weekday]:
+                if not slot.start or not slot.end:
+                    continue
                 working_families_data[pool][weekday] += hour_delta(
                     slot.end, slot.start)
                 # print(
                 #     f"RUTH DEBUG: slot {slot} hour_delta {working_families_data[pool][weekday]}"
                 # )
         for slot in ordered_catalog.catalog[pool][weekday]:
+            if not slot.start or not slot.end:
+                continue
             if slot.end.hour > WORKDAY_END.hour:
                 if slot.start > WORKDAY_END:
                     hours = hour_delta(slot.end, slot.start)

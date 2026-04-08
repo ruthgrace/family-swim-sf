@@ -42,12 +42,17 @@ export function generateGeoJSONLayers(
       daysOfWeek.forEach((day) => {
         const swimTimes = schedule[poolName][day];
 
-        // If there are swim times for this day, create a new feature for that day
-        if (swimTimes.length > 0) {
-          const times = swimTimes
+        // Filter out closure entries for map labels (they should only show in popups)
+        const visibleSwimTimes = swimTimes.filter(
+          (t) => !t.closure && !t.closure_note
+        );
+
+        // If there are visible swim times for this day, create a new feature for that day
+        if (visibleSwimTimes.length > 0) {
+          const times = visibleSwimTimes
             .map((time) => `${time.start} - ${time.end}`)
             .join("\n");
-          const detailedTimes = swimTimes
+          const detailedTimes = visibleSwimTimes
             .map((time) => `${time.start} - ${time.end} (${time.note})`)
             .join("\n");
 

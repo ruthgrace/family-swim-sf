@@ -27,6 +27,8 @@ export interface Day {
   start: string;
   end: string;
   note: Note;
+  closure?: boolean;
+  closure_note?: string;
 }
 
 export type ScheduleForPool = { weekday: Weekday; times: string }[];

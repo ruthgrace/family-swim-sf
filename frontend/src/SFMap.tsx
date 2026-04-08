@@ -217,27 +217,50 @@ const SwimLocationPopup = ({ popupInfo, selectedDay, poolData, onClose }) => {
         </h4>
         {daySchedule.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {daySchedule.map((slot, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: slot.note.includes("Family Swim") ? "#dbeafe" : "#fef3c7",
-                  borderRadius: "6px",
-                  fontSize: "13px"
-                }}
-              >
-                <div style={{ fontWeight: "600", color: "#1f2937" }}>
-                  {slot.start} - {slot.end}
+            {daySchedule.filter((slot) => !(slot.closure && slot.start)).map((slot, index) => (
+              slot.closure && !slot.start ? (
+                // Full-day closure banner
+                <div
+                  key={index}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#fee2e2",
+                    borderRadius: "6px",
+                    fontSize: "13px"
+                  }}
+                >
+                  <div style={{ fontWeight: "600", color: "#991b1b" }}>
+                    {slot.note}
+                  </div>
                 </div>
-                <div style={{
-                  color: slot.note.includes("Family Swim") ? "#1d4ed8" : "#d97706",
-                  fontSize: "12px",
-                  marginTop: "2px"
-                }}>
-                  {slot.note}
+              ) : (
+                // Normal swim slot (possibly with closure note)
+                <div
+                  key={index}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: slot.note.includes("Family Swim") ? "#dbeafe" : "#fef3c7",
+                    borderRadius: "6px",
+                    fontSize: "13px"
+                  }}
+                >
+                  <div style={{ fontWeight: "600", color: "#1f2937" }}>
+                    {slot.start} - {slot.end}
+                  </div>
+                  <div style={{
+                    color: slot.note.includes("Family Swim") ? "#1d4ed8" : "#d97706",
+                    fontSize: "12px",
+                    marginTop: "2px"
+                  }}>
+                    {slot.note}
+                  </div>
+                  {slot.closure_note && (
+                    <div style={{ color: "#dc2626", fontSize: "11px", marginTop: "2px", fontWeight: "600" }}>
+                      {slot.closure_note}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )
             ))}
           </div>
         ) : (

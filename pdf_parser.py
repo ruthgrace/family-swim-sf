@@ -959,6 +959,92 @@ def extract_raw_schedule(pdf_path, pool_name):
         return None
 
 
+def extract_closures_from_pdf(image_data, pool_name, client, year):
+    """
+    PASS 1c: Extract closure/holiday information from the PDF image.
+    Looks for date-specific closures mentioned anywhere on the page.
+    Returns a list of closure dicts.
+    """
+    prompt = f"""Look at this pool schedule PDF for {pool_name}. This schedule covers the date range shown in the header.
+
+Your task is to find any CLOSURES mentioned ANYWHERE on this page. These are date-specific exceptions to the regular weekly schedule.
+
+Look carefully at ALL of these locations — closure info can appear anywhere:
+- Dedicated "CLOSURES:" or "POOL CLOSURES:" sections (often in sidebars)
+- Within the schedule grid itself (e.g., "Closed every 3rd Thurs" in a specific time slot cell — this means only THAT time slot is closed, not the whole day; use scope "activity" with the activity name from that cell)
+- Near column headers (e.g., "POOL CLOSED on Training: Thursday 3/19 & 4/16")
+- Rows or cells that say "All Municipal Pools CLOSED" with specific dates
+- Footnotes, asterisk notes, or small text at the bottom
+- "Federal Holidays" or holiday closure references
+- "3rd Thursday of the month" or similar recurring closure patterns WITH specific dates listed
+- Any text referencing specific dates when the pool or specific activities are closed
+
+For each closure found, extract EVERY specific date mentioned. If it says "every 3rd Thursday" AND lists dates like "3/19, 4/16, 5/21", extract each date as a separate closure entry.
+
+Return a JSON array:
+[
+  {{"start_date": "2026-04-16", "end_date": "2026-04-16", "scope": "full", "activity_pattern": "all", "description": "Closed for staff training (3rd Thursday)"}},
+  {{"start_date": "2026-05-15", "end_date": "2026-05-15", "scope": "full", "activity_pattern": "all", "description": "All Municipal Pools closed"}},
+  {{"start_date": "2026-05-25", "end_date": "2026-05-25", "scope": "full", "activity_pattern": "all", "description": "Closed for Memorial Day"}},
+  {{"start_date": "2026-04-16", "end_date": "2026-04-16", "scope": "activity", "activity_pattern": "Rec/Family Swim", "start_time": "6:30PM", "end_time": "7:30PM", "description": "Closed every 3rd Thursday"}}
+]
+
+Rules:
+- start_date and end_date use YYYY-MM-DD format. The current year is {year}. The schedule header shows the date range — use it to resolve ambiguous months AND to convert relative/recurring dates (like "every 3rd Thursday" or "second Tuesday") into specific YYYY-MM-DD dates that fall within the schedule's date range.
+- For single-day closures, start_date and end_date should be the same.
+- scope: "full" if the entire pool is closed. "activity" if only a specific activity is closed.
+- activity_pattern: "all" for full closures. For activity-specific closures, use the activity name as written (e.g., "Family Swim", "Lap Swim", "Swim Lessons").
+- start_time and end_time: Only include for activity-specific closures (scope "activity") where the time slot is visible in the grid cell. Use the same format as the schedule (e.g., "6:30PM"). Omit for full-day closures.
+- description: Brief human-readable description as stated on the PDF.
+- Create one entry PER DATE. If "3/19, 4/16, 5/21" are all closure dates, return 3 separate entries.
+- If no closures or date-specific exceptions are found, return an empty array: []
+
+Return ONLY the JSON array, no other text."""
+
+    try:
+        message = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=2048,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": image_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        )
+
+        response_text = message.content[0].text.strip()
+        json_text = parse_json_response(response_text)
+        closures = json.loads(json_text)
+
+        if not isinstance(closures, list):
+            print(f"  Warning: Closure extraction returned non-list, using empty list")
+            return []
+
+        print(f"  Found {len(closures)} closure entries")
+        for c in closures:
+            print(f"    - {c.get('start_date')}: {c.get('description')} (scope: {c.get('scope')})")
+
+        return closures
+
+    except (json.JSONDecodeError, Exception) as e:
+        print(f"  Warning: Failed to extract closures: {e}")
+        return []
+
+
 def filter_family_swim(raw_schedule, pool_name):
     """
     PASS 2: Filter raw schedule for family/parent-child swim activities.
@@ -1714,6 +1800,14 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
                 json.dump(raw_schedule, f, indent=2)
             print(f"  Saved cleaned raw schedule to {debug_path}")
 
+        # PASS 1c: Extract closure information from PDF
+        print(f"PASS 1c: Extracting closure information...")
+        image_path = f"{pdf_cache_dir}/{pool_name.replace(' ', '_')}_schedule_page1.png"
+        with open(image_path, 'rb') as f:
+            closure_image_data = base64.standard_b64encode(f.read()).decode('utf-8')
+        closure_client = Anthropic(api_key=ANTHROPIC_API_KEY)
+        closures = extract_closures_from_pdf(closure_image_data, pool_name, closure_client, current_date.year)
+
         # PASS 2: Filter for family/parent-child swim
         print(f"PASS 2: Filtering for family/parent-child swim...")
         family_swim_data = filter_family_swim(raw_schedule, pool_name)
@@ -1753,7 +1847,8 @@ def get_pool_schedule_from_pdf(pool_name, facility_url, current_date, pools_list
         # Save to cache
         cache[pool_name] = {
             'pdf_signature': current_pdf_signature,
-            'schedule_data': combined_data
+            'schedule_data': combined_data,
+            'closures': closures
         }
         save_cache(cache)
 
