@@ -316,19 +316,41 @@ Your answer will be parsed by code. You must reply with ONLY the index value in 
     return None
 
 
-def download_pdf(pdf_url, output_path):
-    """Download a PDF from the given URL"""
-    try:
-        response = requests_get_with_retry(pdf_url)
+def download_pdf(pdf_url, output_path, max_retries=5, backoff_base=5, chunk_timeout=60):
+    """Download a PDF using streaming with retry. Each chunk must arrive within chunk_timeout seconds."""
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(pdf_url, stream=True, timeout=(30, chunk_timeout))
+            response.raise_for_status()
 
-        with open(output_path, 'wb') as f:
-            f.write(response.content)
+            bytes_downloaded = 0
+            with open(output_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        bytes_downloaded += len(chunk)
 
-        return True
-    except Exception as e:
-        print(f"Error downloading PDF: {e}")
-        traceback.print_exc()
-        return False
+            content_length = response.headers.get('content-length')
+            if content_length and bytes_downloaded < int(content_length):
+                raise requests.exceptions.ChunkedEncodingError(
+                    f"Incomplete download: got {bytes_downloaded} of {content_length} bytes"
+                )
+
+            print(f"  Downloaded {bytes_downloaded} bytes")
+            return True
+
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ChunkedEncodingError,
+                requests.exceptions.Timeout) as e:
+            if attempt < max_retries - 1:
+                wait = backoff_base * (2 ** attempt)
+                print(f"  Retry {attempt + 1}/{max_retries - 1} after {wait}s: {e}")
+                time.sleep(wait)
+            else:
+                print(f"Error downloading PDF: {e}")
+                traceback.print_exc()
+                return False
+    return False
 
 
 def convert_pdf_to_image(pdf_path, output_path=None, dpi=300):

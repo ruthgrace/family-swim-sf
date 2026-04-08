@@ -5,3 +5,4 @@ node_modules
 venv
 output.txt
 cron.log
+nohup.out
