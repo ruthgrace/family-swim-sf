@@ -104,3 +104,746 @@ Downloading PDF...
 SIGNAL RECEIVED: SIGHUP (1)
 Timestamp: 2026-04-08 17:49:08.226998
 ============================================================
+
+============================================================
+Starting pool schedule extraction at 2026-04-08 13:07:30.593795-07:00
+Processing 9 pools: Balboa Pool, Coffman Pool, Garfield Pool, Hamilton Pool, Martin Luther King Jr Pool, Mission Community Pool, North Beach Pool, Rossi Pool, Sava Pool
+Mode: Force refresh ALL pools
+============================================================
+
+  Using cached spring break dates: 2026-03-27 to 2026-04-03
+
+============================================================
+Processing Balboa Pool
+============================================================
+Fetching documents from facility page...
+Found 5 documents
+  PDF signature: ['2026 Balboa Pool Spring Break Schedule', '2026 Balboa Pool Spring Schedule']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['2026 Balboa Pool Spring Schedule', '2026 Balboa Pool Spring Break Schedule', '', '', '']
+  Search terms: ['balboa pool', 'balboa']
+  Candidate schedule PDFs: ['2026 Balboa Pool Spring Schedule', '2026 Balboa Pool Spring Break Schedule']
+  Claude date selection response: '1'
+Selected: 2026 Balboa Pool Spring Schedule
+Selected: 2026 Balboa Pool Spring Schedule
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 748, in _error_catcher
+    yield
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 873, in _raw_read
+    data = self._fp_read(amt, read1=read1) if not fp_closed else b""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 856, in _fp_read
+    return self._fp.read(amt) if amt is not None else self._fp.read()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 472, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 1060, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 949, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 872, in _raw_read
+    with self._error_catcher():
+  File "/usr/local/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 753, in _error_catcher
+    raise ReadTimeoutError(self._pool, None, "Read timed out.") from e  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 826, in generate
+    raise ConnectionError(e)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Failed to download PDF for Balboa Pool
+WARNING: Failed to get schedule data for Balboa Pool, skipping
+
+============================================================
+Processing Coffman Pool
+============================================================
+Fetching documents from facility page...
+Found 4 documents
+  PDF signature: ['Coffman Pool_Spring One 26_Mar17_April18']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Coffman Pool_Spring One 26_Mar17_April18', '', '', '']
+  Search terms: ['coffman pool', 'coffman']
+  Candidate schedule PDFs: ['Coffman Pool_Spring One 26_Mar17_April18']
+  Claude date selection response: '1'
+Selected: Coffman Pool_Spring One 26_Mar17_April18
+Selected: Coffman Pool_Spring One 26_Mar17_April18
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connection.py", line 507, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 1411, in getresponse
+    response.begin()
+  File "/usr/local/lib/python3.12/http/client.py", line 324, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 285, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 538, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 369, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 713, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Failed to download PDF for Coffman Pool
+WARNING: Failed to get schedule data for Coffman Pool, skipping
+
+============================================================
+Processing Garfield Pool
+============================================================
+Fetching documents from facility page...
+Found 5 documents
+  PDF signature: ['Garfield Pool_SPRING BREAK_Schedule March 29_April 2 (2)', 'Garfield_Spring 2026 Schedule March 15 to June 4']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Garfield_Spring 2026 Schedule March 15 to June 4', 'Garfield Pool_SPRING BREAK_Schedule March 29_April 2 (2)', '', '', '']
+  Search terms: ['garfield pool', 'garfield']
+  Candidate schedule PDFs: ['Garfield_Spring 2026 Schedule March 15 to June 4', 'Garfield Pool_SPRING BREAK_Schedule March 29_April 2 (2)']
+  Claude date selection response: '1'
+Selected: Garfield_Spring 2026 Schedule March 15 to June 4
+Selected: Garfield_Spring 2026 Schedule March 15 to June 4
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 748, in _error_catcher
+    yield
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 873, in _raw_read
+    data = self._fp_read(amt, read1=read1) if not fp_closed else b""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 856, in _fp_read
+    return self._fp.read(amt) if amt is not None else self._fp.read()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 472, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 1060, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 949, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 872, in _raw_read
+    with self._error_catcher():
+  File "/usr/local/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 753, in _error_catcher
+    raise ReadTimeoutError(self._pool, None, "Read timed out.") from e  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 826, in generate
+    raise ConnectionError(e)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Failed to download PDF for Garfield Pool
+WARNING: Failed to get schedule data for Garfield Pool, skipping
+
+============================================================
+Processing Hamilton Pool
+============================================================
+Fetching documents from facility page...
+Found 4 documents
+  PDF signature: ['Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6', '', '', '']
+  Search terms: ['hamilton pool', 'hamilton']
+  Candidate schedule PDFs: ['Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6']
+  Claude date selection response: '1'
+Selected: Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6
+Selected: Hamilton Pool _ Spring 2026 Schedule _ March 17 to June 6
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 748, in _error_catcher
+    yield
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 873, in _raw_read
+    data = self._fp_read(amt, read1=read1) if not fp_closed else b""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 856, in _fp_read
+    return self._fp.read(amt) if amt is not None else self._fp.read()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 472, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 1060, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 949, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 872, in _raw_read
+    with self._error_catcher():
+  File "/usr/local/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 753, in _error_catcher
+    raise ReadTimeoutError(self._pool, None, "Read timed out.") from e  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 826, in generate
+    raise ConnectionError(e)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Failed to download PDF for Hamilton Pool
+WARNING: Failed to get schedule data for Hamilton Pool, skipping
+
+============================================================
+Processing Martin Luther King Jr Pool
+============================================================
+Fetching documents from facility page...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Found 4 documents
+  PDF signature: ['MLK_Spring26_Apr07_Jun06_FINAL v2.0']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['MLK_Spring26_Apr07_Jun06_FINAL v2.0', '', '', '']
+  Search terms: ['martin luther king jr pool', 'martin luther king jr', 'mlk']
+  Candidate schedule PDFs: ['MLK_Spring26_Apr07_Jun06_FINAL v2.0']
+  Claude date selection response: '1'
+Selected: MLK_Spring26_Apr07_Jun06_FINAL v2.0
+Selected: MLK_Spring26_Apr07_Jun06_FINAL v2.0
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connection.py", line 507, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 1411, in getresponse
+    response.begin()
+  File "/usr/local/lib/python3.12/http/client.py", line 324, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 285, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 538, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 369, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 713, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Failed to download PDF for Martin Luther King Jr Pool
+WARNING: Failed to get schedule data for Martin Luther King Jr Pool, skipping
+
+============================================================
+Processing Mission Community Pool
+============================================================
+Fetching documents from facility page...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Found 4 documents
+  PDF signature: ['Mission Pool Rules and Guidelines (1/5/21 Update)']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Mission Pool Rules and Guidelines (1/5/21 Update)', '', '', '']
+  Search terms: ['mission community pool', 'mission community', 'mission']
+  Candidate schedule PDFs: ['Mission Pool Rules and Guidelines (1/5/21 Update)']
+  Claude date selection response: 'NONE'
+No valid schedule PDF for Mission Community Pool on April 08, 2026
+No schedule PDF found for Mission Community Pool
+WARNING: Failed to get schedule data for Mission Community Pool, skipping
+
+============================================================
+Processing North Beach Pool
+============================================================
+Fetching documents from facility page...
+Found 5 documents
+  PDF signature: ['North Beach Pool_ Spring 2026_ 15MAR to 12JUN', 'North Beach Pool_SPRING BREAK_Schedule March 30_April 3']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['North Beach Pool_SPRING BREAK_Schedule March 30_April 3', 'North Beach Pool_ Spring 2026_ 15MAR to 12JUN', '', '', '']
+  Search terms: ['north beach pool', 'north beach']
+  Candidate schedule PDFs: ['North Beach Pool_SPRING BREAK_Schedule March 30_April 3', 'North Beach Pool_ Spring 2026_ 15MAR to 12JUN']
+  Claude date selection response: '2'
+Selected: North Beach Pool_ Spring 2026_ 15MAR to 12JUN
+Selected: North Beach Pool_ Spring 2026_ 15MAR to 12JUN
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 748, in _error_catcher
+    yield
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 873, in _raw_read
+    data = self._fp_read(amt, read1=read1) if not fp_closed else b""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 856, in _fp_read
+    return self._fp.read(amt) if amt is not None else self._fp.read()
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 472, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 1060, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 949, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 872, in _raw_read
+    with self._error_catcher():
+  File "/usr/local/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 753, in _error_catcher
+    raise ReadTimeoutError(self._pool, None, "Read timed out.") from e  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 826, in generate
+    raise ConnectionError(e)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Failed to download PDF for North Beach Pool
+WARNING: Failed to get schedule data for North Beach Pool, skipping
+
+============================================================
+Processing Rossi Pool
+============================================================
+Fetching documents from facility page...
+Found 5 documents
+  PDF signature: ['Rossi_SPRING BREAK_Schedule March 27_April 3', 'Rossi_Spring 2026 Schedule March 15 to June 4']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Rossi_Spring 2026 Schedule March 15 to June 4', 'Rossi_SPRING BREAK_Schedule March 27_April 3', '', '', '']
+  Search terms: ['rossi pool', 'rossi']
+  Candidate schedule PDFs: ['Rossi_Spring 2026 Schedule March 15 to June 4', 'Rossi_SPRING BREAK_Schedule March 27_April 3']
+  Claude date selection response: '1'
+Selected: Rossi_Spring 2026 Schedule March 15 to June 4
+Selected: Rossi_Spring 2026 Schedule March 15 to June 4
+Downloading PDF...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 4/4 after 40s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+Error downloading PDF: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connection.py", line 507, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 1411, in getresponse
+    response.begin()
+  File "/usr/local/lib/python3.12/http/client.py", line 324, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 285, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1249, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 538, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 369, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url, timeout=timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/adapters.py", line 713, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Failed to download PDF for Rossi Pool
+WARNING: Failed to get schedule data for Rossi Pool, skipping
+
+============================================================
+Processing Sava Pool
+============================================================
+Fetching documents from facility page...
+  Retry 1/4 after 5s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+  Retry 2/4 after 10s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out.
+  Retry 3/4 after 20s: HTTPSConnectionPool(host='sfrecpark.org', port=443): Read timed out. (read timeout=60)
+Found 3 documents
+  PDF signature: []
+  Force refresh enabled, re-parsing...
+  Documents on page: ['', '', '']
+  Search terms: ['sava pool', 'sava']
+  Candidate schedule PDFs: []
+  No candidate PDFs found for Sava Pool
+No schedule PDF found for Sava Pool
+WARNING: Failed to get schedule data for Sava Pool, skipping
+
+============================================================
+Pool extraction complete at 2026-04-08 14:13:55.771494-07:00
+============================================================
+
+Detected schedule update, pushing to git.
