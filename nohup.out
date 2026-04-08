@@ -1,0 +1,106 @@
+
+============================================================
+Starting pool schedule extraction at 2026-04-08 08:37:02.691023-07:00
+Processing 9 pools: Balboa Pool, Coffman Pool, Garfield Pool, Hamilton Pool, Martin Luther King Jr Pool, Mission Community Pool, North Beach Pool, Rossi Pool, Sava Pool
+Mode: Force refresh ALL pools
+============================================================
+
+  Using cached spring break dates: 2026-03-27 to 2026-04-03
+
+============================================================
+Processing Balboa Pool
+============================================================
+Fetching documents from facility page...
+Found 5 documents
+  PDF signature: ['2026 Balboa Pool Spring Break Schedule', '2026 Balboa Pool Spring Schedule']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['2026 Balboa Pool Spring Schedule', '2026 Balboa Pool Spring Break Schedule', '', '', '']
+  Search terms: ['balboa pool', 'balboa']
+  Candidate schedule PDFs: ['2026 Balboa Pool Spring Schedule', '2026 Balboa Pool Spring Break Schedule']
+  Claude date selection response: '1'
+Selected: 2026 Balboa Pool Spring Schedule
+Selected: 2026 Balboa Pool Spring Schedule
+Downloading PDF...
+  Retry 1/2 after 1s: ('Connection broken: IncompleteRead(97494 bytes read, 511067 more expected)', IncompleteRead(97494 bytes read, 511067 more expected))
+  Retry 2/2 after 2s: ('Connection broken: IncompleteRead(97494 bytes read, 511067 more expected)', IncompleteRead(97494 bytes read, 511067 more expected))
+Error downloading PDF: ('Connection broken: IncompleteRead(97494 bytes read, 511067 more expected)', IncompleteRead(97494 bytes read, 511067 more expected))
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 748, in _error_catcher
+    yield
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 894, in _raw_read
+    raise IncompleteRead(self._fp_bytes_read, self.length_remaining)
+urllib3.exceptions.IncompleteRead: IncompleteRead(97494 bytes read, 511067 more expected)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 1060, in stream
+    data = self.read(amt=amt, decode_content=decode_content)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 977, in read
+    data = self._raw_read(amt)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 872, in _raw_read
+    with self._error_catcher():
+  File "/usr/local/lib/python3.12/contextlib.py", line 155, in __exit__
+    self.gen.throw(value)
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/urllib3/response.py", line 772, in _error_catcher
+    raise ProtocolError(arg, e) from e
+urllib3.exceptions.ProtocolError: ('Connection broken: IncompleteRead(97494 bytes read, 511067 more expected)', IncompleteRead(97494 bytes read, 511067 more expected))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/family-swim-sf/pdf_parser.py", line 322, in download_pdf
+    response = requests_get_with_retry(pdf_url)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/pdf_parser.py", line 35, in requests_get_with_retry
+    response = requests.get(url)
+               ^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 724, in send
+    history = [resp for resp in gen]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 265, in resolve_redirects
+    resp = self.send(
+           ^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/family-swim-sf/venv/lib/python3.12/site-packages/requests/models.py", line 822, in generate
+    raise ChunkedEncodingError(e)
+requests.exceptions.ChunkedEncodingError: ('Connection broken: IncompleteRead(97494 bytes read, 511067 more expected)', IncompleteRead(97494 bytes read, 511067 more expected))
+Failed to download PDF for Balboa Pool
+WARNING: Failed to get schedule data for Balboa Pool, skipping
+
+============================================================
+Processing Coffman Pool
+============================================================
+Fetching documents from facility page...
+Found 4 documents
+  PDF signature: ['Coffman Pool_Spring One 26_Mar17_April18']
+  Force refresh enabled, re-parsing...
+  Documents on page: ['Coffman Pool_Spring One 26_Mar17_April18', '', '', '']
+  Search terms: ['coffman pool', 'coffman']
+  Candidate schedule PDFs: ['Coffman Pool_Spring One 26_Mar17_April18']
+  Claude date selection response: '1'
+Selected: Coffman Pool_Spring One 26_Mar17_April18
+Selected: Coffman Pool_Spring One 26_Mar17_April18
+Downloading PDF...
+
+============================================================
+SIGNAL RECEIVED: SIGHUP (1)
+Timestamp: 2026-04-08 17:49:08.226998
+============================================================
