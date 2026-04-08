@@ -27,12 +27,16 @@ import pypdfium2 as pdfium
 # Cache file for storing PDF lists and parsed schedules
 CACHE_FILE = "map_data/pdf_schedule_cache.json"
 
+REQUEST_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
 
 def requests_get_with_retry(url, max_retries=5, backoff_base=5, timeout=60):
     """Wrapper around requests.get with retry and exponential backoff."""
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, timeout=timeout)
+            response = requests.get(url, timeout=timeout, headers=REQUEST_HEADERS)
             response.raise_for_status()
             return response
         except (requests.exceptions.ConnectionError,
@@ -320,7 +324,7 @@ def download_pdf(pdf_url, output_path, max_retries=5, backoff_base=5, chunk_time
     """Download a PDF using streaming with retry. Each chunk must arrive within chunk_timeout seconds."""
     for attempt in range(max_retries):
         try:
-            response = requests.get(pdf_url, stream=True, timeout=(30, chunk_timeout))
+            response = requests.get(pdf_url, stream=True, timeout=(30, chunk_timeout), headers=REQUEST_HEADERS)
             response.raise_for_status()
 
             bytes_downloaded = 0
