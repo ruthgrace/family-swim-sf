@@ -25,7 +25,9 @@ def signal_handler(signum, frame):
 # Register signal handlers
 signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
-signal.signal(signal.SIGHUP, signal_handler)
+# Only register SIGHUP if it isn't already ignored (e.g., by nohup)
+if signal.getsignal(signal.SIGHUP) != signal.SIG_IGN:
+    signal.signal(signal.SIGHUP, signal_handler)
 
 from bs4 import BeautifulSoup
 from urllib import request
